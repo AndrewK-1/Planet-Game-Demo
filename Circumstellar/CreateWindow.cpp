@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <windowsx.h>
 #include "CreateWindow.h"
+#include "MessageHandler.h"
 
 //WINAPI is a kind of macro that includes a bunch of necessary stuff for wWinMain to work.
 //wWinMain is the Unicode wchar_t version of WinMain, an dso the program enables usage of Unicode.
@@ -60,29 +61,9 @@ LRESULT CALLBACK MainWndProc(
 	_In_ UINT ProcMSG, 
 	_In_ WPARAM wParam, 
 	_In_ LPARAM lParam) {
-	POINT point;
-	
-	switch (ProcMSG) {
-	case WM_LBUTTONDOWN: {
-		point.x = GET_X_LPARAM(lParam);
-		point.y = GET_Y_LPARAM(lParam);
-	}
-	break;
 
-		case WM_CLOSE: {
-			DestroyWindow(hwnd);
-		}
-
-		case WM_DESTROY: {
-			PostQuitMessage(0);
-		}
-
-		default:{
-			return DefWindowProc(hwnd, ProcMSG, wParam, lParam);
-		}
-
-	return 0;
-	}
+	CustomWinMessageHandler mHandler;
+	return mHandler.processMessage(hwnd, ProcMSG, wParam, lParam);
 }
 
 WNDCLASSEX WindowDefine(HINSTANCE hI) {
