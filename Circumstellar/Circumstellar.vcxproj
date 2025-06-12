@@ -125,6 +125,9 @@
   <ItemGroup>
     <ClCompile Include="CreateWindow.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CreateWindow.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1,11 +1,7 @@
+#pragma once
 #include <Windows.h>
 #include <windowsx.h>
-#include <chrono>
-#include <thread>
-#include <iostream>
-
-
-LRESULT CALLBACK MainWndProc(HWND, UINT, WPARAM, LPARAM);
+#include "CreateWindow.h"
 
 //WINAPI is a kind of macro that includes a bunch of necessary stuff for wWinMain to work.
 //wWinMain is the Unicode wchar_t version of WinMain, an dso the program enables usage of Unicode.
@@ -20,22 +16,12 @@ int WINAPI wWinMain(
 
 	//Defining the Window Class
 	HINSTANCE handle = hInstance;
-	WNDCLASSEX wcx;
-	wcx.cbSize = sizeof(WNDCLASSEX);
-	wcx.style = CS_VREDRAW | CS_HREDRAW;
-	wcx.lpfnWndProc = MainWndProc;
-	wcx.hInstance = hInstance;
-	wcx.lpszClassName = L"DXGameWindow";
-	wcx.cbClsExtra = 0;
-	wcx.cbWndExtra = 0;
-	wcx.hIcon = NULL;
-	wcx.hCursor = NULL;
-	wcx.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	wcx.lpszMenuName = NULL;
-	wcx.hIconSm = NULL;
+	WNDCLASSEX wClassX = WindowDefine(handle);
 	
-	ATOM RegisteredWindowClass = RegisterClassExW(&wcx);
+	//Registering the Window Class
+	ATOM RegisteredWindowClass = RegisterClassExW(&wClassX);
 
+	//Creating the window
 	HWND hWind = CreateWindowExW(
 		WS_EX_CLIENTEDGE, 
 		MAKEINTATOM(RegisteredWindowClass), 
@@ -50,10 +36,10 @@ int WINAPI wWinMain(
 		hInstance, 
 		NULL);
 
-	BOOL shown = ShowWindow(hWind, nCmdShow);
+	//Showing the window
+	ShowWindow(hWind, nCmdShow);
 	UpdateWindow(hWind);
 
-	
 	/*In Get Message, parameter 1 is pointing to the MSG structure receiving messages.
 	Parameter 2 is a handle to the window whose messages are to be retrieved, can be null to retrieve any messages on the current thread.
 	Parameter 3 specifies keyboard and mouse messages, more specifically, the "lowest" message value to be retrieved.
@@ -98,3 +84,21 @@ LRESULT CALLBACK MainWndProc(
 	return 0;
 	}
 }
+
+WNDCLASSEX WindowDefine(HINSTANCE hI) {
+	WNDCLASSEX wcx;
+	wcx.cbSize = sizeof(WNDCLASSEX);
+	wcx.style = CS_VREDRAW | CS_HREDRAW;
+	wcx.lpfnWndProc = MainWndProc;
+	wcx.hInstance = hI;
+	wcx.lpszClassName = L"DXGameWindow";
+	wcx.cbClsExtra = 0;
+	wcx.cbWndExtra = 0;
+	wcx.hIcon = NULL;
+	wcx.hCursor = NULL;
+	wcx.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	wcx.lpszMenuName = NULL;
+	wcx.hIconSm = NULL;
+	return wcx;
+}
+
