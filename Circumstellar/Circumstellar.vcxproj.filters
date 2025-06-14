@@ -13,27 +13,50 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Windows">
+    <Filter Include="Header Files\API Interaction">
+      <UniqueIdentifier>{28d82c56-e185-4c59-81c8-17b2a3fb1593}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\API Interaction\Windows">
       <UniqueIdentifier>{ae06ee09-e35c-4587-b108-7ff1dbdb53f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Windows">
+    <Filter Include="Header Files\API Interaction\Rendering">
+      <UniqueIdentifier>{3cd720ef-bd2c-47bf-accd-7f1ba8191396}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API Interaction">
+      <UniqueIdentifier>{d2de5e8c-693a-4e92-9ee0-b210e124a72e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API Interaction\Rendering">
+      <UniqueIdentifier>{62abceab-2145-4830-b9a1-8b0b6d874362}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API Interaction\Windows">
       <UniqueIdentifier>{243ef6de-757e-4a96-a78f-5c46edb7c8b1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h">
-      <Filter>Header Files\Windows</Filter>
+      <Filter>Header Files\API Interaction\Windows</Filter>
     </ClInclude>
     <ClInclude Include="MessageHandler.h">
-      <Filter>Header Files\Windows</Filter>
+      <Filter>Header Files\API Interaction\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CreateWindow.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\API Interaction\Windows</Filter>
     </ClCompile>
     <ClCompile Include="MessageHandler.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\API Interaction\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="DirectXStart.cpp">
+      <Filter>Source Files\API Interaction\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectXStart.h">
+      <Filter>Header Files\API Interaction\Rendering</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

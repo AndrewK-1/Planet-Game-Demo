@@ -1,8 +1,6 @@
 #pragma once
-#include <Windows.h>
-#include <Windowsx.h>
+#include "pch.h"
 #include "MessageHandler.h"
-	POINT point;
 	LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM wParam, LPARAM lParam) {
 	switch (ProcMSG) {
 	case WM_LBUTTONDOWN: {
@@ -25,4 +23,4 @@
 
 	return 0;
 	}
-}		
+}

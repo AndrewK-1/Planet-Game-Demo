@@ -1,6 +1,6 @@
 #pragma once
+#include "pch.h"
 #include <Windows.h>
-#include <windowsx.h>
 #include "CreateWindow.h"
 #include "MessageHandler.h"
 
@@ -17,10 +17,14 @@ int WINAPI wWinMain(
 
 	//Defining the Window Class
 	HINSTANCE handle = hInstance;
+	//Call to custom function to define the window class.
 	WNDCLASSEX wClassX = WindowDefine(handle);
 	
 	//Registering the Window Class
-	ATOM RegisteredWindowClass = RegisterClassExW(&wClassX);
+	ATOM RegisteredWindowClass;	
+	if (!(RegisteredWindowClass = RegisterClassExW(&wClassX))) {
+		return 1; //Error registering window class
+	}
 
 	//Creating the window
 	HWND hWind = CreateWindowExW(
@@ -77,7 +81,7 @@ WNDCLASSEX WindowDefine(HINSTANCE hI) {
 	wcx.cbWndExtra = 0;
 	wcx.hIcon = NULL;
 	wcx.hCursor = NULL;
-	wcx.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	wcx.hbrBackground = (HBRUSH)(COLOR_WINDOW+2);
 	wcx.lpszMenuName = NULL;
 	wcx.hIconSm = NULL;
 	return wcx;
