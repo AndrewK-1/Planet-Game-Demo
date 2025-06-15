@@ -3,6 +3,12 @@
 #include <Windows.h>
 #include "CreateWindow.h"
 #include "MessageHandler.h"
+#include "Game.h"
+
+namespace 
+{
+	std::unique_ptr<Game> game;
+}
 
 //WINAPI is a kind of macro that includes a bunch of necessary stuff for wWinMain to work.
 //wWinMain is the Unicode wchar_t version of WinMain, an dso the program enables usage of Unicode.
@@ -17,6 +23,8 @@ int WINAPI wWinMain(
 
 	//Defining the Window Class
 	HINSTANCE handle = hInstance;
+	//Defining game object
+	game = std::make_unique<Game>();
 	//Call to custom function to define the window class.
 	WNDCLASSEX wClassX = WindowDefine(handle);
 	
@@ -45,16 +53,27 @@ int WINAPI wWinMain(
 	ShowWindow(hWind, nCmdShow);
 	UpdateWindow(hWind);
 
+	game->Initialize(hWind);
+
 	/*In Get Message, parameter 1 is pointing to the MSG structure receiving messages.
 	Parameter 2 is a handle to the window whose messages are to be retrieved, can be null to retrieve any messages on the current thread.
 	Parameter 3 specifies keyboard and mouse messages, more specifically, the "lowest" message value to be retrieved.
 		Can also use WM_INPUT for WM_INPUT messages.  Zero means no filtering.
 	Parameter 4 is "highest" value to be retrieved.  similar to previous parameter.*/
-	MSG message;
-	while (((GetMessage(&message, (HWND)NULL, 0, 0))) != 0) 
+	MSG message = {};
+	while (WM_QUIT != message.message) 
 	{
-		TranslateMessage(&message);
-		DispatchMessage(&message);
+		//??PeekMessage is clearing this 'if' statement to the 'else' after a few passes, but GetMessage is not
+		if (PeekMessage(&message, (HWND)NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&message);
+			DispatchMessage(&message);
+		}
+		else 
+		{
+			game->Tick();
+		}
+		
 	}
 
 	return 0;

@@ -17,15 +17,37 @@ public:
 	Game(Game&&) = default;
 	Game& operator=(Game&&) = default;
 
-private:
+	//Initilization and game tick
 	void Initialize(HWND windowHandle);
-	void CreateResources();
+	void Tick();
 
+	//Window minimize/maximize/size change methods
+	void OnActivated();
+	void OnDeactivated();
+	void OnSuspending();
+	void OnResuming();
+	void OnWindowSizeChanged(int width, int height);
+
+private:
+	//Rendering and views methods
+	void Update();
+	void Render();
+	void Clear();
+	void Present();
+	void CreateDevice();
+	void CreateResources();
+	
+	void OnDeviceLost();
+	
 	//Resources
-	HWND										m_windowHandle;
-	int											m_width;
-	int											m_height;
-	Microsoft::WRL::ComPtr<ID3D11Device>		m_device;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
-	Microsoft::WRL::ComPtr<IDXGISwapChain>		m_swapChain;
+	HWND											m_windowHandle;
+	int												m_windowWidth;
+	int												m_windowHeight;
+
+	D3D_FEATURE_LEVEL								m_feature_level;
+	Microsoft::WRL::ComPtr<ID3D11Device>			m_device;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext>		m_deviceContext;
+	Microsoft::WRL::ComPtr<IDXGISwapChain>			m_swapChain;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>	m_renderTargetView;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	m_depthStencilView;
 };

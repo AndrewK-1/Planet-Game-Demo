@@ -49,6 +49,9 @@
 #include <stdexcept>
 #include <tuple>
 
+//Add libraries
+#pragma comment (lib, "d3d11.lib")
+
 
 //Template for catching DirectX API errors
 namespace DX
