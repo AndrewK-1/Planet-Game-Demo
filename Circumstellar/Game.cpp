@@ -6,8 +6,8 @@ using Microsoft::WRL::ComPtr;
 
 Game::Game() noexcept :
 	m_windowHandle(nullptr),
-	m_windowWidth(800),
-	m_windowHeight(600),
+	m_screenWidth(800),
+	m_screenHeight(600),
 	m_feature_level(D3D_FEATURE_LEVEL_9_1)
 {
 }
@@ -33,14 +33,14 @@ void Game::Clear() {
 
 	//Clear views
 	using RGBA = float[4];
-	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), /*DirectX::Colors::CornflowerBlue */  RGBA{0.1f, 0.1f, 0.3f, 1.0f});
+	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), /*DirectX::Colors::CornflowerBlue */  RGBA{0.1f, 0.1f, 0.4f, 1.0f});
 	//Below statement is for depth stencils
 	////m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	//Set render targets
 	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
 
 	//Set viewport
-	D3D11_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(m_windowWidth), static_cast<float>(m_windowHeight), 0.f, 1.f };
+	D3D11_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(m_screenWidth), static_cast<float>(m_screenHeight), 0.f, 1.f };
 	m_deviceContext->RSSetViewports(1, &viewport);
 }
 
@@ -72,7 +72,8 @@ void Game::CreateDevice() {
 
 	static const D3D_FEATURE_LEVEL featureLevels[] =
 	{
-		//Supported Direct3D feature levels.  These are present in the VS DirectX template
+		//Supported Direct3D feature levels.  These are the ones present in the VS DirectX template.  Technically it could be null.
+		//I'll adjust this later as I familiarize myself with what each feature level does/is needed.
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_1,
@@ -130,8 +131,8 @@ void Game::CreateResources()
 		DX::ThrowIfFailed(dxgiAdapter->GetParent(IID_PPV_ARGS(dxgiFactory.GetAddressOf())));
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-		swapChainDesc.BufferDesc.Width = m_windowWidth;					//UINT
-		swapChainDesc.BufferDesc.Height = m_windowHeight;				//UINT
+		swapChainDesc.BufferDesc.Width = m_screenWidth;					//UINT
+		swapChainDesc.BufferDesc.Height = m_screenHeight;				//UINT
 		swapChainDesc.BufferDesc.Format = backBufferFormat;				//DXGI_FORMAT
 		swapChainDesc.BufferDesc.RefreshRate;							//DXGI_RATIONAL
 		swapChainDesc.SampleDesc.Count = 1;								//Part of DXGI_SAMPLE_DESC, for anti-aliasing sampling count
@@ -142,6 +143,7 @@ void Game::CreateResources()
 		swapChainDesc.Windowed = true;									//BOOL
 		//swapChainDesc.SwapEffect;										//DXGI_SWAP_EFFECT
 		//swapChainDesc.Flags;											//UINT
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;	//Allow switch to full screen
 		
 		//Create Swapchain
 		DX::ThrowIfFailed(dxgiFactory->CreateSwapChain(
@@ -150,6 +152,7 @@ void Game::CreateResources()
 			m_swapChain.ReleaseAndGetAddressOf()
 		));
 
+		//COM pointers should be released, but WRL makes it so that this is not always necessary.
 		ComPtr<ID3D11Texture2D> backBuffer; //Stores a flat image
 		//IID_PPV_ARGS retrieves the Interface ID of a COM, and retrieves a pointer to the interface.
 		//Alternative line // DX::ThrowIfFailed(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf()));
@@ -174,8 +177,15 @@ void Game::OnDeviceLost() {
 	m_deviceContext.Reset();
 	m_device.Reset();
 
+
 	CreateDevice();
 	CreateResources();
+}
+
+void Game::GetDefaultSize(int& width, int& height) 
+{
+	width = 800;
+	height = 600;
 }
 
 void Game::OnWindowSizeChanged(int width, int height) {
@@ -183,11 +193,13 @@ void Game::OnWindowSizeChanged(int width, int height) {
 		return;
 	}
 
-	m_windowWidth = std::max(width, 1); //Window width cannot be less than 1
-	m_windowHeight = std::max(height, 1); //Window length cannot be less than 1
+	m_screenWidth = std::max(width, 1); //Window width cannot be less than 1
+	m_screenHeight = std::max(height, 1); //Window length cannot be less than 1
 
 	CreateResources();
 }
+
+
 
 //Suggested message handlers by DirectX template
 void Game::OnActivated() {
@@ -204,4 +216,8 @@ void Game::OnSuspending() {
 
 void Game::OnResuming() {
 	//Game is power-resumed or returned from minimization
+}
+
+void Game::OnClosing() {
+	m_swapChain->SetFullscreenState(FALSE, NULL);
 }

@@ -25,7 +25,7 @@ int WINAPI wWinMain(
 	HINSTANCE handle = hInstance;
 	//Defining game object
 	game = std::make_unique<Game>();
-	//Call to custom function to define the window class.
+	//Call to custom function to define the window class
 	WNDCLASSEX wClassX = WindowDefine(handle);
 	
 	//Registering the Window Class
@@ -34,16 +34,24 @@ int WINAPI wWinMain(
 		return 1; //Error registering window class
 	}
 
+	//Creating the default window size
+	int sWidth, sHeight;
+	game->GetDefaultSize(sWidth, sHeight);
+	//Rectangle object can be resized depending on window styles to get the right dimensions for that style
+	RECT screenRect{ 0, 0, static_cast<LONG>(sWidth), static_cast<LONG>(sHeight)};
+	//Adjusting for window style
+	AdjustWindowRect(&screenRect, WS_OVERLAPPEDWINDOW, FALSE);
+
 	//Creating the window
 	HWND hWind = CreateWindowExW(
 		WS_EX_CLIENTEDGE, 
 		MAKEINTATOM(RegisteredWindowClass), 
 		L"Circumstellar", 
-		WS_CAPTION |  WS_OVERLAPPEDWINDOW | WS_HSCROLL, 
-		CW_USEDEFAULT, 
-		CW_USEDEFAULT, 
-		CW_USEDEFAULT, 
-		CW_USEDEFAULT, 
+		WS_OVERLAPPEDWINDOW, 
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		screenRect.right - screenRect.left,
+		screenRect.bottom - screenRect.top,
 		NULL, 
 		NULL, 
 		hInstance, 
@@ -63,7 +71,7 @@ int WINAPI wWinMain(
 	MSG message = {};
 	while (WM_QUIT != message.message) 
 	{
-		//??PeekMessage is clearing this 'if' statement to the 'else' after a few passes, but GetMessage is not
+		//??PeekMessage is clearing this 'if' statement to the 'else' after a few passes, but the alternative, GetMessage(), is not
 		if (PeekMessage(&message, (HWND)NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&message);
@@ -75,7 +83,7 @@ int WINAPI wWinMain(
 		}
 		
 	}
-
+	game->OnClosing();
 	return 0;
 }
 
@@ -104,5 +112,6 @@ WNDCLASSEX WindowDefine(HINSTANCE hI) {
 	wcx.lpszMenuName = NULL;
 	wcx.hIconSm = NULL;
 	return wcx;
+
 }
 

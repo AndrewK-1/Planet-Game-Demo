@@ -26,7 +26,10 @@ public:
 	void OnDeactivated();
 	void OnSuspending();
 	void OnResuming();
+	void OnClosing();
+	void GetDefaultSize(int& width, int& height);
 	void OnWindowSizeChanged(int width, int height);
+	;
 
 private:
 	//Rendering and views methods
@@ -41,8 +44,8 @@ private:
 	
 	//Resources
 	HWND											m_windowHandle;
-	int												m_windowWidth;
-	int												m_windowHeight;
+	int												m_screenWidth;
+	int												m_screenHeight;
 
 	D3D_FEATURE_LEVEL								m_feature_level;
 	Microsoft::WRL::ComPtr<ID3D11Device>			m_device;

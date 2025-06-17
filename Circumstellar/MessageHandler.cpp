@@ -9,10 +9,15 @@
 	}
 	break;
 
-	case WM_CLOSE: {
+	//Test right mouse click to destroy window
+	case WM_RBUTTONDOWN: {
 		DestroyWindow(hwnd);
 	}
 
+	case WM_CLOSE: {
+		DestroyWindow(hwnd);
+	}
+	
 	case WM_DESTROY: {
 		PostQuitMessage(0);
 	}
