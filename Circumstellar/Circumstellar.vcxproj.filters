@@ -31,6 +31,9 @@
     <Filter Include="Source Files\API Interaction\Windows">
       <UniqueIdentifier>{243ef6de-757e-4a96-a78f-5c46edb7c8b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{ab2be867-da30-484f-adc8-4791ab3a0130}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h">
@@ -55,8 +58,16 @@
     <ClCompile Include="Game.cpp">
       <Filter>Source Files\API Interaction\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="GeometryStructures.h">
+      <Filter>Header Files\API Interaction\Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="VertexShader1.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

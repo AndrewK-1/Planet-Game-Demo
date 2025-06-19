@@ -36,6 +36,7 @@
 #include <wrl/client.h>
 
 #include <d3d11.h>
+#include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 
@@ -51,6 +52,7 @@
 
 //Add libraries
 #pragma comment (lib, "d3d11.lib")
+#pragma comment (lib, "d3dcompiler.lib")
 
 
 //Template for catching DirectX API errors

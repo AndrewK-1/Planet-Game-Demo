@@ -1,6 +1,6 @@
 #pragma once
-#include <Windows.h>
-#include <Windowsx.h>
+#include "pch.h"
+
 class CustomWinMessageHandler {
 public:
 	POINT point;

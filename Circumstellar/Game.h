@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "GeometryStructures.h"
 
 class Game {
 public:
@@ -29,7 +30,6 @@ public:
 	void OnClosing();
 	void GetDefaultSize(int& width, int& height);
 	void OnWindowSizeChanged(int width, int height);
-	;
 
 private:
 	//Rendering and views methods
@@ -47,10 +47,12 @@ private:
 	int												m_screenWidth;
 	int												m_screenHeight;
 
-	D3D_FEATURE_LEVEL								m_feature_level;
-	Microsoft::WRL::ComPtr<ID3D11Device>			m_device;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext>		m_deviceContext;
-	Microsoft::WRL::ComPtr<IDXGISwapChain>			m_swapChain;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>	m_renderTargetView;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	m_depthStencilView;
+	D3D_FEATURE_LEVEL								m_feature_level;		//Feature Levels
+	Microsoft::WRL::ComPtr<ID3D11Device>			m_device;				//GPU device to use
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext>		m_deviceContext;		//Rendering Pipeline
+	Microsoft::WRL::ComPtr<IDXGISwapChain>			m_swapChain;			//Swapchain for showing backbuffers
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>	m_renderTargetView;		//Thing targeted for rendering
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	m_depthStencilView;		//Depth stuff
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer>            m_pVBuffer;				//Buffer for vertex, pixels, and sending to GPU
 };
