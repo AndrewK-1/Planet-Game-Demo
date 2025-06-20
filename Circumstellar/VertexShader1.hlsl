@@ -1,13 +1,13 @@
 struct VSIn
 {
-    float4 position : POSITION4;
-    float4 color : COLOR4;
+    float4 position : POSITION;
+    float4 color : COLOR;
 };
 
 struct VSOut
 {
-    float4 position : VS_Position;
-    float4 color : COLOR4;
+    float4 position : SV_POSITION;
+    float4 color : COLOR;
 };
 
 VSOut main(VSIn input)

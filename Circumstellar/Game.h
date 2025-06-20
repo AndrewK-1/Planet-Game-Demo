@@ -41,6 +41,7 @@ private:
 	void CreateResources();
 	
 	void OnDeviceLost();
+	void InitializeShaders();
 	
 	//Resources
 	HWND											m_windowHandle;
@@ -52,7 +53,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext>		m_deviceContext;		//Rendering Pipeline
 	Microsoft::WRL::ComPtr<IDXGISwapChain>			m_swapChain;			//Swapchain for showing backbuffers
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>	m_renderTargetView;		//Thing targeted for rendering
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	m_depthStencilView;		//Depth stuff
-
-	Microsoft::WRL::ComPtr<ID3D11Buffer>            m_pVBuffer;				//Buffer for vertex, pixels, and sending to GPU
+	//Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	m_depthStencilView;		//Depth stuff
+	Microsoft::WRL::ComPtr<ID3D11InputLayout>		m_inputLayout;			//Input Layout object for receiveing input descriptions or something
+	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_pVBuffer;
 };

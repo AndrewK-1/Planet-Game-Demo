@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Game.h"
 #include <d3dcompiler.h>
+#include <WindowsNumerics.h>
 
 using Microsoft::WRL::ComPtr;
 
@@ -11,6 +12,13 @@ Game::Game() noexcept :
 	m_screenHeight(600),
 	m_feature_level(D3D_FEATURE_LEVEL_9_1)
 {
+}
+
+void Game::Initialize(HWND windowHandle) {
+	m_windowHandle = windowHandle;
+	CreateDevice();
+	CreateResources();
+	InitializeShaders();
 }
 
 void Game::Tick() {
@@ -28,37 +36,7 @@ void Game::Render() {
 	Clear();
 	
 	//Render code
-
-	CustomGeometry::Vertex Vertex1 = { DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f) };
-	CustomGeometry::Vertex Vertex2 = { DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 1.0f) };
-	CustomGeometry::Vertex Vertex3 = { DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
-	CustomGeometry::Vertex Vertices[] = { Vertex1, Vertex2, Vertex3 };
-		
-	D3D11_BUFFER_DESC bufferDesc = {};
-	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;				//CPU has write only privledges, GPU has read only
-	bufferDesc.ByteWidth = sizeof(Vertices) * 3;			//Size of array passed to the GPU
-	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;	//Type of buffer i.e. vertex buffer
-	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; //Allow CPU to write in the buffer
-	bufferDesc.MiscFlags = 0;
-
-	//More data for buffer
-	D3D11_SUBRESOURCE_DATA subData = {};
-	subData.pSysMem = &Vertices;
-	subData.SysMemPitch = 0;
-	subData.SysMemSlicePitch = 0;
-
-	//Creating the buffer
-	DX::ThrowIfFailed(m_device->CreateBuffer(&bufferDesc, &subData, &m_pVBuffer));
-	
-	//Description of the vertex buffer to be submitted.  The semantic in argument 1 should match the .hlsl shader semantics it intends to use
-	D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
-		{static_cast<LPCSTR>("POSITION4"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{static_cast<LPCSTR>("COLOR4"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 } };
-
-	//Compiling the shader
-	ID3DBlob* shaderBlob = nullptr;
-	ID3DBlob* errorBlob = nullptr;
-	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexShader1.hlsl", NULL, NULL, "main", "vs_5_0", 0, 0, &shaderBlob, &errorBlob));
+	m_deviceContext->Draw(3, 0);
 
 	Present();
 }
@@ -72,7 +50,7 @@ void Game::Clear() {
 	//Below statement is for depth stencils
 	////m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	//Set render targets
-	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), NULL);
 
 	//Set viewport
 	D3D11_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(m_screenWidth), static_cast<float>(m_screenHeight), 0.f, 1.f };
@@ -90,12 +68,6 @@ void Game::Present() {
 	else {
 		DX::ThrowIfFailed(presentResult);
 	}
-}
-
-void Game::Initialize(HWND windowHandle) {
-	m_windowHandle = windowHandle;
-	CreateDevice();
-	CreateResources();
 }
 
 void Game::CreateDevice() {
@@ -144,7 +116,7 @@ void Game::CreateResources()
 	//Clear previous window size-specific contexts
 	m_deviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 	m_renderTargetView.Reset();
-	m_depthStencilView.Reset();
+	//m_depthStencilView.Reset();
 	m_deviceContext->Flush();
 
 	const DXGI_FORMAT backBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM; //32-bit color format RGBA
@@ -205,15 +177,17 @@ void Game::OnDeviceLost() {
 
 	//Further Direct3d resource cleanup can go here.
 
-	m_depthStencilView.Reset();
+	//m_depthStencilView.Reset();
 	m_renderTargetView.Reset();
 	m_swapChain.Reset();
 	m_deviceContext.Reset();
 	m_device.Reset();
-
+	m_inputLayout.Reset();
+	m_pVBuffer.Reset();
 
 	CreateDevice();
 	CreateResources();
+	InitializeShaders();
 }
 
 void Game::GetDefaultSize(int& width, int& height) 
@@ -232,7 +206,6 @@ void Game::OnWindowSizeChanged(int width, int height) {
 
 	CreateResources();
 }
-
 
 //Suggested message handlers by DirectX template
 void Game::OnActivated() {
@@ -253,4 +226,76 @@ void Game::OnResuming() {
 
 void Game::OnClosing() {
 	m_swapChain->SetFullscreenState(FALSE, NULL);
+}
+
+void Game::InitializeShaders() {
+	CustomGeometry::Vertex Vertex1 = { DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f) };
+	CustomGeometry::Vertex Vertex2 = { DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, -1.0f), DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 1.0f) };
+	CustomGeometry::Vertex Vertex3 = { DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 0.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
+	CustomGeometry::Vertex Vertices[] = { Vertex1, Vertex2, Vertex3 };
+
+	D3D11_BUFFER_DESC bufferDesc = {};
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = sizeof(CustomGeometry::Vertex) * ARRAYSIZE(Vertices);	//Size of array passed to the GPU
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;	//Type of buffer i.e. vertex buffer
+	bufferDesc.CPUAccessFlags = 0;
+	bufferDesc.MiscFlags = 0;
+
+	//More data for buffer
+	D3D11_SUBRESOURCE_DATA subData = {};
+	subData.pSysMem = Vertices;
+	subData.SysMemPitch = 0;
+	subData.SysMemSlicePitch = 0;
+
+	//Creating the vertex buffer
+
+	DX::ThrowIfFailed(m_device->CreateBuffer(&bufferDesc, &subData, &m_pVBuffer));
+
+	//Description of the vertex buffer to be submitted.  The semantic in argument 1 should match the .hlsl shader semantics it intends to use
+	D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
+		{static_cast<LPCSTR>("POSITION"), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{static_cast<LPCSTR>("COLOR"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 } };
+
+
+	//Compiling the shader
+	Microsoft::WRL::ComPtr<ID3DBlob> VshaderBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> VerrorBlob = nullptr;
+	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexShader1.hlsl", nullptr, nullptr, "main", "vs_5_0", 0, 0, &VshaderBlob, &VerrorBlob));
+	//Create certex shader
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> createdVertexShader;
+	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, &createdVertexShader));
+
+	//Pixel Shader
+	Microsoft::WRL::ComPtr<ID3DBlob> PshaderBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> PerrorBlob = nullptr;
+	DX::ThrowIfFailed(D3DCompileFromFile(L"PixelShader1.hlsl", nullptr, nullptr, "main", "ps_5_0", 0, 0, &PshaderBlob, &PerrorBlob));
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> createdPixelShader;
+	DX::ThrowIfFailed(m_device->CreatePixelShader(PshaderBlob->GetBufferPointer(), PshaderBlob->GetBufferSize(), NULL, &createdPixelShader));
+
+	//Craete input layout
+	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), &m_inputLayout));
+
+	//DX::ThrowIfFailed(m_deviceContext->IASetInputLayout(shaderBlob));
+
+	m_deviceContext->VSSetShader(createdVertexShader.Get(), NULL, 0);
+	m_deviceContext->PSSetShader(createdPixelShader.Get(), NULL, 0);
+
+	VshaderBlob->Release();
+	if (VerrorBlob.Get() != nullptr) {
+		VerrorBlob->Release();
+	}
+	
+	PshaderBlob->Release();
+	if (PerrorBlob.Get() != nullptr) {
+		PerrorBlob->Release();
+	}
+
+	//Setting the vertex buffer.  Tells the GPU what vertices to read
+	UINT stride = sizeof(Vertex1);
+	UINT offset = 0;
+	m_deviceContext->IASetVertexBuffers(0, 1, m_pVBuffer.GetAddressOf(), &stride, &offset);
+	m_deviceContext->IASetInputLayout(m_inputLayout.Get());
+
+	//Set topology type for primitive
+	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
