@@ -229,9 +229,12 @@ void Game::OnClosing() {
 }
 
 void Game::InitializeShaders() {
-	CustomGeometry::Vertex Vertex1 = { DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f) };
-	CustomGeometry::Vertex Vertex2 = { DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, -1.0f), DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 1.0f) };
-	CustomGeometry::Vertex Vertex3 = { DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 0.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
+	CustomGeometry::Vertex Vertex1 = { DirectX::XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f) };
+	CustomGeometry::Vertex Vertex2 = { DirectX::XMFLOAT4(0.433f, -0.25f, 0.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 1.0f) };
+	CustomGeometry::Vertex Vertex3 = { DirectX::XMFLOAT4(-0.433f, -0.25f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
+
+
+
 	CustomGeometry::Vertex Vertices[] = { Vertex1, Vertex2, Vertex3 };
 
 	D3D11_BUFFER_DESC bufferDesc = {};
@@ -297,5 +300,5 @@ void Game::InitializeShaders() {
 	m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 
 	//Set topology type for primitive
-	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 }
