@@ -3,7 +3,9 @@
 #include <windowsx.h>
 #include "MessageHandler.h"
 #include "Game.h"
+#include "InputController.h"
 
+InputController inputController;
 
 	LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM wParam, LPARAM lParam) {
 	switch (ProcMSG) {
@@ -12,10 +14,8 @@
 		point.y = GET_Y_LPARAM(lParam);
 		return 0;
 	}
-	break;
-
-	//Test right mouse click to destroy window
-	case WM_RBUTTONDOWN: {
+	case WM_KEYDOWN: {
+		inputController.HandleInput(ProcMSG);
 		return 0;
 	}
 

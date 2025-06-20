@@ -3,6 +3,7 @@
 #include "Game.h"
 #include <d3dcompiler.h>
 #include <WindowsNumerics.h>
+#include <debugapi.h>
 
 using Microsoft::WRL::ComPtr;
 
@@ -232,9 +233,6 @@ void Game::InitializeShaders() {
 	CustomGeometry::Vertex Vertex1 = { DirectX::XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f) };
 	CustomGeometry::Vertex Vertex2 = { DirectX::XMFLOAT4(0.433f, -0.25f, 0.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 1.0f) };
 	CustomGeometry::Vertex Vertex3 = { DirectX::XMFLOAT4(-0.433f, -0.25f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
-
-
-
 	CustomGeometry::Vertex Vertices[] = { Vertex1, Vertex2, Vertex3 };
 
 	D3D11_BUFFER_DESC bufferDesc = {};
@@ -258,7 +256,6 @@ void Game::InitializeShaders() {
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
 		{static_cast<LPCSTR>("POSITION"), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{static_cast<LPCSTR>("COLOR"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 } };
-
 
 	//Compiling the shader
 	Microsoft::WRL::ComPtr<ID3DBlob> VshaderBlob = nullptr;
@@ -300,5 +297,5 @@ void Game::InitializeShaders() {
 	m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 
 	//Set topology type for primitive
-	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }

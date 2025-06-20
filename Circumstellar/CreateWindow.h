@@ -1,5 +1,9 @@
 #pragma once
 #include <Windows.h>
 
-LRESULT CALLBACK MainWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK MainWndProc(
+	_In_ HWND,
+	_In_ UINT,
+	_In_ WPARAM,
+	_In_ LPARAM);
 WNDCLASSEX WindowDefine(HINSTANCE);

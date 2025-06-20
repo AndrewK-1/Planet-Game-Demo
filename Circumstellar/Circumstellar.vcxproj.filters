@@ -34,6 +34,12 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{ab2be867-da30-484f-adc8-4791ab3a0130}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\User Input">
+      <UniqueIdentifier>{9ab046f9-3f11-443f-9501-daf756c8dce1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\User Input">
+      <UniqueIdentifier>{08c7b0e2-7230-4519-b2c5-094be2873e17}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h">
@@ -43,6 +49,9 @@
       <Filter>Header Files\API Interaction\Windows</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="InputController.h">
+      <Filter>Header Files\User Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CreateWindow.cpp">
@@ -60,6 +69,9 @@
     </ClCompile>
     <ClCompile Include="GeometryStructures.h">
       <Filter>Header Files\API Interaction\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="InputController.cpp">
+      <Filter>Source Files\User Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

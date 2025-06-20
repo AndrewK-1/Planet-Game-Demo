@@ -150,6 +150,7 @@
     <ClCompile Include="CreateWindow.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GeometryStructures.h" />
+    <ClCompile Include="InputController.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
     <ClCompile Include="Game.h" />
     <ClCompile Include="pch.cpp">
@@ -159,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h" />
+    <ClInclude Include="InputController.h" />
     <ClInclude Include="MessageHandler.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
