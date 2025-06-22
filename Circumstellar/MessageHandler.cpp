@@ -3,9 +3,8 @@
 #include <windowsx.h>
 #include "MessageHandler.h"
 #include "Game.h"
-#include "InputController.h"
 
-InputController inputController;
+
 
 	LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM wParam, LPARAM lParam) {
 	switch (ProcMSG) {

@@ -4,6 +4,8 @@
 #include <d3dcompiler.h>
 #include <WindowsNumerics.h>
 #include <debugapi.h>
+#include <chrono>
+#include <thread>
 
 using Microsoft::WRL::ComPtr;
 
@@ -11,7 +13,8 @@ Game::Game() noexcept :
 	m_windowHandle(nullptr),
 	m_screenWidth(800),
 	m_screenHeight(600),
-	m_feature_level(D3D_FEATURE_LEVEL_9_1)
+	m_feature_level(D3D_FEATURE_LEVEL_9_1),
+	m_sintest(0.0f)
 {
 }
 
@@ -23,21 +26,40 @@ void Game::Initialize(HWND windowHandle) {
 }
 
 void Game::Tick() {
-	Update();
 	Render();
+	std::this_thread::sleep_for(std::chrono::milliseconds(16));
+	Update();
 }
 
 void Game::Update() {
 	//Game logic.
 	//The goal is to let game logic to operate at its own pace,
 	//while rendering operates when it needs to.
+
+	m_sintest += 0.1f;
+	if (m_sintest > 6.28f) {
+		m_sintest = 0;
+	}
+
+	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationX(0.01f), m_matrixData.worldMatrix);
+	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(0.03f), m_matrixData.worldMatrix);
+	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationZ(0.05f), m_matrixData.worldMatrix);
+	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(0.0f, std::sin(m_sintest) / 100.0f, 0.0f), m_matrixData.worldMatrix);
+	m_transMatrixData.transWorldMatrix = DirectX::XMMatrixTranspose(m_matrixData.worldMatrix);
+	m_transMatrixData.transProjectionMatrix = DirectX::XMMatrixTranspose(m_matrixData.projectionMatrix);
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	DX::ThrowIfFailed(m_deviceContext->Map(m_constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
+	CopyMemory(mappedResource.pData, &m_transMatrixData, sizeof(TransformMatrices));
+	m_deviceContext->Unmap(m_constBuffer.Get(), 0);
+
+	m_deviceContext->VSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
 }
 
 void Game::Render() {
 	Clear();
 	
 	//Render code
-	m_deviceContext->Draw(3, 0);
+	m_deviceContext->Draw(12, 0);
 
 	Present();
 }
@@ -233,7 +255,11 @@ void Game::InitializeShaders() {
 	CustomGeometry::Vertex Vertex1 = { DirectX::XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f) };
 	CustomGeometry::Vertex Vertex2 = { DirectX::XMFLOAT4(0.433f, -0.25f, 0.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 1.0f) };
 	CustomGeometry::Vertex Vertex3 = { DirectX::XMFLOAT4(-0.433f, -0.25f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
-	CustomGeometry::Vertex Vertices[] = { Vertex1, Vertex2, Vertex3 };
+	CustomGeometry::Vertex Vertex4 = { DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
+	CustomGeometry::Vertex Vertices[] = { Vertex1, Vertex2, Vertex3,
+		Vertex1, Vertex3, Vertex4,
+		Vertex1, Vertex4, Vertex2,
+		Vertex2, Vertex4, Vertex3};
 
 	D3D11_BUFFER_DESC bufferDesc = {};
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -298,4 +324,23 @@ void Game::InitializeShaders() {
 
 	//Set topology type for primitive
 	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	
+	//Constant Buffers
+	D3D11_BUFFER_DESC constDesc = {};
+	constDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constDesc.ByteWidth = static_cast<UINT>(sizeof(TransformMatrices) + (16 - (sizeof(TransformMatrices) % 16)));
+	constDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constDesc.MiscFlags = 0;
+	constDesc.StructureByteStride = 0;
+
+	DX::ThrowIfFailed(m_device->CreateBuffer(&constDesc, 0, m_constBuffer.GetAddressOf()));
+
+	//Transformation Matrices
+	m_matrixData = {
+		DirectX::XMMatrixIdentity(),
+		DirectX::XMMatrixIdentity(),
+		DirectX::XMMatrixPerspectiveFovRH(3.14159f / 2.0f, 0.5f, 0.1f, 10.0f)
+	};
+	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.5f), m_matrixData.worldMatrix);
 }

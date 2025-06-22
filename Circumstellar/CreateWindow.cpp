@@ -5,6 +5,8 @@
 #include "MessageHandler.h"
 #include "Game.h"
 
+CustomWinMessageHandler mHandler;
+
 namespace 
 {
 	std::unique_ptr<Game> game;
@@ -20,7 +22,7 @@ int WINAPI wWinMain(
 	)
 {
 	//To create a window: define a window class, register it, and create the window with CreateWindow or CreateWindowEx functions
-
+	
 	//Defining the Window Class
 	HINSTANCE handle = hInstance;
 	//Defining game object
@@ -95,7 +97,7 @@ LRESULT CALLBACK MainWndProc(
 	_In_ WPARAM wParam, 
 	_In_ LPARAM lParam) {
 
-	CustomWinMessageHandler mHandler;
+	
 	return mHandler.processMessage(hwnd, ProcMSG, wParam, lParam);
 }
 
