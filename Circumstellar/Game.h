@@ -85,6 +85,4 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
 	float m_sintest;
-
-	std::list<UINT>									m_pressedKeys;
 };

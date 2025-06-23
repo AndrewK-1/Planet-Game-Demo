@@ -25,11 +25,27 @@ void InputController::BindKey(UINT key, Action action) {
 	bindingMap[key] = action;
 }
 
-void InputController::HandleInput(UINT key, Game* game) {
+void InputController::PressedKeysExecute(Game* game) {
+	for (UINT key : m_pressedKeys) {
+		if (bindingMap.find(key) != bindingMap.end()) {
+			bindingMap[key](game); //Call the method whose name is listed in the map at this key
+		}
+	}
+}
+
+void InputController::HandleKeyDown(UINT key, Game* game) {
 	//If bindingMap.find doesn't find the key, it will return bindingMap.end()
 	if (bindingMap.find(key) != bindingMap.end()) {
 		bindingMap[key](game); //Call the method whose name is listed in the map at this key
 	}
+
+	if (m_pressedKeys.find(key) == m_pressedKeys.end()) {
+		m_pressedKeys.insert(key);
+	}
+}
+
+void InputController::HandleKeyUp(UINT key, Game* game) {
+	m_pressedKeys.erase(key);
 }
 
 void InputController::HandleRawInput(long x, long y, Game* game) {

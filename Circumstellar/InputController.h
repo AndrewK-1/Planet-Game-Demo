@@ -4,6 +4,7 @@
 #include <functional>
 #include "Camera.h"
 #include "Game.h"
+#include <unordered_set>
 
 //Function alias Action that takes no parameters and returns void.
 //When Action is used from here on, it means std::function<void()>.
@@ -19,7 +20,9 @@ class InputController {
 public:
 	InputController();
 	void BindKey(UINT key, Action action);
-	void HandleInput(UINT key, Game* game);
+	void HandleKeyDown(UINT key, Game* game);
+	void HandleKeyUp(UINT key, Game* game);
+	void PressedKeysExecute(Game* game);
 	void HandleRawInput(long x, long y, Game* game);
 	
 	//Helper to improve readability of source binds while moving callable methods to the class
@@ -36,4 +39,5 @@ private:
 	void MoveRight(Game* camera);		//d
 	void MoveLeft(Game* camera);		//a
 	float cameraSpeed;
+	std::unordered_set<UINT> m_pressedKeys;
 };

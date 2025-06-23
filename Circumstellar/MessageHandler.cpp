@@ -57,7 +57,11 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 		return 0;
 	}
 	case WM_KEYDOWN: {
-		inputController->HandleInput(static_cast<UINT>(wParam), game);
+		inputController->HandleKeyDown(static_cast<UINT>(wParam), game);
+		return 0;
+	}
+	case WM_KEYUP: {
+		inputController->HandleKeyUp(static_cast<UINT>(wParam), game);
 		return 0;
 	}
 
