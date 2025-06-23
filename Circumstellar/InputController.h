@@ -38,6 +38,9 @@ private:
 	void MoveBackward(Game* camera);	//s
 	void MoveRight(Game* camera);		//d
 	void MoveLeft(Game* camera);		//a
+	void RollCounterClockwise(Game* camera);
+	void RollClockwise(Game* game);
 	float cameraSpeed;
+	float rollSpeed;
 	std::unordered_set<UINT> m_pressedKeys;
 };

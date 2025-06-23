@@ -48,18 +48,13 @@ void Game::Update() {
 		m_sintest = 0;
 	}
 
-	/*
-	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationX(0.01f), m_matrixData.worldMatrix);
-	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(0.03f), m_matrixData.worldMatrix);
-	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationZ(0.05f), m_matrixData.worldMatrix);
-	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(0.0f, std::sin(m_sintest) / 100.0f, 0.0f), m_matrixData.worldMatrix);
-	*/
-	m_transMatrixData.transWorldMatrix = DirectX::XMMatrixTranspose(m_matrixData.worldMatrix);
-	
+	m_transMatrixData.transWorldMatrix = XMMatrixTranspose(m_matrixData.worldMatrix);
 	m_matrixData.viewMatrix = camera->getCameraMatrix();
-	m_transMatrixData.transViewMatrix = XMMatrixTranspose(m_matrixData.viewMatrix);
-
+	
+	m_transMatrixData.transViewMatrix = XMMatrixInverse(nullptr, m_matrixData.viewMatrix);
+	m_transMatrixData.transViewMatrix = XMMatrixTranspose(m_transMatrixData.transViewMatrix);
 	m_transMatrixData.transProjectionMatrix = DirectX::XMMatrixTranspose(m_matrixData.projectionMatrix);
+
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	DX::ThrowIfFailed(m_deviceContext->Map(m_constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
 	CopyMemory(mappedResource.pData, &m_transMatrixData, sizeof(TransformMatrices));
@@ -228,8 +223,8 @@ void Game::OnDeviceLost() {
 
 void Game::GetDefaultSize(int& width, int& height) 
 {
-	width = 800;
-	height = 600;
+	width = 1920;
+	height = 1080;
 }
 
 void Game::OnWindowSizeChanged(int width, int height) {
@@ -319,16 +314,6 @@ void Game::InitializeShaders() {
 	m_deviceContext->VSSetShader(createdVertexShader.Get(), NULL, 0);
 	m_deviceContext->PSSetShader(createdPixelShader.Get(), NULL, 0);
 
-	VshaderBlob->Release();
-	if (VerrorBlob.Get() != nullptr) {
-		VerrorBlob->Release();
-	}
-	
-	PshaderBlob->Release();
-	if (PerrorBlob.Get() != nullptr) {
-		PerrorBlob->Release();
-	}
-
 	//Setting the vertex buffer.  Tells the GPU what vertices to read
 	UINT stride = sizeof(Vertex1);
 	UINT offset = 0;
@@ -353,7 +338,7 @@ void Game::InitializeShaders() {
 	m_matrixData = {
 		DirectX::XMMatrixIdentity(),
 		DirectX::XMMatrixIdentity(),
-		DirectX::XMMatrixPerspectiveFovLH(3.14159f / 2.0f, 1.3f, 0.1f, 10.0f)
+		DirectX::XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f/9.0f, 0.1f, 10.0f)
 	};
 	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.5f), m_matrixData.worldMatrix);
 }
