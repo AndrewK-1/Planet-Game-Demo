@@ -15,9 +15,9 @@ struct InputBinding {
 	Action action;
 };
 
-class Game {
+class InputController {
 public:
-	Game();
+	InputController();
 	void BindKey(UINT key, Action action);
 	void HandleInput(UINT key, Game* game);
 	void HandleRawInput(long x, long y, Game* game);
@@ -29,11 +29,11 @@ public:
 	}
 private:
 	std::map<UINT, Action> bindingMap;	//Handles binding virtual keys to actions
-	void MoveUp(Game* game);			//space
-	void MoveDown(Game* game);		//shift
-	void MoveForward(Game* game);		//w
-	void MoveBackward(Game* game);	//s
-	void MoveRight(Game* game);		//d
-	void MoveLeft(Game* game);		//a
+	void MoveUp(Game* camera);			//space
+	void MoveDown(Game* camera);		//shift
+	void MoveForward(Game* camera);		//w
+	void MoveBackward(Game* camera);	//s
+	void MoveRight(Game* camera);		//d
+	void MoveLeft(Game* camera);		//a
 	float cameraSpeed;
 };

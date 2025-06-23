@@ -35,6 +35,12 @@ public:
 	void GameInputKeyDown(UINT key);
 	void GameInputKeyUp(UINT key);
 	bool IsKeyPressed(UINT key);
+	void MoveUp();
+	void MoveDown();
+	void MoveRight();
+	void MoveLeft();
+	void MoveForward();
+	void MoveBackward();
 	std::unique_ptr<Camera> camera;
 
 private:
@@ -80,5 +86,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
 	float m_sintest;
 
-	std::list<UINT>									pressedKeys;
+	std::list<UINT>									m_pressedKeys;
 };

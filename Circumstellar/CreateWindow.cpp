@@ -29,7 +29,6 @@ int WINAPI wWinMain(
 	//Defining game object
 	game = std::make_unique<Game>();
 	mHandler = std::make_unique<CustomWinMessageHandler>();
-	game->inputController = mHandler->getInputController();
 	//Call to custom function to define the window class
 	WNDCLASSEX wClassX = WindowDefine(handle);
 	
@@ -76,6 +75,7 @@ int WINAPI wWinMain(
 	MSG message = {};
 	while (WM_QUIT != message.message) 
 	{
+		mHandler->getInputController();
 		//??PeekMessage is clearing this 'if' statement to the 'else' after a few passes, but the alternative, GetMessage(), is not
 		//!!Reason found: GetMessage waits for a message, PeekMessage doesn't.
 		//!!Therefore, GetMessage would never resolve to false

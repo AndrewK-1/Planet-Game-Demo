@@ -7,7 +7,7 @@ class CustomWinMessageHandler {
 public:
 	CustomWinMessageHandler();
 	LRESULT processMessage(HWND hwnd, UINT ProcMSG, WPARAM wParam, LPARAM lParam, Game* game);
-	Game* getInputController();
+	InputController* getInputController();
 private:
 	POINT point;
 };

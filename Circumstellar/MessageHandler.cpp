@@ -2,17 +2,17 @@
 #include "pch.h"
 #include <windowsx.h>
 #include "MessageHandler.h"
-#include "Game.h"
+#include "InputController.h"
 #include "ErrorHandling.h"
 
 namespace {
-	std::unique_ptr<Game> inputController;
+	std::unique_ptr<InputController> inputController;
 }
 
 CustomWinMessageHandler::CustomWinMessageHandler() :
 	point({ 0, 0 })
 {
-	inputController = std::make_unique<Game>();
+	inputController = std::make_unique<InputController>();
 
 	RAWINPUTDEVICE RID[1];
 	RID[0] = {};
@@ -79,6 +79,6 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 	}
 }
 
-Game* CustomWinMessageHandler::getInputController() {
+InputController* CustomWinMessageHandler::getInputController() {
 	return inputController.get();
 }
