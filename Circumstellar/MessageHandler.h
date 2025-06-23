@@ -1,11 +1,13 @@
 #pragma once
 #include "pch.h"
 #include "InputController.h"
+#include "Game.h"
 
 class CustomWinMessageHandler {
 public:
-	POINT point;
-	LRESULT processMessage(HWND hwnd, UINT ProcMSG, WPARAM wParam, LPARAM lParam);
+	CustomWinMessageHandler();
+	LRESULT processMessage(HWND hwnd, UINT ProcMSG, WPARAM wParam, LPARAM lParam, Game* game);
+	Game* getInputController();
 private:
-	InputController inputController;
+	POINT point;
 };

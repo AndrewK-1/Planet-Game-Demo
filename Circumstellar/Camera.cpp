@@ -4,31 +4,87 @@
 
 using namespace DirectX;
 
-Camera::Camera() {
-	upVec = XMVectorSet(0, 1, 0, 0);
-	zYawAngle = 0;
-	yPitchAngle = 0;
+Camera::Camera() :
+	posMatrix(XMMatrixIdentity())
+{
 }
 
-XMMATRIX Camera::getMatrixData() {
+//Return XMMATRIX of the current camera for transformation
+XMMATRIX Camera::getCameraMatrix() 
+{
 	return posMatrix;
 }
 
-void Camera::rotateRight(float angle) {
-	XMMATRIX right = XMMatrixRotationY(angle);
-	posMatrix = XMMatrixMultiply(right, posMatrix);
-	XMVectorSet(XMVectorGetX(posMatrix.r[0]), XMVectorGetX(posMatrix.r[1]), XMVectorGetX(posMatrix.r[2]), 1);
+//Rotate the camera by a local up axis horizontally
+void Camera::Yaw(float angle) 
+{
+	upVec = XMVectorSet(XMVectorGetY(posMatrix.r[0]), XMVectorGetY(posMatrix.r[1]), XMVectorGetY(posMatrix.r[2]), 1);
+	XMMATRIX horizontalRotateMatrix = XMMatrixRotationAxis(upVec, angle);
+	posMatrix = XMMatrixMultiply(horizontalRotateMatrix, posMatrix);
 }
 
-void Camera::rotateLeft(float angle) {
-
+//Rotate the camera by a local side axis vertically
+void Camera::Pitch(float angle) 
+{
+	sideVec = XMVectorSet(XMVectorGetX(posMatrix.r[0]), XMVectorGetX(posMatrix.r[1]), XMVectorGetX(posMatrix.r[2]), 1);
+	XMMATRIX vericalRotateMatrix = XMMatrixRotationAxis(sideVec, angle);
+	posMatrix = XMMatrixMultiply(vericalRotateMatrix, posMatrix);
 }
 
-void Camera::rotateUp(float angle) {
-	XMMATRIX up = XMMatrixRotationZ(angle);
-
+//Move along an axis
+void Camera::Up(float distance) 
+{
+	distance *= -1;
+	upVec = XMVectorSet(XMVectorGetY(posMatrix.r[0]), XMVectorGetY(posMatrix.r[1]), XMVectorGetY(posMatrix.r[2]), 1);
+	upVec = XMVectorScale(upVec, distance);
+	XMMATRIX translationMatrix = XMMatrixTranslationFromVector(upVec);
+	posMatrix = XMMatrixMultiply(translationMatrix, posMatrix);
+	OutputDebugString(L" Up ");
 }
 
-void Camera::rotateDown(float angle) {
+void Camera::Down(float distance)
+{
+	upVec = XMVectorSet(XMVectorGetY(posMatrix.r[0]), XMVectorGetY(posMatrix.r[1]), XMVectorGetY(posMatrix.r[2]), 1);
+	upVec = XMVectorScale(upVec, distance);
+	XMMATRIX translationMatrix = XMMatrixTranslationFromVector(upVec);
+	posMatrix = XMMatrixMultiply(translationMatrix, posMatrix);
+	OutputDebugString(L" Down ");
+}
 
+void Camera::Right(float distance)
+{
+	distance *= -1;
+	sideVec = XMVectorSet(XMVectorGetX(posMatrix.r[0]), XMVectorGetX(posMatrix.r[1]), XMVectorGetX(posMatrix.r[2]), 1);
+	sideVec = XMVectorScale(sideVec, distance);
+	XMMATRIX translationMatrix = XMMatrixTranslationFromVector(sideVec);
+	posMatrix = XMMatrixMultiply(translationMatrix, posMatrix);
+	OutputDebugString(L" Right ");
+}
+
+void Camera::Left(float distance)
+{
+	sideVec = XMVectorSet(XMVectorGetX(posMatrix.r[0]), XMVectorGetX(posMatrix.r[1]), XMVectorGetX(posMatrix.r[2]), 1);
+	sideVec = XMVectorScale(sideVec, distance);
+	XMMATRIX translationMatrix = XMMatrixTranslationFromVector(sideVec);
+	posMatrix = XMMatrixMultiply(translationMatrix, posMatrix);
+	OutputDebugString(L" Left ");
+}
+
+void Camera::Forward(float distance)
+{
+	distance *= -1;
+	sideVec = XMVectorSet(XMVectorGetZ(posMatrix.r[0]), XMVectorGetZ(posMatrix.r[1]), XMVectorGetZ(posMatrix.r[2]), 1);
+	sideVec = XMVectorScale(sideVec, distance);
+	XMMATRIX translationMatrix = XMMatrixTranslationFromVector(sideVec);
+	posMatrix = XMMatrixMultiply(translationMatrix, posMatrix);
+	OutputDebugString(L" Forward ");
+}
+
+void Camera::Backward(float distance)
+{
+	sideVec = XMVectorSet(XMVectorGetZ(posMatrix.r[0]), XMVectorGetZ(posMatrix.r[1]), XMVectorGetZ(posMatrix.r[2]), 1);
+	sideVec = XMVectorScale(sideVec, distance);
+	XMMATRIX translationMatrix = XMMatrixTranslationFromVector(sideVec);
+	posMatrix = XMMatrixMultiply(translationMatrix, posMatrix);
+	OutputDebugString(L" Backward ");
 }

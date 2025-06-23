@@ -21,8 +21,8 @@ VSOut main(VSIn input)
 {
     VSOut output;
     output.position = mul(float4(input.position), worldMatrix);
-    //output.position = mul(input.position, viewMatrix);
-    // output.position = mul(input.position, projectionMatrix);
+    output.position = mul(float4(output.position), viewMatrix);
+    output.position = mul(float4(output.position), projectionMatrix);
     output.color = input.color;
     return output;
 }

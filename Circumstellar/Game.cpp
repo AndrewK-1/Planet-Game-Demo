@@ -6,16 +6,25 @@
 #include <debugapi.h>
 #include <chrono>
 #include <thread>
+#include "Camera.h"
+#include "InputController.h"
+
+namespace GameInput{ Game* inputController; }
 
 using Microsoft::WRL::ComPtr;
+using namespace DirectX;
+
 
 Game::Game() noexcept :
 	m_windowHandle(nullptr),
 	m_screenWidth(800),
 	m_screenHeight(600),
 	m_feature_level(D3D_FEATURE_LEVEL_9_1),
-	m_sintest(0.0f)
+	m_sintest(0.0f),
+	m_matrixData({DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity()}),
+	m_transMatrixData({ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() })
 {
+	camera = std::make_unique<Camera>();
 }
 
 void Game::Initialize(HWND windowHandle) {
@@ -36,16 +45,26 @@ void Game::Update() {
 	//The goal is to let game logic to operate at its own pace,
 	//while rendering operates when it needs to.
 
+	for (UINT key : m_pressedKeys) {
+		inputController->HandleInput(key, this);
+	}
+
 	m_sintest += 0.1f;
 	if (m_sintest > 6.28f) {
 		m_sintest = 0;
 	}
 
+	/*
 	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationX(0.01f), m_matrixData.worldMatrix);
 	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(0.03f), m_matrixData.worldMatrix);
 	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationZ(0.05f), m_matrixData.worldMatrix);
 	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(0.0f, std::sin(m_sintest) / 100.0f, 0.0f), m_matrixData.worldMatrix);
+	*/
 	m_transMatrixData.transWorldMatrix = DirectX::XMMatrixTranspose(m_matrixData.worldMatrix);
+	
+	m_matrixData.viewMatrix = camera->getCameraMatrix();
+	m_transMatrixData.transViewMatrix = XMMatrixTranspose(m_matrixData.viewMatrix);
+
 	m_transMatrixData.transProjectionMatrix = DirectX::XMMatrixTranspose(m_matrixData.projectionMatrix);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	DX::ThrowIfFailed(m_deviceContext->Map(m_constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
@@ -340,7 +359,40 @@ void Game::InitializeShaders() {
 	m_matrixData = {
 		DirectX::XMMatrixIdentity(),
 		DirectX::XMMatrixIdentity(),
-		DirectX::XMMatrixPerspectiveFovRH(3.14159f / 2.0f, 0.5f, 0.1f, 10.0f)
+		DirectX::XMMatrixPerspectiveFovLH(3.14159f / 2.0f, 1.3f, 0.1f, 10.0f)
 	};
 	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.5f), m_matrixData.worldMatrix);
+}
+
+void Game::GameInputKeyDown(UINT key) {
+	if (m_pressedKeys.count(key)) {
+		m_pressedKeys.insert(key);
+	}
+}
+
+void Game::GameInputKeyUp(UINT key) {
+	m_pressedKeys.erase(key);
+}
+
+bool Game::IsKeyPressed(UINT key) {
+	return m_pressedKeys.count(key);
+}
+
+void Game::MoveUp() {
+	game->camera->Up(cameraSpeed);
+}
+void Game::MoveDown(Game* game) {
+	game->camera->Down(cameraSpeed);
+}
+void Game::MoveForward(Game* game) {
+	game->camera->Forward(cameraSpeed);
+}
+void Game::MoveBackward(Game* game) {
+	game->camera->Backward(cameraSpeed);
+}
+void Game::MoveRight(Game* game) {
+	game->camera->Right(cameraSpeed);
+}
+void Game::MoveLeft(Game* game) {
+	game->camera->Left(cameraSpeed);
 }

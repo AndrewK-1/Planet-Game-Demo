@@ -49,6 +49,7 @@
 #include <memory>
 #include <stdexcept>
 #include <tuple>
+#include <string>
 
 //Add libraries
 #pragma comment (lib, "d3d11.lib")

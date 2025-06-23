@@ -147,7 +147,9 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CreateWindow.cpp" />
+    <ClCompile Include="ErrorHandling.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GeometryStructures.h" />
     <ClCompile Include="InputController.cpp" />
@@ -159,7 +161,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="CreateWindow.h" />
+    <ClInclude Include="ErrorHandling.h" />
     <ClInclude Include="InputController.h" />
     <ClInclude Include="MessageHandler.h" />
     <ClInclude Include="pch.h" />

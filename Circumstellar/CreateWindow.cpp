@@ -4,12 +4,13 @@
 #include "CreateWindow.h"
 #include "MessageHandler.h"
 #include "Game.h"
-
-CustomWinMessageHandler mHandler;
+#include <thread>
+#include <chrono>
 
 namespace 
 {
 	std::unique_ptr<Game> game;
+	std::unique_ptr<CustomWinMessageHandler> mHandler;
 }
 
 //WINAPI is a kind of macro that includes a bunch of necessary stuff for wWinMain to work.
@@ -27,6 +28,8 @@ int WINAPI wWinMain(
 	HINSTANCE handle = hInstance;
 	//Defining game object
 	game = std::make_unique<Game>();
+	mHandler = std::make_unique<CustomWinMessageHandler>();
+	game->inputController = mHandler->getInputController();
 	//Call to custom function to define the window class
 	WNDCLASSEX wClassX = WindowDefine(handle);
 	
@@ -98,7 +101,7 @@ LRESULT CALLBACK MainWndProc(
 	_In_ LPARAM lParam) {
 
 	
-	return mHandler.processMessage(hwnd, ProcMSG, wParam, lParam);
+	return mHandler->processMessage(hwnd, ProcMSG, wParam, lParam, game.get());
 }
 
 WNDCLASSEX WindowDefine(HINSTANCE hI) {

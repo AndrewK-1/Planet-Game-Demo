@@ -9,4 +9,3 @@ LRESULT CALLBACK MainWndProc(
 	_In_ WPARAM,
 	_In_ LPARAM);
 WNDCLASSEX WindowDefine(HINSTANCE);
-extern CustomWinMessageHandler mHandler;

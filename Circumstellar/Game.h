@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
 #include "GeometryStructures.h"
+#include "Camera.h"
+#include <list>
 
 class Game {
 public:
@@ -30,6 +32,10 @@ public:
 	void OnClosing();
 	void GetDefaultSize(int& width, int& height);
 	void OnWindowSizeChanged(int width, int height);
+	void GameInputKeyDown(UINT key);
+	void GameInputKeyUp(UINT key);
+	bool IsKeyPressed(UINT key);
+	std::unique_ptr<Camera> camera;
 
 private:
 	//Rendering and views methods
@@ -73,4 +79,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
 	float m_sintest;
+
+	std::list<UINT>									pressedKeys;
 };
