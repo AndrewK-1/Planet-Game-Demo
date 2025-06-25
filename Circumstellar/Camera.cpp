@@ -6,26 +6,38 @@
 using namespace DirectX;
 
 Camera::Camera() :
-	posMatrix(XMMatrixIdentity()),
-	orientQuaternion(XMQuaternionIdentity()),
-	position(XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f))
+	posMatrix({ 1.0f, 0.0f, 0.0f, 0.0f, 
+				0.0f, 1.0f, 0.0f, 0.0f, 
+				0.0f, 0.0f, 1.0f, 0.0f, 
+				0.0f, 0.0f, 0.0f, 1.0f }),
+	orientQuaternion(0.0f, 0.0f, 0.0f, 1.0f),
+	position(0.0f, 0.0f, 0.0f, 1.0f)
 {
 }
 
 //Return XMMATRIX of the current camera for transformation
-XMMATRIX Camera::getCameraMatrix() 
+XMFLOAT4X4 Camera::getCameraFloat4x4()
 {
-	return XMMatrixInverse(nullptr, posMatrix);
+	return posMatrix;
 }
 
-void Camera::YawAndPitch(float aYaw, float aPitch) {
-	upVec = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuaternion);
-	XMVECTOR yawQuat = XMQuaternionRotationAxis(upVec, aYaw);
-	orientQuaternion = XMQuaternionNormalize(XMQuaternionMultiply(orientQuaternion, yawQuat));
+XMMATRIX Camera::getCameraMatrix() 
+{
+	return XMLoadFloat4x4(&posMatrix);
+}
 
-	sideVec = XMVector3Rotate(XMVectorSet(1, 0, 0, 0), orientQuaternion);
+void Camera::YawAndPitch(float aYaw, float aPitch) 
+{
+	//Set temporary vectors to stored postion and rotation values;
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	//Complete rotations, and store the normalized result in the orientation float4
+	XMVECTOR upVec = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuatVec);
+	XMVECTOR yawQuat = XMQuaternionRotationAxis(upVec, aYaw);
+	orientQuatVec = XMQuaternionNormalize(XMQuaternionMultiply(orientQuatVec, yawQuat));
+	//Do the same for the pitch
+	XMVECTOR sideVec = XMVector3Rotate(XMVectorSet(1, 0, 0, 0), orientQuatVec);
 	XMVECTOR pitchQuat = XMQuaternionRotationAxis(sideVec, aPitch);
-	orientQuaternion = XMQuaternionNormalize(XMQuaternionMultiply(orientQuaternion, pitchQuat));
+	XMStoreFloat4(&orientQuaternion, XMQuaternionNormalize(XMQuaternionMultiply(orientQuatVec, pitchQuat)));
 
 	UpdateMatrix();
 }
@@ -33,84 +45,105 @@ void Camera::YawAndPitch(float aYaw, float aPitch) {
 //Rotate the camera by a local up axis horizontally
 void Camera::Yaw(float angle) 
 {
+	//Set temporary vectors to stored postion and rotation values
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
 	//Worldspace up vector
-	upVec = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuaternion);
+	XMVECTOR upVec = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuatVec);
 	XMVECTOR yawQuat = XMQuaternionRotationAxis(upVec, angle);
-	orientQuaternion = XMQuaternionNormalize(XMQuaternionMultiply(orientQuaternion, yawQuat));
+	XMStoreFloat4(&orientQuaternion, XMQuaternionNormalize(XMQuaternionMultiply(orientQuatVec, yawQuat)));
 	UpdateMatrix();
 }
 
 //Rotate the camera by a local side axis vertically
 void Camera::Pitch(float angle) 
 {
+	//Set temporary vectors to stored postion and rotation values
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
 	//Worldspace side vector
-	sideVec = XMVector3Rotate(XMVectorSet(1, 0, 0, 0), orientQuaternion);
+	XMVECTOR sideVec = XMVector3Rotate(XMVectorSet(1, 0, 0, 0), orientQuatVec);
 	XMVECTOR pitchQuat = XMQuaternionRotationAxis(sideVec, angle);
-	orientQuaternion = XMQuaternionNormalize(XMQuaternionMultiply(orientQuaternion, pitchQuat));
+	XMStoreFloat4(&orientQuaternion, XMQuaternionNormalize(XMQuaternionMultiply(orientQuatVec, pitchQuat)));
 	UpdateMatrix();
 }
 
-void Camera::Roll(float angle) {
-	forwardVec = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuaternion);
+void Camera::Roll(float angle) 
+{
+	//Set temporary vectors to stored postion and rotation values
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR forwardVec = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuatVec);
 	XMVECTOR rollQuat = XMQuaternionRotationAxis(forwardVec, angle);
-	orientQuaternion = XMQuaternionNormalize(XMQuaternionMultiply(orientQuaternion, rollQuat));
+	XMStoreFloat4(&orientQuaternion, XMQuaternionNormalize(XMQuaternionMultiply(orientQuatVec, rollQuat)));
 	UpdateMatrix();
 }
 
 //Move along an axis
 void Camera::Up(float distance) 
 {
-	upVec = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuaternion);
+	XMVECTOR positionVec = XMLoadFloat4(&position);
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR upVec = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuatVec);
 	XMVECTOR moveVec = XMVectorScale(upVec, distance);
-	position = XMVectorAdd(position, moveVec);
+	XMStoreFloat4(&position, XMVectorAdd(positionVec, moveVec));
 	UpdateMatrix();
 }
 
 void Camera::Down(float distance)
 {
-	upVec = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuaternion);
+	XMVECTOR positionVec = XMLoadFloat4(&position);
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR upVec = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuatVec);
 	XMVECTOR moveVec = XMVectorScale(upVec, -distance);
-	position = XMVectorAdd(position, moveVec);
+	XMStoreFloat4(&position, XMVectorAdd(positionVec, moveVec));
 	UpdateMatrix();
 }
 
 void Camera::Right(float distance)
 {
-	sideVec = XMVector3Rotate(XMVectorSet(1, 0, 0, 0), orientQuaternion);
+	XMVECTOR positionVec = XMLoadFloat4(&position);
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR sideVec = XMVector3Rotate(XMVectorSet(1, 0, 0, 0), orientQuatVec);
 	XMVECTOR moveVec = XMVectorScale(sideVec, distance);
-	position = XMVectorAdd(position, moveVec);
+	XMStoreFloat4(&position, XMVectorAdd(positionVec, moveVec));
 	UpdateMatrix();
 }
 
 void Camera::Left(float distance)
 {
-	sideVec = XMVector3Rotate(XMVectorSet(1, 0, 0, 0), orientQuaternion);
+	XMVECTOR positionVec = XMLoadFloat4(&position);
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR sideVec = XMVector3Rotate(XMVectorSet(1, 0, 0, 0), orientQuatVec);
 	XMVECTOR moveVec = XMVectorScale(sideVec, -distance);
-	position = XMVectorAdd(position, moveVec);
+	XMStoreFloat4(&position, XMVectorAdd(positionVec, moveVec));
 	UpdateMatrix();
 }
 
 void Camera::Forward(float distance)
 {
-	forwardVec = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuaternion);
+	XMVECTOR positionVec = XMLoadFloat4(&position);
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR forwardVec = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuatVec);
 	XMVECTOR moveVec = XMVectorScale(forwardVec, distance);
-	position = XMVectorAdd(position, moveVec);
+	XMStoreFloat4(&position, XMVectorAdd(positionVec, moveVec));
 	UpdateMatrix();
 }
 
 void Camera::Backward(float distance)
 {
-	forwardVec = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuaternion);
+	XMVECTOR positionVec = XMLoadFloat4(&position);
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR forwardVec = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuatVec);
 	XMVECTOR moveVec = XMVectorScale(forwardVec, -distance);
-	position = XMVectorAdd(position, moveVec);
+	XMStoreFloat4(&position, XMVectorAdd(positionVec, moveVec));
 	UpdateMatrix();
 }
 
 void Camera::UpdateMatrix()
 {
-	XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuaternion);
-	XMVECTOR target = XMVectorAdd(position, forward);
-	XMVECTOR up = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuaternion);
-
-	posMatrix = XMMatrixLookAtLH(position, target, up);
+	XMVECTOR positionVec = XMLoadFloat4(&position);
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuatVec);
+	XMVECTOR target = XMVectorAdd(positionVec, forward);
+	XMVECTOR up = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), orientQuatVec);
+	//Create matrix and store as a float4x4
+	XMStoreFloat4x4(&posMatrix, XMMatrixLookAtLH(positionVec, target, up));
 }

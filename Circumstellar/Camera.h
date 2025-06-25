@@ -4,6 +4,7 @@
 class Camera {
 public:
 	Camera();
+	DirectX::XMFLOAT4X4 getCameraFloat4x4();
 	DirectX::XMMATRIX getCameraMatrix();
 	void YawAndPitch(float aYaw, float aPitch);
 	void Yaw(float angle);
@@ -17,12 +18,7 @@ public:
 	void Backward(float distance);
 	void UpdateMatrix();
 private:
-	DirectX::XMMATRIX posMatrix;	//Actual rotation matrix of the camera.  For now I will work on the z and 
-	DirectX::XMVECTOR sideVec;
-	DirectX::XMVECTOR upVec;
-	DirectX::XMVECTOR forwardVec;
-	float	zYawAngle;
-	float	yPitchAngle;
-	DirectX::XMVECTOR orientQuaternion;
-	DirectX::XMVECTOR position;
+	DirectX::XMFLOAT4X4 posMatrix;	//Actual rotation matrix of the camera.  For now I will work on the z and 
+	DirectX::XMFLOAT4 orientQuaternion;
+	DirectX::XMFLOAT4 position;
 };

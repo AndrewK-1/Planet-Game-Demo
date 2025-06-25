@@ -48,7 +48,7 @@ void InputController::HandleKeyUp(UINT key, Game* game) {
 }
 
 void InputController::HandleRawInput(long x, long y, Game* game) {
-	float speed = 0.01f;
+	float speed = 0.001f;
 	
 	if (x == 0) {
 		game->camera->Pitch(static_cast<float>(y) * speed);

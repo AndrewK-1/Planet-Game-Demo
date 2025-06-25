@@ -32,13 +32,13 @@ public:
 	}
 private:
 	std::map<UINT, Action> bindingMap;	//Handles binding virtual keys to actions
-	void MoveUp(Game* camera);			//space
-	void MoveDown(Game* camera);		//shift
-	void MoveForward(Game* camera);		//w
-	void MoveBackward(Game* camera);	//s
-	void MoveRight(Game* camera);		//d
-	void MoveLeft(Game* camera);		//a
-	void RollCounterClockwise(Game* camera);
+	void MoveUp(Game* game);			//space
+	void MoveDown(Game* game);		//shift
+	void MoveForward(Game* game);		//w
+	void MoveBackward(Game* game);	//s
+	void MoveRight(Game* game);		//d
+	void MoveLeft(Game* game);		//a
+	void RollCounterClockwise(Game* game);
 	void RollClockwise(Game* game);
 	float cameraSpeed;
 	float rollSpeed;

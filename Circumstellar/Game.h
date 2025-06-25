@@ -69,20 +69,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>		m_inputLayout;			//Input Layout object for receiveing input descriptions or something
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_pVBuffer;
 
-	struct TransformMatrices {
+	struct MatrixData {
 		DirectX::XMMATRIX worldMatrix;
 		DirectX::XMMATRIX viewMatrix;
-		DirectX::XMMATRIX projectionMatrix;
+		DirectX::XMMATRIX perspectiveMatrix;
 	};
-	TransformMatrices								m_matrixData;
-
-	struct TransposedTransformMatrices {
-		DirectX::XMMATRIX transWorldMatrix;
-		DirectX::XMMATRIX transViewMatrix;
-		DirectX::XMMATRIX transProjectionMatrix;
-	};
-	TransposedTransformMatrices						m_transMatrixData;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
-	float m_sintest;
 };

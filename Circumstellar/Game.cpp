@@ -11,15 +11,11 @@
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
-
 Game::Game() noexcept :
 	m_windowHandle(nullptr),
-	m_screenWidth(800),
-	m_screenHeight(600),
-	m_feature_level(D3D_FEATURE_LEVEL_9_1),
-	m_sintest(0.0f),
-	m_matrixData({DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity()}),
-	m_transMatrixData({ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() })
+	m_screenWidth(1920),
+	m_screenHeight(1080),
+	m_feature_level(D3D_FEATURE_LEVEL_9_1)
 {
 	camera = std::make_unique<Camera>();
 }
@@ -42,22 +38,21 @@ void Game::Update() {
 	//The goal is to let game logic to operate at its own pace,
 	//while rendering operates when it needs to.
 
+	MatrixData matData;
 
-	m_sintest += 0.1f;
-	if (m_sintest > 6.28f) {
-		m_sintest = 0;
-	}
+	matData.worldMatrix = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.5f), XMMatrixIdentity());
+	matData.worldMatrix = XMMatrixTranspose(matData.worldMatrix);
 
-	m_transMatrixData.transWorldMatrix = XMMatrixTranspose(m_matrixData.worldMatrix);
-	m_matrixData.viewMatrix = camera->getCameraMatrix();
-	
-	m_transMatrixData.transViewMatrix = XMMatrixInverse(nullptr, m_matrixData.viewMatrix);
-	m_transMatrixData.transViewMatrix = XMMatrixTranspose(m_transMatrixData.transViewMatrix);
-	m_transMatrixData.transProjectionMatrix = DirectX::XMMatrixTranspose(m_matrixData.projectionMatrix);
+	matData.viewMatrix = camera->getCameraMatrix();
+	//matData.viewMatrix = XMMatrixInverse(nullptr, matData.viewMatrix);
+	matData.viewMatrix = XMMatrixTranspose(matData.viewMatrix);
+
+	matData.perspectiveMatrix = XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 10.0f);
+	matData.perspectiveMatrix = XMMatrixTranspose(matData.perspectiveMatrix);
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	DX::ThrowIfFailed(m_deviceContext->Map(m_constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
-	CopyMemory(mappedResource.pData, &m_transMatrixData, sizeof(TransformMatrices));
+	CopyMemory(mappedResource.pData, &matData, sizeof(MatrixData));
 	m_deviceContext->Unmap(m_constBuffer.Get(), 0);
 
 	m_deviceContext->VSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
@@ -327,18 +322,10 @@ void Game::InitializeShaders() {
 	D3D11_BUFFER_DESC constDesc = {};
 	constDesc.Usage = D3D11_USAGE_DYNAMIC;
 	constDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constDesc.ByteWidth = static_cast<UINT>(sizeof(TransformMatrices) + (16 - (sizeof(TransformMatrices) % 16)));
+	constDesc.ByteWidth = static_cast<UINT>(sizeof(MatrixData) + (16 - (sizeof(MatrixData) % 16)));
 	constDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	constDesc.MiscFlags = 0;
 	constDesc.StructureByteStride = 0;
 
 	DX::ThrowIfFailed(m_device->CreateBuffer(&constDesc, 0, m_constBuffer.GetAddressOf()));
-
-	//Transformation Matrices
-	m_matrixData = {
-		DirectX::XMMatrixIdentity(),
-		DirectX::XMMatrixIdentity(),
-		DirectX::XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f/9.0f, 0.1f, 10.0f)
-	};
-	m_matrixData.worldMatrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.5f), m_matrixData.worldMatrix);
 }
