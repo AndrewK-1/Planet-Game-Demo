@@ -7,6 +7,7 @@
 #include <chrono>
 #include <thread>
 #include "Camera.h"
+#include "GraphicsObject.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -15,9 +16,14 @@ Game::Game() noexcept :
 	m_windowHandle(nullptr),
 	m_screenWidth(1920),
 	m_screenHeight(1080),
-	m_feature_level(D3D_FEATURE_LEVEL_9_1)
+	m_feature_level(D3D_FEATURE_LEVEL_9_1),
+	float4x4Data(
+		{ {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
+		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
+		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} })
 {
 	camera = std::make_unique<Camera>();
+	m_graphicsObj = std::make_unique<GraphicsObject>();
 }
 
 void Game::Initialize(HWND windowHandle) {
@@ -40,15 +46,11 @@ void Game::Update() {
 
 	MatrixData matData;
 
-	matData.worldMatrix = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.5f), XMMatrixIdentity());
-	matData.worldMatrix = XMMatrixTranspose(matData.worldMatrix);
-
+	//Load transform matrices
+	matData.worldMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.worldMatrix));
 	matData.viewMatrix = camera->getCameraMatrix();
-	//matData.viewMatrix = XMMatrixInverse(nullptr, matData.viewMatrix);
 	matData.viewMatrix = XMMatrixTranspose(matData.viewMatrix);
-
-	matData.perspectiveMatrix = XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 10.0f);
-	matData.perspectiveMatrix = XMMatrixTranspose(matData.perspectiveMatrix);
+	matData.perspectiveMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.perspectiveMatrix));
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	DX::ThrowIfFailed(m_deviceContext->Map(m_constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
@@ -62,7 +64,10 @@ void Game::Render() {
 	Clear();
 	
 	//Render code
-	m_deviceContext->Draw(12, 0);
+	m_deviceContext->Draw(m_graphicsObj->GetVertexCount(), 0);
+
+	std::wstring msg = std::to_wstring(m_graphicsObj->GetVertexCount());
+
 
 	Present();
 }
@@ -131,6 +136,7 @@ void Game::CreateDevice() {
 		&m_feature_level,								//Pointer to feature level variable.
 		deviceContext.ReleaseAndGetAddressOf()			//Release device context, and gets its address.
 		//If COM objects are not released, they can stay in memory even when the program closes, so COM objects must be released at some point.
+		//(Note, in this context the objects are released because they are being overwritten.  If a COM object is not overwritten, a it should not be preemtively Release()'ed)
 	));
 
 	DX::ThrowIfFailed(device.As(&m_device));
@@ -255,35 +261,11 @@ void Game::OnClosing() {
 }
 
 void Game::InitializeShaders() {
-	CustomGeometry::Vertex Vertex1 = { DirectX::XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f) };
-	CustomGeometry::Vertex Vertex2 = { DirectX::XMFLOAT4(0.433f, -0.25f, 0.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.3f, 0.0f, 1.0f) };
-	CustomGeometry::Vertex Vertex3 = { DirectX::XMFLOAT4(-0.433f, -0.25f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
-	CustomGeometry::Vertex Vertex4 = { DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3f, 1.0f, 1.0f) };
-	CustomGeometry::Vertex Vertices[] = { Vertex1, Vertex2, Vertex3,
-		Vertex1, Vertex3, Vertex4,
-		Vertex1, Vertex4, Vertex2,
-		Vertex2, Vertex4, Vertex3};
-
-	D3D11_BUFFER_DESC bufferDesc = {};
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(CustomGeometry::Vertex) * ARRAYSIZE(Vertices);	//Size of array passed to the GPU
-	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;	//Type of buffer i.e. vertex buffer
-	bufferDesc.CPUAccessFlags = 0;
-	bufferDesc.MiscFlags = 0;
-
-	//More data for buffer
-	D3D11_SUBRESOURCE_DATA subData = {};
-	subData.pSysMem = Vertices;
-	subData.SysMemPitch = 0;
-	subData.SysMemSlicePitch = 0;
-
-	//Creating the vertex buffer
-
-	DX::ThrowIfFailed(m_device->CreateBuffer(&bufferDesc, &subData, &m_pVBuffer));
+	m_graphicsObj->SendToPipeline(m_device.Get());
 
 	//Description of the vertex buffer to be submitted.  The semantic in argument 1 should match the .hlsl shader semantics it intends to use
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
-		{static_cast<LPCSTR>("POSITION"), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{static_cast<LPCSTR>("POSITION"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{static_cast<LPCSTR>("COLOR"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 } };
 
 	//Compiling the shader
@@ -303,18 +285,14 @@ void Game::InitializeShaders() {
 
 	//Craete input layout
 	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), &m_inputLayout));
-
-	//DX::ThrowIfFailed(m_deviceContext->IASetInputLayout(shaderBlob));
-
+	//Set shaders to use
 	m_deviceContext->VSSetShader(createdVertexShader.Get(), NULL, 0);
 	m_deviceContext->PSSetShader(createdPixelShader.Get(), NULL, 0);
-
-	//Setting the vertex buffer.  Tells the GPU what vertices to read
-	UINT stride = sizeof(Vertex1);
-	UINT offset = 0;
-	m_deviceContext->IASetVertexBuffers(0, 1, m_pVBuffer.GetAddressOf(), &stride, &offset);
+	
+	//Bind Vertices to context
+	m_graphicsObj->Bind(m_deviceContext.Get());
+	//Set input layout
 	m_deviceContext->IASetInputLayout(m_inputLayout.Get());
-
 	//Set topology type for primitive
 	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
@@ -328,4 +306,8 @@ void Game::InitializeShaders() {
 	constDesc.StructureByteStride = 0;
 
 	DX::ThrowIfFailed(m_device->CreateBuffer(&constDesc, 0, m_constBuffer.GetAddressOf()));
+
+	//Store matrices into members
+	XMStoreFloat4x4(&float4x4Data.worldMatrix, XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 3.0f), XMMatrixIdentity()));
+	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 10.0f));
 }

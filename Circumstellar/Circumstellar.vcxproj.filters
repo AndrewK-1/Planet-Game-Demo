@@ -40,6 +40,12 @@
     <Filter Include="Header Files\User Input">
       <UniqueIdentifier>{08c7b0e2-7230-4519-b2c5-094be2873e17}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Game World">
+      <UniqueIdentifier>{7ffaca0c-79e5-4cae-bb60-963eac239195}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GameWorld">
+      <UniqueIdentifier>{5128c5f9-fcb4-438c-9af2-a376815c5791}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h">
@@ -57,6 +63,27 @@
     </ClInclude>
     <ClInclude Include="ErrorHandling.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleVoxelObject.h">
+      <Filter>Header Files\GameWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldObject.h">
+      <Filter>Header Files\GameWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainVoxel.h">
+      <Filter>Header Files\GameWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleVoxelObjectArray.h">
+      <Filter>Header Files\GameWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleVoxelObjectGenerated.h">
+      <Filter>Header Files\GameWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldRenderedObject.h">
+      <Filter>Header Files\GameWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsObject.h">
+      <Filter>Header Files\API Interaction\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +111,18 @@
     </ClCompile>
     <ClCompile Include="ErrorHandling.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldObject.cpp">
+      <Filter>Source Files\Game World</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainVoxel.cpp">
+      <Filter>Source Files\Game World</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldRenderedObject.cpp">
+      <Filter>Source Files\Game World</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsObject.cpp">
+      <Filter>Source Files\API Interaction\Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

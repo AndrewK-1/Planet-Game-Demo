@@ -50,6 +50,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <string>
+#include <vector>
 
 //Add libraries
 #pragma comment (lib, "d3d11.lib")

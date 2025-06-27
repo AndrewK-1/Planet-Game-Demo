@@ -156,6 +156,7 @@
     <ClCompile Include="ErrorHandling.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GeometryStructures.h" />
+    <ClCompile Include="GraphicsObject.cpp" />
     <ClCompile Include="InputController.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
     <ClCompile Include="Game.h" />
@@ -163,14 +164,24 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TerrainVoxel.cpp" />
+    <ClCompile Include="WorldObject.cpp" />
+    <ClCompile Include="WorldRenderedObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CreateWindow.h" />
     <ClInclude Include="ErrorHandling.h" />
+    <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="InputController.h" />
     <ClInclude Include="MessageHandler.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SimpleVoxelObjectArray.h" />
+    <ClInclude Include="SimpleVoxelObjectGenerated.h" />
+    <ClInclude Include="TerrainVoxel.h" />
+    <ClInclude Include="SimpleVoxelObject.h" />
+    <ClInclude Include="WorldObject.h" />
+    <ClInclude Include="WorldRenderedObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

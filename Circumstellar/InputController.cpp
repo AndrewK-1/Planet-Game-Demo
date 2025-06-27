@@ -11,7 +11,7 @@
 
 //bindingMap is a map containing a UINT key corresponding to a windows message, and an Action which is std::function<void()>
 
-InputController::InputController() : cameraSpeed(0.01f), rollSpeed(0.05f) {
+InputController::InputController() : cameraSpeed(0.04f), rollSpeed(0.05f) {
 	//Note: VK_ is a prefix for some key codes.  All letters and numbers can be listed as '1' or 'A' instead of hexadecimal
 	BindKey(0x20, BindHelper(&InputController::MoveUp)); //VK_SPACE
 	BindKey(0x43, BindHelper(&InputController::MoveDown));	//C key

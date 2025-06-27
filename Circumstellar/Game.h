@@ -3,6 +3,7 @@
 #include "GeometryStructures.h"
 #include "Camera.h"
 #include <list>
+#include "GraphicsObject.h"
 
 class Game {
 public:
@@ -32,16 +33,9 @@ public:
 	void OnClosing();
 	void GetDefaultSize(int& width, int& height);
 	void OnWindowSizeChanged(int width, int height);
-	void GameInputKeyDown(UINT key);
-	void GameInputKeyUp(UINT key);
-	bool IsKeyPressed(UINT key);
-	void MoveUp();
-	void MoveDown();
-	void MoveRight();
-	void MoveLeft();
-	void MoveForward();
-	void MoveBackward();
 	std::unique_ptr<Camera> camera;
+
+	
 
 private:
 	//Rendering and views methods
@@ -75,5 +69,15 @@ private:
 		DirectX::XMMATRIX perspectiveMatrix;
 	};
 
+	struct Float4x4Data {
+		DirectX::XMFLOAT4X4 worldMatrix;
+		DirectX::XMFLOAT4X4 viewMatrix;
+		DirectX::XMFLOAT4X4 perspectiveMatrix;
+	};
+
+	Float4x4Data float4x4Data;
+
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
+
+	std::unique_ptr<GraphicsObject> m_graphicsObj;
 };
