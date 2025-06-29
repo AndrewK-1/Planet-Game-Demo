@@ -9,6 +9,13 @@ WorldObject::WorldObject() : objectScale(1.0f, 1.0f, 1.0f, 1.0f), objectPos(0.0f
 
 }
 
+WorldObject::WorldObject(XMVECTOR position, XMVECTOR rotation, XMVECTOR scale) 
+{
+	XMStoreFloat4(&objectPos, position);
+	XMStoreFloat4(&objectRot, rotation);
+	XMStoreFloat4(&objectScale, scale);
+}
+
 DirectX::XMFLOAT4 WorldObject::getObjectPos() {
 	return objectPos;
 }

@@ -8,6 +8,7 @@
 #include <thread>
 #include "Camera.h"
 #include "GraphicsObject.h"
+#include <random>
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -20,13 +21,14 @@ Game::Game() noexcept :
 	float4x4Data(
 		{ {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
 		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
-		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} })
+		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} }),
 {
 	camera = std::make_unique<Camera>();
 	m_graphicsObj = std::make_unique<GraphicsObject>();
 }
 
 void Game::Initialize(HWND windowHandle) {
+
 	m_windowHandle = windowHandle;
 	CreateDevice();
 	CreateResources();

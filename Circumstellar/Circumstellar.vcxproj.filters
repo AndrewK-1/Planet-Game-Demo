@@ -46,6 +46,9 @@
     <Filter Include="Header Files\GameWorld">
       <UniqueIdentifier>{5128c5f9-fcb4-438c-9af2-a376815c5791}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GameWorld\WorldOrganizers">
+      <UniqueIdentifier>{2941b812-7fc3-4cd0-bd82-a63c10e4e3d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h">
@@ -67,9 +70,6 @@
     <ClInclude Include="SimpleVoxelObject.h">
       <Filter>Header Files\GameWorld</Filter>
     </ClInclude>
-    <ClInclude Include="WorldObject.h">
-      <Filter>Header Files\GameWorld</Filter>
-    </ClInclude>
     <ClInclude Include="TerrainVoxel.h">
       <Filter>Header Files\GameWorld</Filter>
     </ClInclude>
@@ -84,6 +84,15 @@
     </ClInclude>
     <ClInclude Include="GraphicsObject.h">
       <Filter>Header Files\API Interaction\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="World.h">
+      <Filter>Header Files\GameWorld\WorldOrganizers</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldObject.h">
+      <Filter>Header Files\GameWorld\WorldOrganizers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +133,9 @@
     <ClCompile Include="GraphicsObject.cpp">
       <Filter>Source Files\API Interaction\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="World.cpp">
+      <Filter>Source Files\Game World</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -135,5 +147,10 @@
     <FxCompile Include="PixelShader1.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Circumstellar.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

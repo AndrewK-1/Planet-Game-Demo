@@ -4,6 +4,7 @@
 class WorldObject {
 public:
 	WorldObject();
+	WorldObject(DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale);
 	DirectX::XMFLOAT4 getObjectPos();
 	DirectX::XMFLOAT4 getObjectRot();
 	DirectX::XMMATRIX getObjectMatrix();

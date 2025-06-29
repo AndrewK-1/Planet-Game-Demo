@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include <list>
 #include "GraphicsObject.h"
+#include "World.h"
 
 class Game {
 public:
