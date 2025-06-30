@@ -1,5 +1,6 @@
 cbuffer constMatrixData : register(b0)
 {
+    float4x4 worldMatrix;
     float4x4 viewMatrix;
     float4x4 projectionMatrix;
 };
@@ -12,10 +13,10 @@ struct VSIn
 
 struct InstanceIn
 {
-    float4 row0 : POSITION;
-    float4 row1 : POSITION;
-    float4 row2 : POSITION;
-    float4 row3 : POSITION;
+    float4 row0 : INSTANCE_POSITION0;
+    float4 row1 : INSTANCE_POSITION1;
+    float4 row2 : INSTANCE_POSITION2;
+    float4 row3 : INSTANCE_POSITION3;
 };
 
 struct VSOut

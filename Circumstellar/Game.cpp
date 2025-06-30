@@ -66,10 +66,7 @@ void Game::Render() {
 	Clear();
 	
 	//Render code
-	m_deviceContext->Draw(m_graphicsObj->GetVertexCount(), 0);
-
-	std::wstring msg = std::to_wstring(m_graphicsObj->GetVertexCount());
-
+	m_deviceContext->DrawInstanced(m_graphicsObj->GetVertexCount(), m_worldObjects.size(), 0, 0);
 
 	Present();
 }
@@ -265,19 +262,60 @@ void Game::OnClosing() {
 void Game::InitializeShaders() {
 	m_graphicsObj->SendToPipeline(m_device.Get());
 
+
+	OutputDebugString(L"Beginning instancing information.\n");
+	//Instancing
+	int instanceCount = 0;
+	for (int i = 0; i < 100; i++) {
+		instanceCount++;
+		float ifloat = static_cast<float>(i/10.0f);
+		XMVECTOR instpos = XMVectorSet(ifloat, ifloat, ifloat, 1.0f);
+		XMVECTOR instrot = XMVectorSet(ifloat, 0.0f, 0.0f, 1.0f);
+		XMVECTOR instscale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+		WorldObject worldobj(instpos, instrot, instscale);
+		m_worldObjects.push_back(worldobj);
+	}
+	//Instancing
+	std::vector<DirectX::XMMATRIX> instanceMatrices;
+	for (const auto& objIterator : m_worldObjects) {
+		instanceMatrices.push_back(objIterator.getObjectMatrix());
+		OutputDebugString(L"New instance Matrix\n");
+	}
+	//Instancing
+	D3D11_BUFFER_DESC instanceDesc = {};
+	instanceDesc.Usage = D3D11_USAGE_DEFAULT;
+	instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCount;
+	OutputDebugString(L"Instance ByteWidth: "); OutputDebugString(std::to_wstring(sizeof(XMMATRIX) * instanceCount).c_str()); OutputDebugString(L".\n");
+	instanceDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	D3D11_SUBRESOURCE_DATA instanceData = { instanceMatrices.data(), 0, 0 };
+	m_device->CreateBuffer(&instanceDesc, &instanceData, &m_instanceBuffer);
+
+	OutputDebugString(L"Instancing properly instantiated.\n");
+
+	OutputDebugString(L"Starting Input Element Desc.\n");
 	//Description of the vertex buffer to be submitted.  The semantic in argument 1 should match the .hlsl shader semantics it intends to use
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
+		//Vertex data
 		{static_cast<LPCSTR>("POSITION"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{static_cast<LPCSTR>("COLOR"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 } };
+		{static_cast<LPCSTR>("COLOR"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		//Instance data
+		{static_cast<LPCSTR>("INSTANCE_POSITION"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{static_cast<LPCSTR>("INSTANCE_POSITION"), 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{static_cast<LPCSTR>("INSTANCE_POSITION"), 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{static_cast<LPCSTR>("INSTANCE_POSITION"), 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+	};
+	OutputDebugString(L"VertexBuffer Input Element Desc created.\n");
 
+	OutputDebugString(L"Compiling shaders.\n");
 	//Compiling the shader
 	Microsoft::WRL::ComPtr<ID3DBlob> VshaderBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> VerrorBlob = nullptr;
-	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexShader1.hlsl", nullptr, nullptr, "main", "vs_5_0", 0, 0, &VshaderBlob, &VerrorBlob));
-	//Create certex shader
+	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexInstanceShader.hlsl", nullptr, nullptr, "main", "vs_5_0", 0, 0, &VshaderBlob, &VerrorBlob));
+	OutputDebugString(L"Creating vertex shader.\n");
+	//Create vertex shader
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> createdVertexShader;
 	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, &createdVertexShader));
-
+	OutputDebugString(L"Compiling and creating pixel shader.\n");
 	//Pixel Shader
 	Microsoft::WRL::ComPtr<ID3DBlob> PshaderBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> PerrorBlob = nullptr;
@@ -285,48 +323,48 @@ void Game::InitializeShaders() {
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> createdPixelShader;
 	DX::ThrowIfFailed(m_device->CreatePixelShader(PshaderBlob->GetBufferPointer(), PshaderBlob->GetBufferSize(), NULL, &createdPixelShader));
 
-	//Craete input layout
+	OutputDebugString(L"Creating input layout.\n");
+	//Create input layout
 	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), &m_inputLayout));
 	//Set shaders to use
 	m_deviceContext->VSSetShader(createdVertexShader.Get(), NULL, 0);
 	m_deviceContext->PSSetShader(createdPixelShader.Get(), NULL, 0);
 	
+	OutputDebugString(L"Binding vertices to context\n");
 	//Bind Vertices to context
-	m_graphicsObj->Bind(m_deviceContext.Get());
+	m_graphicsObj->Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
 	//Set input layout
 	m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 	//Set topology type for primitive
 	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
+	OutputDebugString(L"Constant buffer description.\n");
 	//Constant Buffers
 	D3D11_BUFFER_DESC constDesc = {};
 	constDesc.Usage = D3D11_USAGE_DYNAMIC;
 	constDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constDesc.ByteWidth = static_cast<UINT>(sizeof(MatrixData) + (16 - (sizeof(MatrixData) % 16)));
+	std::wstring msg = L"ByteWidth: ";
+	msg += std::to_wstring(static_cast<UINT>(sizeof(MatrixData) + (16 - (sizeof(MatrixData) % 16))));
+	msg += L"\n";
+	OutputDebugString(msg.c_str());
 	constDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	constDesc.MiscFlags = 0;
 	constDesc.StructureByteStride = 0;
 
 	DX::ThrowIfFailed(m_device->CreateBuffer(&constDesc, 0, m_constBuffer.GetAddressOf()));
-
+	OutputDebugString(L"Constant Buffer successfully created.\n");
+	
 	//Store matrices into members
 	XMStoreFloat4x4(&float4x4Data.worldMatrix, XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 3.0f), XMMatrixIdentity()));
 	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 100.0f));
+	OutputDebugString(L"Matrices successfuly stored into float4x4.\n");
+	
+	msg = L"Vertex count per instance: ";
+	msg += std::to_wstring(m_graphicsObj->GetVertexCount());
+	msg += L".\n";
+	OutputDebugString(msg.c_str());
 
-	/*
-	int instanceCount = 0;
-	for (int i = 0; i < 10; i++) {
-		instanceCount++;
-		m_worldObjects.push_back()
-	}
-
-	//Instancing
-	D3D11_BUFFER_DESC instanceDesc = {};
-	instanceDesc.Usage = D3D11_USAGE_DEFAULT;
-	instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCount;
-	instanceDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	D3D11_SUBRESOURCE_DATA instanceData = { instances, 0, 0 };
-	ID3D11Buffer* instanceBuffer = nullptr;
-	m_device->CreateBuffer(&instanceDesc, &instanceData, &instanceBuffer);
-	*/
+	msg = L"Number of instances: "; msg += std::to_wstring(m_worldObjects.size()); msg += L".\n";
+	OutputDebugString(msg.c_str());
 }

@@ -8,6 +8,7 @@ public:
 	//Send this object's geometry to the pipeline
 	bool SendToPipeline(ID3D11Device* device);
 	void Bind(ID3D11DeviceContext* context);
+	void Bind(ID3D11DeviceContext* context, ID3D11Buffer* instancing);
 	UINT GetVertexCount();
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vBuffer;

@@ -12,18 +12,18 @@ WorldObject::WorldObject() : objectScale(1.0f, 1.0f, 1.0f, 1.0f), objectPos(0.0f
 WorldObject::WorldObject(XMVECTOR position, XMVECTOR rotation, XMVECTOR scale) 
 {
 	XMStoreFloat4(&objectPos, position);
-	XMStoreFloat4(&objectRot, rotation);
+	XMStoreFloat4(&objectRot, XMQuaternionRotationRollPitchYawFromVector(rotation));
 	XMStoreFloat4(&objectScale, scale);
 }
 
-DirectX::XMFLOAT4 WorldObject::getObjectPos() {
+DirectX::XMFLOAT4 WorldObject::getObjectPos() const {
 	return objectPos;
 }
-DirectX::XMFLOAT4 WorldObject::getObjectRot() {
+DirectX::XMFLOAT4 WorldObject::getObjectRot() const {
 	return objectRot;
 }
-DirectX::XMMATRIX WorldObject::getObjectMatrix() {
-	return XMMatrixAffineTransformation(XMLoadFloat4(&objectScale), XMQuaternionIdentity(), XMLoadFloat4(&objectRot), XMLoadFloat4(&objectPos));
+DirectX::XMMATRIX WorldObject::getObjectMatrix() const {
+	return XMMatrixAffineTransformation(XMLoadFloat4(&objectScale), XMVectorZero(), XMLoadFloat4(&objectRot), XMLoadFloat4(&objectPos));
 }
 //Rotate object about the current world origin
 void WorldObject::rotateAboutWorldAxisX(float angle) {
