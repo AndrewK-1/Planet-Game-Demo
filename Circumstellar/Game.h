@@ -81,4 +81,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
 
 	std::unique_ptr<GraphicsObject> m_graphicsObj;
+
+	std::vector<WorldObject> m_worldObjects;
 };

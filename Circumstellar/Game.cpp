@@ -8,7 +8,7 @@
 #include <thread>
 #include "Camera.h"
 #include "GraphicsObject.h"
-#include <random>
+#include "WorldObject.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -21,7 +21,7 @@ Game::Game() noexcept :
 	float4x4Data(
 		{ {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
 		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
-		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} }),
+		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} })
 {
 	camera = std::make_unique<Camera>();
 	m_graphicsObj = std::make_unique<GraphicsObject>();
@@ -311,5 +311,22 @@ void Game::InitializeShaders() {
 
 	//Store matrices into members
 	XMStoreFloat4x4(&float4x4Data.worldMatrix, XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 3.0f), XMMatrixIdentity()));
-	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 10.0f));
+	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 100.0f));
+
+	/*
+	int instanceCount = 0;
+	for (int i = 0; i < 10; i++) {
+		instanceCount++;
+		m_worldObjects.push_back()
+	}
+
+	//Instancing
+	D3D11_BUFFER_DESC instanceDesc = {};
+	instanceDesc.Usage = D3D11_USAGE_DEFAULT;
+	instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCount;
+	instanceDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	D3D11_SUBRESOURCE_DATA instanceData = { instances, 0, 0 };
+	ID3D11Buffer* instanceBuffer = nullptr;
+	m_device->CreateBuffer(&instanceDesc, &instanceData, &instanceBuffer);
+	*/
 }
