@@ -1,10 +1,9 @@
 #pragma once
 #include "pch.h"
-#include "WorldRenderedObject.h"
+#include "WorldObject.h"
 class World {
 public:
 	World();
 private:
-	std::vector<WorldRenderedObject> m_worldObjects;
-	std::vector<WorldRenderedObject> m_visibleWorldObjects;
+	std::vector<std::vector<WorldObject>> m_worldObjectArray;
 };

@@ -4,16 +4,24 @@
 
 using namespace DirectX;
 
-WorldObject::WorldObject() : objectScale(1.0f, 1.0f, 1.0f, 1.0f), objectPos(0.0f, 0.0f, 0.0f, 1.0f), objectRot(0.0f, 0.0f, 0.0f, 1.0f)
+WorldObject::WorldObject() : objectScale(1.0f, 1.0f, 1.0f, 1.0f), objectPos(0.0f, 0.0f, 0.0f, 1.0f), objectRot(0.0f, 0.0f, 0.0f, 1.0f), m_objectType(0)
 {
 
 }
 
-WorldObject::WorldObject(XMVECTOR position, XMVECTOR rotation, XMVECTOR scale) 
+WorldObject::WorldObject(XMVECTOR position, XMVECTOR rotation, XMVECTOR scale) : m_objectType(0)
 {
 	XMStoreFloat4(&objectPos, position);
 	XMStoreFloat4(&objectRot, XMQuaternionRotationRollPitchYawFromVector(rotation));
 	XMStoreFloat4(&objectScale, scale);
+}
+
+WorldObject::WorldObject(XMVECTOR position, XMVECTOR rotation, XMVECTOR scale, int objType)
+{
+	XMStoreFloat4(&objectPos, position);
+	XMStoreFloat4(&objectRot, XMQuaternionRotationRollPitchYawFromVector(rotation));
+	XMStoreFloat4(&objectScale, scale);
+	m_objectType = objType;
 }
 
 DirectX::XMFLOAT4 WorldObject::getObjectPos() const {

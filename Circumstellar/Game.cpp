@@ -266,7 +266,7 @@ void Game::InitializeShaders() {
 	OutputDebugString(L"Beginning instancing information.\n");
 	//Instancing
 	int instanceCount = 0;
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 1; i++) {
 		instanceCount++;
 		float ifloat = static_cast<float>(i/10.0f);
 		XMVECTOR instpos = XMVectorSet(ifloat, ifloat, ifloat, 1.0f);
