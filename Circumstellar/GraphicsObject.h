@@ -10,6 +10,7 @@ public:
 	void Bind(ID3D11DeviceContext* context);
 	void Bind(ID3D11DeviceContext* context, ID3D11Buffer* instancing);
 	UINT GetVertexCount();
+	void SetGeometry(std::vector<CustomGeometry::Vertex> &geometry);
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vBuffer;
 	UINT m_vCount;

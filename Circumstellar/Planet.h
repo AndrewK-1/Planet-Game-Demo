@@ -9,7 +9,7 @@ public:
 	Planet(float radius, DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale);
 	Planet();
 	void GenerateGeometry();
-	
+	std::vector<CustomGeometry::Vertex>* GetGeometry();
 private:
 	std::vector<std::vector<std::vector<float>>> m_voxelChangeData;
 	std::vector<CustomGeometry::Vertex> m_geometry;

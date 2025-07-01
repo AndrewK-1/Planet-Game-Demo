@@ -5,6 +5,7 @@
 #include <list>
 #include "GraphicsObject.h"
 #include "World.h"
+#include "Planet.h"
 
 class Game {
 public:
@@ -85,4 +86,6 @@ private:
 	std::vector<WorldObject> m_worldObjects;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_instanceBuffer;
+
+	Planet planet1;
 };

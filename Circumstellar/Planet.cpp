@@ -13,7 +13,12 @@ Planet::Planet(float radius)
 Planet::Planet(float radius, DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale) 
 	: WorldObject(position, rotation, scale), m_radius(radius), m_voxelChangeData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{} {}
 
+std::vector<CustomGeometry::Vertex>* Planet::GetGeometry() {
+	return &m_geometry;
+}
+
 void Planet::GenerateGeometry() {
+	OutputDebugString(L"Generating Geometry.\n");
 	m_geometry.clear();
 	//truncated radius to assist in defining the loop variables
 	int ceilradius = (int)std::ceil(m_radius);
@@ -57,6 +62,7 @@ void Planet::GenerateGeometry() {
 										m_tempVertices.clear();
 										m_visitedEmpty[x][y][z] = 1;
 										RecursiveCubeCheck(x, y, z, 'n');
+										OutputDebugString(L"Generating Triangles.\n");
 										for (int triIndex = 2; triIndex < m_tempVertices.size(); triIndex++) {
 											m_geometry.push_back(m_tempVertices[0]);
 											m_geometry.push_back(m_tempVertices[triIndex-1]);

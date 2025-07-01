@@ -53,3 +53,6 @@ UINT GraphicsObject::GetVertexCount() {
 	return m_vCount;
 }
 
+void GraphicsObject::SetGeometry(std::vector<CustomGeometry::Vertex>& geometry) {
+	m_vertices = geometry;
+}
