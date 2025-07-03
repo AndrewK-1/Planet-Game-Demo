@@ -26,6 +26,14 @@ XMMATRIX Camera::getCameraMatrix()
 	return XMLoadFloat4x4(&posMatrix);
 }
 
+XMFLOAT4 Camera::GetOrientation() {
+	return orientQuaternion;
+}
+
+XMFLOAT4 Camera::GetPosition() {
+	return position;
+}
+
 void Camera::YawAndPitch(float aYaw, float aPitch) 
 {
 	//Set temporary vectors to stored postion and rotation values;

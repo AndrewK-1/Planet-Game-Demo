@@ -37,7 +37,8 @@ public:
 	void OnWindowSizeChanged(int width, int height);
 	std::unique_ptr<Camera> camera;
 
-	
+	std::unique_ptr<Planet> m_planet1;
+	bool updatePlanetGeometryFlag;
 
 private:
 	//Rendering and views methods
@@ -87,5 +88,5 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_instanceBuffer;
 
-	Planet planet1;
+	void UpdatePlanetGeometry();
 };

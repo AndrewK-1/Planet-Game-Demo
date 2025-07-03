@@ -22,8 +22,9 @@ Game::Game() noexcept :
 		{ {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
 		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
 		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} }),
-	planet1(4.0f)
+	updatePlanetGeometryFlag(0)
 {
+	m_planet1 = std::make_unique<Planet>(4.0f);
 	camera = std::make_unique<Camera>();
 	m_graphicsObj = std::make_unique<GraphicsObject>();
 }
@@ -48,6 +49,12 @@ void Game::Update() {
 	//while rendering operates when it needs to.
 
 	MatrixData matData;
+
+	//If the planet was flagged as updated, reestablish its new geometry in the GPU
+	if (updatePlanetGeometryFlag == true) {
+		UpdatePlanetGeometry();
+		updatePlanetGeometryFlag = false;
+	}
 
 	//Load transform matrices
 	matData.worldMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.worldMatrix));
@@ -261,20 +268,19 @@ void Game::OnClosing() {
 }
 
 void Game::InitializeShaders() {
-	planet1.GenerateGeometry();
-	m_graphicsObj->SetGeometry(*planet1.GetGeometry());
+	m_planet1->GenerateGeometry();
+	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry());
 	m_graphicsObj->SendToPipeline(m_device.Get());
-
 
 	OutputDebugString(L"Beginning instancing information.\n");
 	//Instancing
 	int instanceCount = 0;
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 7; i++) {
 		instanceCount++;
-		float ifloat = static_cast<float>(i/10.0f);
-		XMVECTOR instpos = XMVectorSet(ifloat, ifloat, ifloat, 1.0f);
-		XMVECTOR instrot = XMVectorSet(ifloat, 0.0f, 0.0f, 1.0f);
-		XMVECTOR instscale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+		float ifloat = static_cast<float>(i);
+		XMVECTOR instpos = XMVectorSet(ifloat*5.0f, ifloat * 5.0f, ifloat * 5.0f, 1.0f);
+		XMVECTOR instrot = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+		XMVECTOR instscale = XMVectorSet(1.0f/(ifloat+1.0f), 1.0f/ (ifloat + 1.0f), 1.0f/ (ifloat + 1.0f), 1.0f);
 		WorldObject worldobj(instpos, instrot, instscale);
 		m_worldObjects.push_back(worldobj);
 	}
@@ -370,4 +376,11 @@ void Game::InitializeShaders() {
 
 	msg = L"Number of instances: "; msg += std::to_wstring(m_worldObjects.size()); msg += L".\n";
 	OutputDebugString(msg.c_str());
+}
+
+void Game::UpdatePlanetGeometry() {
+	OutputDebugString(L"Updating render of planet.\n");
+	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry());
+	m_graphicsObj->SendToPipeline(m_device.Get());
+	m_graphicsObj->Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
 }

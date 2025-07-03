@@ -6,6 +6,8 @@ public:
 	Camera();
 	DirectX::XMFLOAT4X4 getCameraFloat4x4();
 	DirectX::XMMATRIX getCameraMatrix();
+	DirectX::XMFLOAT4 GetOrientation();
+	DirectX::XMFLOAT4 GetPosition();
 	void YawAndPitch(float aYaw, float aPitch);
 	void Yaw(float angle);
 	void Pitch(float angle);

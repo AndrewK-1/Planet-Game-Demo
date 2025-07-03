@@ -5,9 +5,9 @@
 
 using namespace DirectX;
 
-World::World() 
-{
-	XMVECTOR pos;
-	XMVECTOR rot;
-	XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+World::World() : m_worldObjectArray() {}
+World::World(std::vector<WorldObject> objectArray) : m_worldObjectArray(objectArray){}
+
+void World::pushObject(WorldObject obj) {
+	m_worldObjectArray.push_back(obj);
 }

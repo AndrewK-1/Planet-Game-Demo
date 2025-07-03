@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Game.h"
 #include <unordered_set>
+#include "GameTool.h"
 
 //Function alias Action that takes no parameters and returns void.
 //When Action is used from here on, it means std::function<void()>.
@@ -24,6 +25,8 @@ public:
 	void HandleKeyUp(UINT key, Game* game);
 	void PressedKeysExecute(Game* game);
 	void HandleRawInput(long x, long y, Game* game);
+	void UseTool(Game* game);
+	void UseToolAlt(Game* game);
 	
 	//Helper to improve readability of source binds while moving callable methods to the class
 	template<typename T>
@@ -43,4 +46,6 @@ private:
 	float cameraSpeed;
 	float rollSpeed;
 	std::unordered_set<UINT> m_pressedKeys;
+	float m_changePower;
+	GameTool m_gameTool;
 };

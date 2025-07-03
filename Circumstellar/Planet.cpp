@@ -1,20 +1,73 @@
 #pragma once
 #include "pch.h"
 #include "Planet.h"
+#include <algorithm>
 
 using namespace DirectX;
 
 Planet::Planet() 
-	: WorldObject(), m_radius(10), m_voxelChangeData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{} {}
+	: WorldObject(), m_radius(10), m_arrayRadius(std::ceil(m_radius)), m_voxelData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{} 
+{
+	GenerateData();
+}
 
 Planet::Planet(float radius) 
-	: WorldObject(), m_voxelChangeData({}), m_radius(radius), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{} {}
+	: WorldObject(), m_voxelData({}), m_radius(radius), m_arrayRadius(std::ceil(m_radius)), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{}
+{
+	GenerateData();
+}
 
 Planet::Planet(float radius, DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale) 
-	: WorldObject(position, rotation, scale), m_radius(radius), m_voxelChangeData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{} {}
+	: WorldObject(position, rotation, scale), m_radius(radius), m_arrayRadius(std::ceil(m_radius)), m_voxelData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{}
+{
+	GenerateData();
+}
 
 std::vector<CustomGeometry::Vertex>* Planet::GetGeometry() {
 	return &m_geometry;
+}
+
+int Planet::GetArrayRadius() {
+	return m_arrayRadius;
+}
+
+//Setting voxel array size and inserting float elements
+void Planet::GenerateData() {
+	OutputDebugString(L"Generating data...");
+	m_voxelData.clear();
+	int arraysize = (int)std::ceil(m_radius) * 2 + 1;
+	int ceilradius = (int)std::ceil(m_radius);
+	int arraymax = (int)std::ceil(m_radius) + 1;
+	m_voxelData.resize(arraysize);
+	//Setting size of voxel array
+	for (int i = 0; i < arraysize; i++) {
+		m_voxelData[i].resize(arraysize);
+		for (int j = 0; j < arraysize; j++) {
+			m_voxelData[i][j].resize(arraysize);
+		}
+	}
+	//Loop for inserting floats into voxel array
+	for (int z = -ceilradius; z < arraymax; z++) {
+		for (int y = -ceilradius; y < arraymax; y++) {
+			for (int x = -ceilradius; x < arraymax; x++) {
+				float num = std::clamp(static_cast<float>(m_radius - std::sqrt((std::pow((x), 2) + std::pow((y), 2) + std::pow((z), 2)))), -1.0f, 1.0f);
+				//std::wstring msg = L"Float at " + std::to_wstring(x); msg += L", " + std::to_wstring(y); msg += L", " + std::to_wstring(z); msg += L": " + std::to_wstring(num); msg += L"\n";
+				//OutputDebugString(msg.c_str());
+				m_voxelData[x + ceilradius][y + ceilradius][z + ceilradius] = num;
+			}
+		}
+	}
+}
+
+void Planet::EditData(int x, int y, int z, float value) {
+	//if (x > (-m_arrayRadius) && x < m_arrayRadius) {
+		//if (y > (-m_arrayRadius) && y < m_arrayRadius) {
+			//if (z > (-m_arrayRadius) && z < m_arrayRadius) {
+				m_voxelData[x][y][z] = std::clamp(m_voxelData[x][y][z] + value, -1.0f, 1.0f);
+			//}
+		//}
+	//}
+	GenerateGeometry();
 }
 
 void Planet::GenerateGeometry() {
@@ -25,18 +78,20 @@ void Planet::GenerateGeometry() {
 	//truncated radius to assist in defining the loop variables
 	int ceilradius = (int)std::ceil(m_radius);
 	//Array maximum.  Beyond this point groupings will be outside the sphere's intersection.
-	int arraymax = (int)std::ceil(m_radius)+1;
+	int arraymax = (int)std::ceil(m_radius)*2;
 	#if DEBUG
 	OutputDebugString(L"Array start: "); OutputDebugString(std::to_wstring(-ceilradius).c_str()); OutputDebugString(L"\n");
 	OutputDebugString(L"Array limit: "); OutputDebugString(std::to_wstring(arraymax).c_str()); OutputDebugString(L"\n");
 	#endif
 	//Geometry loop.  i is z, j is y, k is x.  ii is z, ij is y, ik is x.
-	for (int i = -ceilradius; i < arraymax; i++) {
-		m_currentCoords[2] = static_cast<float>(i);
-		for (int j = -ceilradius; j < arraymax; j++) {
-			m_currentCoords[1] = static_cast<float>(j);
-			for (int k = -ceilradius; k < arraymax; k++) {
-				m_currentCoords[0] = static_cast<float>(k);
+	
+	for (int i = 0; i < arraymax; i++) {
+		m_currentCoords[2] = static_cast<float>(i) - static_cast<float>(m_arrayRadius);
+		for (int j = 0; j < arraymax; j++) {
+			m_currentCoords[1] = static_cast<float>(j) - static_cast<float>(m_arrayRadius);
+			for (int k = 0; k < arraymax; k++) {
+				m_currentCoords[0] = static_cast<float>(k) - static_cast<float>(m_arrayRadius);
+
 				#if DEBUG
 				OutputDebugString(L"K: "); OutputDebugString(std::to_wstring(k).c_str());
 				OutputDebugString(L" J: "); OutputDebugString(std::to_wstring(j).c_str());
@@ -46,22 +101,28 @@ void Planet::GenerateGeometry() {
 				OutputDebugString(L" J: "); OutputDebugString(std::to_wstring(m_currentCoords[1]).c_str());
 				OutputDebugString(L" I: "); OutputDebugString(std::to_wstring(m_currentCoords[2]).c_str());
 				OutputDebugString(L"\n");
-				#endif
+				#endif			
+				
 				bool allNegative = 1;
 				bool allPositive = 1;
 				//value of each vertex in relation to the sphere's radius
+				
 				for (int ii = 0; ii < 2; ii++) {
+					
 					for (int ij = 0; ij < 2; ij++) {
+						
 						for (int ik = 0; ik < 2; ik++) {
+							
 							#if DEBUG
 							OutputDebugString(L"Inserting value of cube at xyz: "); 
-							OutputDebugString(std::to_wstring(static_cast<float>(m_radius - std::sqrt((std::pow((k + ik),2) + std::pow((j + ij),2) + std::pow((i + ii),2))))).c_str());
+							OutputDebugString(std::to_wstring(m_voxelData[ik + k][ij + j][ii + i]).c_str());
 							OutputDebugString(L"\n");
-							#endif
+							#endif					
 							//Negatives are air, positives are material
-							m_cubeValues[ik][ij][ii] = static_cast<float>(m_radius - std::sqrt((std::pow((k + ik),2) + std::pow((j + ij),2) + std::pow((i + ii),2))));
+							m_cubeValues[ik][ij][ii] = m_voxelData[ik + k][ij + j][ii + i];//std::clamp(static_cast<float>(m_radius - std::sqrt((std::pow((k + ik),2) + std::pow((j + ij),2) + std::pow((i + ii),2)))), -1.0f, 1.0f);
 							if (m_cubeValues[ik][ij][ii] > 0) {
 								allNegative = 0;
+
 							}
 							if (m_cubeValues[ik][ij][ii] < 0) {
 								allPositive = 0;
@@ -105,12 +166,15 @@ void Planet::GenerateGeometry() {
 										m_tempVertices.clear();
 										m_visitedEmpty[x][y][z] = 1;
 										RecursiveCubeCheck(x, y, z, 'n');
+										
 										#if DEBUG
 										OutputDebugString(L"Generating "); OutputDebugString(std::to_wstring(m_tempVertices.size() - 2).c_str()); 
 										OutputDebugString(L" triangle(s).\n");
-										#endif
+										#endif	
+
 										for (int triIndex = 0; triIndex < m_tempVertices.size(); triIndex++) {
 											XMFLOAT4 vertex = m_tempVertices[triIndex].V_Position;
+											
 											#if DEBUG
 											std::wstring triMsg = L"Vertex "; triMsg += std::to_wstring(triIndex); triMsg += L": ";
 											triMsg += std::to_wstring(vertex.x); triMsg += L", ";
@@ -118,6 +182,7 @@ void Planet::GenerateGeometry() {
 											triMsg += std::to_wstring(vertex.z); triMsg += L"\n";
 											OutputDebugString(triMsg.c_str());
 											#endif
+
 										}
 										for (int triIndex = 2; triIndex < m_tempVertices.size(); triIndex++) {
 
@@ -148,35 +213,26 @@ void Planet::RecursiveCubeCheck(int x, int y, int z, char translationAxis)
 			switch (translationAxis) {
 			case 'x': {
 				//yz
-				OutputDebugString(L"Winding 1, Case X, Check Y.\n");
 				AxisCheck(x, y, z, 'y');
-				OutputDebugString(L"Winding 1, Case X, Check Z.\n");
 				AxisCheck(x, y, z, 'z');
 				break;
 			}
 			case 'y': {
 				//zx
-				OutputDebugString(L"Winding 1, Case Y, Check Z.\n");
 				AxisCheck(x, y, z, 'z');
-				OutputDebugString(L"Winding 1, Case Y, Check X.\n");
 				AxisCheck(x, y, z, 'x');
 				break;
 			}
 			case 'z': {
 				//xy
-				OutputDebugString(L"Winding 1, Case Z, Check X.\n");
 				AxisCheck(x, y, z, 'x');
-				OutputDebugString(L"Winding 1, Case Z, Check Y.\n");
 				AxisCheck(x, y, z, 'y');
 				break;
 			}
 			case 'n': {
 				//xyz		
-				OutputDebugString(L"Winding 1, Case N, Check X.\n");
 				AxisCheck(x, y, z, 'x');
-				OutputDebugString(L"Winding 1, Case N, Check Y.\n");
 				AxisCheck(x, y, z, 'y');
-				OutputDebugString(L"Winding 1, Case N, Check Z.\n");
 				AxisCheck(x, y, z, 'z'); 
 				break;
 			}
@@ -189,35 +245,26 @@ void Planet::RecursiveCubeCheck(int x, int y, int z, char translationAxis)
 			switch (translationAxis) {
 			case 'x': {
 				//zy
-				OutputDebugString(L"Winding 2, Case X, Check Z.\n");
 				AxisCheck(x, y, z, 'z');
-				OutputDebugString(L"Winding 2, Case X, Check Y.\n");
 				AxisCheck(x, y, z, 'y');
 				break;
 			}
 			case 'y': {
 				//xz
-				OutputDebugString(L"Winding 2, Case Y, Check X.\n");
 				AxisCheck(x, y, z, 'x');
-				OutputDebugString(L"Winding 2, Case Y, Check Z.\n");
 				AxisCheck(x, y, z, 'z');
 				break;
 			}
 			case 'z': {
 				//yx
-				OutputDebugString(L"Winding 2, Case Z, Check Y.\n");
 				AxisCheck(x, y, z, 'y');
-				OutputDebugString(L"Winding 2, Case Z, Check X.\n");
 				AxisCheck(x, y, z, 'x');
 				break;
 			}
 			case 'n': {
 				//xzy			
-				OutputDebugString(L"Winding 2, Case N, Check X.\n");
 				AxisCheck(x, y, z, 'x');
-				OutputDebugString(L"Winding 2, Case N, Check Z.\n");
 				AxisCheck(x, y, z, 'z');
-				OutputDebugString(L"Winding 2, Case N, Check Y.\n");
 				AxisCheck(x, y, z, 'y');
 				break;
 			}
@@ -235,72 +282,42 @@ void Planet::AxisCheck(int x, int y, int z, char axis) {
 	int wrap;
 	switch (axis) {
 	case 'x': {
-		std::wstring msg = (L" Checking axis X. From: ");
-		msg += std::to_wstring(x); msg += L", "; msg += std::to_wstring(y); msg += L", "; msg += std::to_wstring(z); msg += L"\n";
-		OutputDebugString(msg.c_str());
 		wrap = Wraparound(x);
 		//If next point is also negative and hasn't been visited, call recursive check
 		if (m_cubeValues[wrap][y][z] < 0) {
-			OutputDebugString(L" Is Negative.\n");
 			if (m_visitedEmpty[wrap][y][z] == 0) {
-				OutputDebugString(L" Not visited. \n");
 				m_visitedEmpty[wrap][y][z] = 1;
-				msg = {};
-				msg = (L" Moving to point: ");
-				msg += std::to_wstring(wrap); msg += L", "; msg += std::to_wstring(y); msg += L", "; msg += std::to_wstring(z); msg += L"\n";
-				OutputDebugString(msg.c_str());
 				RecursiveCubeCheck(wrap, y, z, 'x');
 			}
 		}
 		//If next point is positive:
 		else {
-			OutputDebugString(L"Calculating Vertex.\n");
 			CalculateVertex(x, y, z, 'x');
 		}
 		break;
 	}
 	case 'y': {
-		std::wstring msg = (L" Checking axis Y. Form: ");
-		msg += std::to_wstring(x); msg += L", "; msg += std::to_wstring(y); msg += L", "; msg += std::to_wstring(z); msg += L"\n";
-		OutputDebugString(msg.c_str());
 		wrap = Wraparound(y);
 		if (m_cubeValues[x][wrap][z] < 0) {
-			OutputDebugString(L" Is Negative.\n");
 			if (m_visitedEmpty[x][wrap][z] == 0) {
-				OutputDebugString(L" Not visited. \n");
 				m_visitedEmpty[x][wrap][z] = 1;
-				msg = {};
-				msg = (L" Moving to point: ");
-				msg += std::to_wstring(x); msg += L", "; msg += std::to_wstring(wrap); msg += L", "; msg += std::to_wstring(z); msg += L"\n";
-				OutputDebugString(msg.c_str());
 				RecursiveCubeCheck(x, wrap, z, 'y');
 			}
 		}
 		else {
-			OutputDebugString(L"Calculating Vertex.\n");
 			CalculateVertex(x, y, z, 'y');
 		}
 		break;
 	}
 	case 'z': {
-		std::wstring msg = (L" Checking axis Z. From: ");
-		msg += std::to_wstring(x); msg += L", "; msg += std::to_wstring(y); msg += L", "; msg += std::to_wstring(z); msg += L"\n";
-		OutputDebugString(msg.c_str());
 		wrap = Wraparound(z);
 		if (m_cubeValues[x][y][wrap] < 0) {
-			OutputDebugString(L" Is Negative.\n");
 			if (m_visitedEmpty[x][y][wrap] == 0) {
-				OutputDebugString(L" Not visited. \n");
 				m_visitedEmpty[x][y][wrap] = 1;
-				msg = {};
-				msg = (L" Moving to point: ");
-				msg += std::to_wstring(x); msg += L", "; msg += std::to_wstring(y); msg += L", "; msg += std::to_wstring(wrap); msg += L"\n";
-				OutputDebugString(msg.c_str());
 				RecursiveCubeCheck(x, y, wrap, 'z');
 			}
 		}
 		else {
-			OutputDebugString(L"Calculating Vertex.\n");
 			CalculateVertex(x, y, z, 'z');
 		}
 		break;
@@ -310,19 +327,12 @@ void Planet::AxisCheck(int x, int y, int z, char axis) {
 }
 
 void Planet::CalculateVertex(int x, int y, int z, char axis) {
-	std::wstring calcmsg = L"Calculating vertex from ";
-	calcmsg += std::to_wstring(x); calcmsg += L", "; calcmsg += std::to_wstring(y); calcmsg += L", "; calcmsg += std::to_wstring(z);
-	calcmsg += L" along axis "; calcmsg += axis; calcmsg += L".\n";
-	OutputDebugString(calcmsg.c_str());
 	XMFLOAT4 Color = { 0.5f, 0.5f, 0.5f, 1.0f };
 	switch (axis) {
 	case 'x': {
 		int wrap = Wraparound(x);
 		float air = std::abs(m_cubeValues[x][y][z]);
 		float solid = std::abs(m_cubeValues[wrap][y][z]);
-		std::wstring switchmsg = L"Air value at xyz: "; switchmsg += std::to_wstring(air);
-		switchmsg += L". Solid value at wrap yz: "; switchmsg += std::to_wstring(solid) + L"\n";
-		OutputDebugString(switchmsg.c_str());
 		if (x == 0) {
 			m_tempVertices.push_back({ { (m_currentCoords[0] + (air / (air + solid))),
 			(m_currentCoords[1]) + static_cast<float>(y), (m_currentCoords[2]) + static_cast<float>(z), 1.0f }, Color });
@@ -337,9 +347,6 @@ void Planet::CalculateVertex(int x, int y, int z, char axis) {
 		int wrap = Wraparound(y);
 		float air = std::abs(m_cubeValues[x][y][z]);
 		float solid = std::abs(m_cubeValues[x][wrap][z]);
-		std::wstring switchmsg = L"Air value at xyz: "; switchmsg += std::to_wstring(air);
-		switchmsg += L". Solid value at x wrap z: "; switchmsg += std::to_wstring(solid) + L"\n";
-		OutputDebugString(switchmsg.c_str());
 		if (y == 0) {
 			m_tempVertices.push_back({ { m_currentCoords[0] + static_cast<float>(x),
 				(m_currentCoords[1] + (air / (air + solid))),
@@ -356,9 +363,6 @@ void Planet::CalculateVertex(int x, int y, int z, char axis) {
 		int wrap = Wraparound(z);
 		float air = std::abs(m_cubeValues[x][y][z]);
 		float solid = std::abs(m_cubeValues[x][y][wrap]);
-		std::wstring switchmsg = L"Air value at xyz: "; switchmsg += std::to_wstring(air);
-		switchmsg += L". Solid value at xy wrap: "; switchmsg += std::to_wstring(solid) + L"\n";
-		OutputDebugString(switchmsg.c_str());
 		if (z == 0) {
 			m_tempVertices.push_back({ {m_currentCoords[0] + static_cast<float>(x), m_currentCoords[1] + static_cast<float>(y),
 				(m_currentCoords[2] + (air / (air +solid))), 1.0f},

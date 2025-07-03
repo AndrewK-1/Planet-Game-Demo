@@ -12,9 +12,9 @@ namespace CustomGeometry {
 		DirectX::XMFLOAT4 V_Color;
 	};
 	
-	const Color CubeColor = { DirectX::XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f) };
+	inline const Color CubeColor = { DirectX::XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f) };
 
-	const std::vector<Vertex> CubeArray = {
+	inline const std::vector<Vertex> CubeArray = {
 		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), CubeColor.ColorData },
 		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), CubeColor.ColorData },
 		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), CubeColor.ColorData },

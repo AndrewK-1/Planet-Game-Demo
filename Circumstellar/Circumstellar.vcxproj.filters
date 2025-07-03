@@ -63,9 +63,6 @@
     <ClInclude Include="ErrorHandling.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleVoxelObject.h">
-      <Filter>Header Files\GameWorld</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicsObject.h">
       <Filter>Header Files\API Interaction\Rendering</Filter>
     </ClInclude>
@@ -80,6 +77,12 @@
     </ClInclude>
     <ClInclude Include="WorldObject.h">
       <Filter>Header Files\GameWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="Planet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTool.h">
+      <Filter>Header Files\User Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -119,8 +122,11 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SimpleVoxelObject.cpp">
-      <Filter>Source Files\Game World</Filter>
+    <ClCompile Include="Planet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTool.cpp">
+      <Filter>Source Files\User Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
