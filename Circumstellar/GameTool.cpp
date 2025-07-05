@@ -14,30 +14,26 @@ bool GameTool::ChangeTerrain(Planet* planet, Camera* currentCam, float changePow
 	XMFLOAT4 tempLoadFloat = planet->getObjectRot();
 	XMVECTOR planetRot = XMLoadFloat4(&tempLoadFloat); tempLoadFloat = planet->getObjectPos();
 	XMVECTOR planetPos = XMLoadFloat4(&tempLoadFloat); tempLoadFloat = currentCam->GetOrientation();
-	XMVECTOR cameraRot = XMLoadFloat4(&tempLoadFloat); tempLoadFloat = currentCam->GetPosition();
-	XMVECTOR cameraPos = XMLoadFloat4(&tempLoadFloat);
 
 	XMVECTOR invertedPlanetRot = XMQuaternionInverse(planetRot);
-	XMVECTOR newCameraPos = XMVectorSubtract(cameraPos, planetPos);
-	newCameraPos = XMVector3Rotate(newCameraPos, invertedPlanetRot);
-	XMVECTOR newCameraRot = XMVector3Rotate(cameraRot, invertedPlanetRot);
 
-
-	XMVECTOR forwardVec = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), newCameraRot);
-	float rayDistance = 1.0f;
-	XMVECTOR moveVec = XMVectorScale(forwardVec, rayDistance);
+	XMVECTOR camRayPos = currentCam->GetForwardRay(10.0f);
+	camRayPos = XMVectorSubtract(camRayPos, planetPos);
+	camRayPos = XMVector3Rotate(camRayPos, invertedPlanetRot);
+	XMVECTOR camRayRot = XMVector3Rotate(currentCam->GetOrientationVector(), invertedPlanetRot);
 	XMFLOAT4 rayPosition;
-	XMStoreFloat4(&rayPosition, XMVectorAdd(newCameraPos, moveVec));
-
-	msg = L"Camera ray position: " + std::to_wstring(rayPosition.x); msg += L", " + std::to_wstring(rayPosition.y); msg += L", " + std::to_wstring(rayPosition.z);
-	msg += L".\n"; OutputDebugString(msg.c_str());
+	XMStoreFloat4(&rayPosition, camRayPos);
 
 	XMFLOAT4 debugFloat;
+	XMStoreFloat4(&debugFloat, camRayPos);
+	msg = L"Camera ray position: " + std::to_wstring(debugFloat.x); msg += L", " + std::to_wstring(debugFloat.y); msg += L", " + std::to_wstring(debugFloat.z);
+	msg += L".\n"; OutputDebugString(msg.c_str());
+	
 	XMStoreFloat4(&debugFloat, planetPos);
 	msg = L"Planet position: " + std::to_wstring(debugFloat.x); msg += L", " + std::to_wstring(debugFloat.y); msg += L", " + std::to_wstring(debugFloat.z);
 	msg += L".\n"; OutputDebugString(msg.c_str());
 	
-	XMStoreFloat4(&debugFloat, newCameraPos);
+	XMStoreFloat4(&debugFloat, camRayPos);
 	msg = L"Camera position: " + std::to_wstring(debugFloat.x); msg += L", " + std::to_wstring(debugFloat.y); msg += L", " + std::to_wstring(debugFloat.z);
 	msg += L".\n"; OutputDebugString(msg.c_str());
 

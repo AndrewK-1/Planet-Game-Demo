@@ -22,9 +22,11 @@ Game::Game() noexcept :
 		{ {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
 		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
 		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} }),
-	updatePlanetGeometryFlag(0)
+	updatePlanetGeometryFlag(0),
+	m_planetVertexCount(0),
+	m_planetIndexCount(0)
 {
-	m_planet1 = std::make_unique<Planet>(4.0f);
+	m_planet1 = std::make_unique<Planet>(10.0f);
 	camera = std::make_unique<Camera>();
 	m_graphicsObj = std::make_unique<GraphicsObject>();
 }
@@ -48,13 +50,34 @@ void Game::Update() {
 	//The goal is to let game logic to operate at its own pace,
 	//while rendering operates when it needs to.
 
-	MatrixData matData;
+
+	//Instancing for terrain modification cursor (isosphere)
+	XMMATRIX defaultInstanceMatrix = XMMatrixIdentity();
+	XMMATRIX camRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
+		camera->GetForwardRay(10.0f));
+	std::vector<DirectX::XMMATRIX> instanceMatrices;
+	instanceMatrices.push_back(defaultInstanceMatrix);
+	instanceMatrices.push_back(camRayMatrix);
+
+	int instanceCounter = instanceMatrices.size();
+	D3D11_BUFFER_DESC instanceDesc = {};
+	instanceDesc.Usage = D3D11_USAGE_DEFAULT;
+	instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCounter;
+	instanceDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	D3D11_SUBRESOURCE_DATA instanceData = { instanceMatrices.data(), 0, 0};
+	m_device->CreateBuffer(&instanceDesc, &instanceData, &m_instanceBuffer);
+	UpdateGraphicsBuffers();
+
 
 	//If the planet was flagged as updated, reestablish its new geometry in the GPU
 	if (updatePlanetGeometryFlag == true) {
-		UpdatePlanetGeometry();
+		
 		updatePlanetGeometryFlag = false;
+		m_planetVertexCount = m_planet1->GetVertexCount();
+		m_planetIndexCount = m_planetVertexCount;
 	}
+
+	MatrixData matData;
 
 	//Load transform matrices
 	matData.worldMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.worldMatrix));
@@ -74,8 +97,20 @@ void Game::Render() {
 	Clear();
 	
 	//Render code
-	m_deviceContext->DrawInstanced(m_graphicsObj->GetVertexCount(), m_worldObjects.size(), 0, 0);
+	//m_deviceContext->DrawInstanced(m_graphicsObj->GetVertexCount(), m_worldObjects.size(), 0, 0);
 
+	
+	UINT currentIndex = 0;
+	UINT currentVertex = 0;
+	m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, 1, 0, 0, 0);
+	currentIndex += m_planetIndexCount;
+	currentVertex += m_planetVertexCount;
+	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, 1, currentIndex, currentVertex, 1);
+	
+	currentIndex += m_cubeIndexCount;
+	currentVertex += m_cubeVertexCount;
+	m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, 1, currentIndex, currentVertex, 1);
+	
 	Present();
 }
 
@@ -268,17 +303,30 @@ void Game::OnClosing() {
 }
 
 void Game::InitializeShaders() {
+	std::wstring msg;
+	//Retrieve vertex and index arrays, and add them to vertex buffer with AddGeometry()
 	m_planet1->GenerateGeometry();
-	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry());
+	m_planetVertexCount = m_planet1->GetVertexCount();
+	m_planetIndexCount = m_planetVertexCount;
+	std::vector<UINT> planetIndexArray = m_planet1->GetIndexArray();
+	msg = L"Size of planet index array: " + std::to_wstring(planetIndexArray.size()); msg += L"\n";
+	msg += L"Size of planet vertex array: " + std::to_wstring(m_planet1->GetVertexCount()); msg += L"\n";
+	msg += L"Size of m_planetIndexCount: " + std::to_wstring(m_planetIndexCount); msg += L"\n";
+	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry(), planetIndexArray);
+	msg += L"Size of cube index array: " + std::to_wstring(m_cubeIndices.size()); msg += L"\n";
+	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
+	msg += L"Size of isoSphere index array: " + std::to_wstring(m_isoSphereIndices.size()); msg += L"\n";
+	m_graphicsObj->AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
 	m_graphicsObj->SendToPipeline(m_device.Get());
+	OutputDebugString(msg.c_str());
 
 	OutputDebugString(L"Beginning instancing information.\n");
 	//Instancing
-	int instanceCount = 0;
+	int instanceCounter = 0;
 	for (int i = 0; i < 7; i++) {
-		instanceCount++;
+		instanceCounter++;
 		float ifloat = static_cast<float>(i);
-		XMVECTOR instpos = XMVectorSet(ifloat*5.0f, ifloat * 5.0f, ifloat * 5.0f, 1.0f);
+		XMVECTOR instpos = XMVectorSet(ifloat*15.0f, ifloat * 15.0f, ifloat * 15.0f, 1.0f);
 		XMVECTOR instrot = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 		XMVECTOR instscale = XMVectorSet(1.0f/(ifloat+1.0f), 1.0f/ (ifloat + 1.0f), 1.0f/ (ifloat + 1.0f), 1.0f);
 		WorldObject worldobj(instpos, instrot, instscale);
@@ -293,8 +341,8 @@ void Game::InitializeShaders() {
 	//Instancing
 	D3D11_BUFFER_DESC instanceDesc = {};
 	instanceDesc.Usage = D3D11_USAGE_DEFAULT;
-	instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCount;
-	OutputDebugString(L"Instance ByteWidth: "); OutputDebugString(std::to_wstring(sizeof(XMMATRIX) * instanceCount).c_str()); OutputDebugString(L".\n");
+	instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCounter;
+	OutputDebugString(L"Instance ByteWidth: "); OutputDebugString(std::to_wstring(sizeof(XMMATRIX) * instanceCounter).c_str()); OutputDebugString(L".\n");
 	instanceDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	D3D11_SUBRESOURCE_DATA instanceData = { instanceMatrices.data(), 0, 0 };
 	m_device->CreateBuffer(&instanceDesc, &instanceData, &m_instanceBuffer);
@@ -324,6 +372,15 @@ void Game::InitializeShaders() {
 	//Create vertex shader
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> createdVertexShader;
 	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, &createdVertexShader));
+
+	OutputDebugString(L"Compiling and creating geometry shader.\n");
+	//Geometry Shader
+	Microsoft::WRL::ComPtr<ID3DBlob> GshaderBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> GerrorBlob = nullptr;
+	DX::ThrowIfFailed(D3DCompileFromFile(L"GeometryShader1.hlsl", nullptr, nullptr, "main", "gs_5_0", 0, 0, &GshaderBlob, &GerrorBlob));
+	Microsoft::WRL::ComPtr<ID3D11GeometryShader> createdGeometryShader;
+	DX::ThrowIfFailed(m_device->CreateGeometryShader(GshaderBlob->GetBufferPointer(), GshaderBlob->GetBufferSize(), NULL, &createdGeometryShader));
+
 	OutputDebugString(L"Compiling and creating pixel shader.\n");
 	//Pixel Shader
 	Microsoft::WRL::ComPtr<ID3DBlob> PshaderBlob = nullptr;
@@ -337,6 +394,7 @@ void Game::InitializeShaders() {
 	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), &m_inputLayout));
 	//Set shaders to use
 	m_deviceContext->VSSetShader(createdVertexShader.Get(), NULL, 0);
+	m_deviceContext->GSSetShader(createdGeometryShader.Get(), NULL, 0);
 	m_deviceContext->PSSetShader(createdPixelShader.Get(), NULL, 0);
 	
 	OutputDebugString(L"Binding vertices to context\n");
@@ -353,7 +411,7 @@ void Game::InitializeShaders() {
 	constDesc.Usage = D3D11_USAGE_DYNAMIC;
 	constDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constDesc.ByteWidth = static_cast<UINT>(sizeof(MatrixData) + (16 - (sizeof(MatrixData) % 16)));
-	std::wstring msg = L"ByteWidth: ";
+	msg = L"ByteWidth: ";
 	msg += std::to_wstring(static_cast<UINT>(sizeof(MatrixData) + (16 - (sizeof(MatrixData) % 16))));
 	msg += L"\n";
 	OutputDebugString(msg.c_str());
@@ -378,9 +436,18 @@ void Game::InitializeShaders() {
 	OutputDebugString(msg.c_str());
 }
 
-void Game::UpdatePlanetGeometry() {
+void Game::UpdateGraphicsBuffers() {
+	std::wstring msg;
 	OutputDebugString(L"Updating render of planet.\n");
-	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry());
+	std::vector<UINT> planetIndexArray = m_planet1->GetIndexArray();
+	msg = L"Size of planet index array: " + std::to_wstring(planetIndexArray.size()); msg += L"\n";
+	msg = L"Size of planet vertex array: " + std::to_wstring(m_planet1->GetVertexCount()); msg += L"\n";
+	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry(), planetIndexArray);
+	msg += L"Size of cube index array: " + std::to_wstring(m_cubeIndices.size()); msg += L"\n";
+	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
+	msg += L"Size of isoSphere index array: " + std::to_wstring(m_isoSphereIndices.size()); msg += L"\n";
+	OutputDebugString(msg.c_str());
+	m_graphicsObj->AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
 	m_graphicsObj->SendToPipeline(m_device.Get());
 	m_graphicsObj->Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
 }

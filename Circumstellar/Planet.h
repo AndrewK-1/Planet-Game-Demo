@@ -14,9 +14,12 @@ public:
 	void EditData(int x, int y, int z, float value);
 	std::vector<CustomGeometry::Vertex>* GetGeometry();
 	int GetArrayRadius();
+	int GetVertexCount();
+	std::vector<UINT> GetIndexArray();
 private:
 	std::vector<std::vector<std::vector<float>>> m_voxelData;
 	std::vector<CustomGeometry::Vertex> m_geometry;
+	std::vector<UINT> m_indexArray;
 	float m_radius;
 	int m_arrayRadius;
 	float m_cubeValues[2][2][2];
@@ -27,6 +30,7 @@ private:
 	int Wraparound(int a);
 	void AxisCheck(int x, int y, int z, char axis);
 	void CalculateVertex(int x, int y, int z, char axis);
+	int m_vertexCount;
 	//Map for more efficient vertex changes
 	//std::map<int, std::map<int, std::map<int, std::vector<CustomGeometry::Vertex>>>> m_trianglemap;
 };

@@ -29,9 +29,21 @@ XMMATRIX Camera::getCameraMatrix()
 XMFLOAT4 Camera::GetOrientation() {
 	return orientQuaternion;
 }
+XMVECTOR Camera::GetOrientationVector() {
+	return XMLoadFloat4(&orientQuaternion);
+}
 
 XMFLOAT4 Camera::GetPosition() {
 	return position;
+}
+
+//Get a position from the forwrd direction of the camera
+XMVECTOR Camera::GetForwardRay(float distance) {
+	XMVECTOR orientQuatVec = XMLoadFloat4(&orientQuaternion);
+	XMVECTOR forwardVec = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), orientQuatVec);
+	XMVECTOR moveVec = XMVectorScale(forwardVec, distance);
+	XMVECTOR camPos = XMLoadFloat4(&position);
+	return XMVectorAdd(camPos, moveVec);
 }
 
 void Camera::YawAndPitch(float aYaw, float aPitch) 

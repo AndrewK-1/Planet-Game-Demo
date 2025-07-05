@@ -52,7 +52,19 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 	}
 
 	case WM_LBUTTONDOWN: {
-		inputController->HandleKeyDown(static_cast<UINT>(wParam), game);
+		inputController->HandleKeyDown(static_cast<UINT>(0x0001), game);
+		return 0;
+	}
+	case WM_LBUTTONUP: {
+		inputController->HandleKeyUp(static_cast<UINT>(0x0001), game);
+		return 0;
+	}
+	case WM_RBUTTONDOWN: {
+		inputController->HandleKeyDown(static_cast<UINT>(0x0002), game);
+		return 0;
+	}
+	case WM_RBUTTONUP: {
+		inputController->HandleKeyUp(static_cast<UINT>(0x0002), game);
 		return 0;
 	}
 

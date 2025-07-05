@@ -88,5 +88,15 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_instanceBuffer;
 
-	void UpdatePlanetGeometry();
+	void UpdateGraphicsBuffers();
+	int m_planetVertexCount;
+	int m_planetIndexCount;
+	int m_cubeIndexCount = CustomGeometry::CubeVertexCount;
+	int m_cubeVertexCount = CustomGeometry::CubeVertexCount;
+	std::vector<CustomGeometry::Vertex> m_cubeVertices = CustomGeometry::CubeArray;
+	std::vector<UINT> m_cubeIndices = CustomGeometry::CubeIndexArray;
+	int m_isoSphereIndexCount = CustomGeometry::IsoSphereIndexCount;
+	int m_isoSphereVertexCount = CustomGeometry::IsoSphereVertexCount;
+	std::vector<CustomGeometry::Vertex> m_isoSphereVertices = CustomGeometry::IsoSphereArray;
+	std::vector<UINT> m_isoSphereIndices = CustomGeometry::IsoSphereIndexArray;
 };

@@ -31,6 +31,14 @@ int Planet::GetArrayRadius() {
 	return m_arrayRadius;
 }
 
+int Planet::GetVertexCount() {
+	return m_vertexCount;
+}
+
+std::vector<UINT> Planet::GetIndexArray() {
+	return m_indexArray;
+}
+
 //Setting voxel array size and inserting float elements
 void Planet::GenerateData() {
 	OutputDebugString(L"Generating data...");
@@ -60,25 +68,22 @@ void Planet::GenerateData() {
 }
 
 void Planet::EditData(int x, int y, int z, float value) {
-	//if (x > (-m_arrayRadius) && x < m_arrayRadius) {
-		//if (y > (-m_arrayRadius) && y < m_arrayRadius) {
-			//if (z > (-m_arrayRadius) && z < m_arrayRadius) {
-				m_voxelData[x][y][z] = std::clamp(m_voxelData[x][y][z] + value, -1.0f, 1.0f);
-			//}
-		//}
-	//}
+	m_voxelData[x][y][z] = std::clamp(m_voxelData[x][y][z] + value, -1.0f, 1.0f);
 	GenerateGeometry();
 }
 
 void Planet::GenerateGeometry() {
+	m_vertexCount = 0;
 	#if DEBUG
 	OutputDebugString(L"Generating Geometry.\n");
 	#endif
 	m_geometry.clear();
+	m_indexArray.clear();
+	m_vertexCount = 0;
 	//truncated radius to assist in defining the loop variables
 	int ceilradius = (int)std::ceil(m_radius);
 	//Array maximum.  Beyond this point groupings will be outside the sphere's intersection.
-	int arraymax = (int)std::ceil(m_radius)*2;
+	int arraymax = ceilradius*2;
 	#if DEBUG
 	OutputDebugString(L"Array start: "); OutputDebugString(std::to_wstring(-ceilradius).c_str()); OutputDebugString(L"\n");
 	OutputDebugString(L"Array limit: "); OutputDebugString(std::to_wstring(arraymax).c_str()); OutputDebugString(L"\n");
@@ -185,7 +190,8 @@ void Planet::GenerateGeometry() {
 
 										}
 										for (int triIndex = 2; triIndex < m_tempVertices.size(); triIndex++) {
-
+											m_vertexCount += 3;
+	
 											m_geometry.push_back(m_tempVertices[0]);
 											m_geometry.push_back(m_tempVertices[triIndex-1]);
 											m_geometry.push_back(m_tempVertices[triIndex]);
@@ -199,13 +205,16 @@ void Planet::GenerateGeometry() {
 			}
 		}
 	}
+	for (UINT i = 0; i < m_geometry.size(); i++) {
+		m_indexArray.push_back(i);
+	}
 }
 
 //Recursively iterate over points to generate geometry
 void Planet::RecursiveCubeCheck(int x, int y, int z, char translationAxis)
 {
 	//If the current point is one of four points going in a certain direction.  This is for clockwise winding.
-	if ((x == 0 && y == 0 && z == 0) || (x == 1 && y == 1 && z == 0) || (x == 0 && y == 1 && z == 1) || (x == 1 && y == 0 && z == 1)) {
+	if (!((x == 0 && y == 0 && z == 0) || (x == 1 && y == 1 && z == 0) || (x == 0 && y == 1 && z == 1) || (x == 1 && y == 0 && z == 1))) {
 		//Check and visitedEmpty adjustment is also done in Axis Check, so might change that
 		//If the vertex is negative (empty), then it is visited and will generate geometry
 		//if (m_cubeValues[x][y][z] < 0) {
