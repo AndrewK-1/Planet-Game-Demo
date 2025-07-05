@@ -22,6 +22,8 @@ int WINAPI wWinMain(
 	_In_ int nCmdShow
 	)
 {
+
+	
 	//To create a window: define a window class, register it, and create the window with CreateWindow or CreateWindowEx functions
 	
 	//Defining the Window Class
@@ -72,6 +74,14 @@ int WINAPI wWinMain(
 	Parameter 3 specifies keyboard and mouse messages, more specifically, the "lowest" message value to be retrieved.
 		Can also use WM_INPUT for WM_INPUT messages.  Zero means no filtering.
 	Parameter 4 is "highest" value to be retrieved.  similar to previous parameter.*/
+
+	int width;
+	int height;
+	game->GetDefaultSize(width, height);
+	RECT cursorBox = { width/2, height/2, width/2+1, height/2+1 };
+	ClipCursor(&cursorBox);
+	ShowCursor(false);
+
 	MSG message = {};
 	while (WM_QUIT != message.message) 
 	{

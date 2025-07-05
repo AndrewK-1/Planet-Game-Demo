@@ -20,6 +20,9 @@ struct InputBinding {
 class InputController {
 public:
 	InputController();
+	void ChangeToToolOne(Game* game);
+	void ChangeToToolTwo(Game* game);
+	void ChangeToToolThree(Game* game);
 	void BindKey(UINT key, Action action);
 	void HandleKeyDown(UINT key, Game* game);
 	void HandleKeyUp(UINT key, Game* game);
@@ -27,7 +30,13 @@ public:
 	void HandleRawInput(long x, long y, Game* game);
 	void UseTool(Game* game);
 	void UseToolAlt(Game* game);
+	void ChangeCameraSpeed(float speed);
 	
+
+	//Change these later.  There needs to be a new map for handling key press and release separately.
+	void ShiftDown(Game* game);
+	void ShiftUp(Game* game);
+
 	//Helper to improve readability of source binds while moving callable methods to the class
 	template<typename T>
 	Action BindHelper(T methodName) {
@@ -43,8 +52,8 @@ private:
 	void MoveLeft(Game* game);		//a
 	void RollCounterClockwise(Game* game);
 	void RollClockwise(Game* game);
-	float cameraSpeed;
-	float rollSpeed;
+	float m_cameraSpeed;
+	float m_rollSpeed;
 	std::unordered_set<UINT> m_pressedKeys;
 	float m_changePower;
 	GameTool m_gameTool;

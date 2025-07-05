@@ -24,7 +24,8 @@ Game::Game() noexcept :
 		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} }),
 	updatePlanetGeometryFlag(0),
 	m_planetVertexCount(0),
-	m_planetIndexCount(0)
+	m_planetIndexCount(0),
+	m_currentTool(1)
 {
 	m_planet1 = std::make_unique<Planet>(10.0f);
 	camera = std::make_unique<Camera>();
@@ -54,6 +55,8 @@ void Game::Update() {
 	//Instancing for terrain modification cursor (isosphere)
 	XMMATRIX defaultInstanceMatrix = XMMatrixIdentity();
 	XMMATRIX camRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
+		camera->GetForwardRay(10.0f));
+	XMMATRIX cubeRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
 		camera->GetForwardRay(10.0f));
 	std::vector<DirectX::XMMATRIX> instanceMatrices;
 	instanceMatrices.push_back(defaultInstanceMatrix);
@@ -95,22 +98,32 @@ void Game::Update() {
 
 void Game::Render() {
 	Clear();
-	
-	//Render code
-	//m_deviceContext->DrawInstanced(m_graphicsObj->GetVertexCount(), m_worldObjects.size(), 0, 0);
 
-	
+	//Render code
+
 	UINT currentIndex = 0;
 	UINT currentVertex = 0;
 	m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, 1, 0, 0, 0);
 	currentIndex += m_planetIndexCount;
 	currentVertex += m_planetVertexCount;
-	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, 1, currentIndex, currentVertex, 1);
-	
-	currentIndex += m_cubeIndexCount;
-	currentVertex += m_cubeVertexCount;
-	m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, 1, currentIndex, currentVertex, 1);
-	
+	//choose which tool to show
+	switch (m_currentTool) {
+	case 1: {
+		currentIndex += m_cubeIndexCount;
+		currentVertex += m_cubeVertexCount;
+		m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, 1, currentIndex, currentVertex, 1);
+		break;
+	}
+	case 2: {
+		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, 1, currentIndex, currentVertex, 1);
+
+		break;
+	}
+	case 3: {
+		break;
+	}
+	}
+
 	Present();
 }
 
@@ -424,7 +437,7 @@ void Game::InitializeShaders() {
 	
 	//Store matrices into members
 	XMStoreFloat4x4(&float4x4Data.worldMatrix, XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 3.0f), XMMatrixIdentity()));
-	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 100.0f));
+	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 1000.0f));
 	OutputDebugString(L"Matrices successfuly stored into float4x4.\n");
 	
 	msg = L"Vertex count per instance: ";
@@ -437,17 +450,22 @@ void Game::InitializeShaders() {
 }
 
 void Game::UpdateGraphicsBuffers() {
-	std::wstring msg;
-	OutputDebugString(L"Updating render of planet.\n");
+	//std::wstring msg;
+	//OutputDebugString(L"Updating render of planet.\n");
 	std::vector<UINT> planetIndexArray = m_planet1->GetIndexArray();
-	msg = L"Size of planet index array: " + std::to_wstring(planetIndexArray.size()); msg += L"\n";
-	msg = L"Size of planet vertex array: " + std::to_wstring(m_planet1->GetVertexCount()); msg += L"\n";
+	//msg = L"Size of planet index array: " + std::to_wstring(planetIndexArray.size()); msg += L"\n";
+	//msg = L"Size of planet vertex array: " + std::to_wstring(m_planet1->GetVertexCount()); msg += L"\n";
 	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry(), planetIndexArray);
-	msg += L"Size of cube index array: " + std::to_wstring(m_cubeIndices.size()); msg += L"\n";
+	//msg += L"Size of cube index array: " + std::to_wstring(m_cubeIndices.size()); msg += L"\n";
 	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
-	msg += L"Size of isoSphere index array: " + std::to_wstring(m_isoSphereIndices.size()); msg += L"\n";
-	OutputDebugString(msg.c_str());
+	//msg += L"Size of isoSphere index array: " + std::to_wstring(m_isoSphereIndices.size()); msg += L"\n";
+	//OutputDebugString(msg.c_str());
 	m_graphicsObj->AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
 	m_graphicsObj->SendToPipeline(m_device.Get());
 	m_graphicsObj->Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
+}
+
+//1 to 3, indicates current tool for rendering purposes
+void Game::SetCurrentTool(int tool) {
+	m_currentTool = tool;
 }

@@ -40,6 +40,8 @@ public:
 	std::unique_ptr<Planet> m_planet1;
 	bool updatePlanetGeometryFlag;
 
+	void SetCurrentTool(int tool);
+
 private:
 	//Rendering and views methods
 	void Update();
@@ -99,4 +101,5 @@ private:
 	int m_isoSphereVertexCount = CustomGeometry::IsoSphereVertexCount;
 	std::vector<CustomGeometry::Vertex> m_isoSphereVertices = CustomGeometry::IsoSphereArray;
 	std::vector<UINT> m_isoSphereIndices = CustomGeometry::IsoSphereIndexArray;
+	int m_currentTool;
 };

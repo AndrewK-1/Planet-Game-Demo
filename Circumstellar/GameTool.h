@@ -8,6 +8,8 @@ public:
 	GameTool();
 	GameTool(float terrainChangeRadius);
 	bool ChangeTerrain(Planet* planet, Camera* currentCam, float changePower);
+	int GetCurrentTool();
+	void SetCurrentTool(int tool);
 private:
 	float m_terrainChangeRadius;
 	enum Toolsets {
@@ -15,4 +17,5 @@ private:
 		block=1,
 		ship=2
 	};
+	int m_currentTool = 0;
 };

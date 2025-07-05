@@ -12,9 +12,9 @@ GraphicsObject::GraphicsObject() :
 
 bool GraphicsObject::SendToPipeline(ID3D11Device* device) {
 	m_vCount = static_cast<UINT>(m_vertices.size());
-	OutputDebugString(L"Vertex count: ");
-	OutputDebugString(std::to_wstring(m_vertices.size()).c_str());
-	OutputDebugString(L"\n");
+	//OutputDebugString(L"Vertex count: ");
+	//OutputDebugString(std::to_wstring(m_vertices.size()).c_str());
+	//OutputDebugString(L"\n");
 	D3D11_BUFFER_DESC vertBufferDesc = {};
 	vertBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertBufferDesc.ByteWidth = sizeof(CustomGeometry::Vertex) * m_vertices.size();	//Size of array passed to the GPU
@@ -28,7 +28,7 @@ bool GraphicsObject::SendToPipeline(ID3D11Device* device) {
 	subData.SysMemSlicePitch = 0;
 
 	DX::ThrowIfFailed(device->CreateBuffer(&vertBufferDesc, &subData, m_vBuffer.GetAddressOf()));
-	OutputDebugString(L"Sent To Pipeline\n");
+	//OutputDebugString(L"Sent To Pipeline\n");
 	
 
 	//Index Buffer Description
@@ -57,7 +57,7 @@ void GraphicsObject::Bind(ID3D11DeviceContext* context){
 
 	context->IASetVertexBuffers(0, 1, m_vBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetIndexBuffer(m_iBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	OutputDebugString(L"Object Bound \n");
+	//OutputDebugString(L"Object Bound \n");
 }
 
 void GraphicsObject::Bind(ID3D11DeviceContext* context, ID3D11Buffer* instancing) {
@@ -66,7 +66,7 @@ void GraphicsObject::Bind(ID3D11DeviceContext* context, ID3D11Buffer* instancing
 	Microsoft::WRL::ComPtr<ID3D11Buffer> buffers[] = { m_vBuffer.Get(), instancing};
 	context->IASetVertexBuffers(0, 2, buffers->GetAddressOf(), stride, offset);
 	context->IASetIndexBuffer(m_iBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	OutputDebugString(L"Instancing Objects Bound \n");
+	//OutputDebugString(L"Instancing Objects Bound \n");
 }
 
 UINT GraphicsObject::GetVertexCount() {

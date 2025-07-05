@@ -11,7 +11,7 @@
 
 //bindingMap is a map containing a UINT key corresponding to a windows message, and an Action which is std::function<void()>
 
-InputController::InputController() : cameraSpeed(0.1f), rollSpeed(0.05f), m_changePower(0.1f) {
+InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_changePower(0.1f) {
 	//Note: VK_ is a prefix for some key codes.  All letters and numbers can be listed as '1' or 'A' instead of hexadecimal
 	BindKey(0x20, BindHelper(&InputController::MoveUp)); //VK_SPACE
 	BindKey(0x43, BindHelper(&InputController::MoveDown));	//C key
@@ -21,16 +21,14 @@ InputController::InputController() : cameraSpeed(0.1f), rollSpeed(0.05f), m_chan
 	BindKey(0x41, BindHelper(&InputController::MoveLeft));	//A key
 	BindKey(0x0001, BindHelper(&InputController::UseTool)); //Left Mouse Button 0x0001
 	BindKey(0x0002, BindHelper(&InputController::UseToolAlt)); //Right Mouse Button 0x010
+	BindKey('1', BindHelper(&InputController::ChangeToToolOne)); //One
+	BindKey('2', BindHelper(&InputController::ChangeToToolTwo)); //Two
+	BindKey('3', BindHelper(&InputController::ChangeToToolThree)); //Two
 	BindKey('Q', BindHelper(&InputController::RollCounterClockwise));
 	BindKey('E', BindHelper(&InputController::RollClockwise));
 }
 
-void InputController::UseTool(Game* game) {
-	OutputDebugString(L"UseTool activated.\n");
-	if (m_gameTool.ChangeTerrain(game->m_planet1.get(), game->camera.get(), m_changePower)) {
-		game->updatePlanetGeometryFlag = 1;
-	}
-}
+
 void InputController::UseToolAlt(Game* game) {
 	OutputDebugString(L"UseTool activated.\n");
 	if (m_gameTool.ChangeTerrain(game->m_planet1.get(), game->camera.get(), -m_changePower)) {
@@ -53,13 +51,32 @@ void InputController::PressedKeysExecute(Game* game) {
 
 void InputController::HandleKeyDown(UINT key, Game* game) {
 	//If bindingMap.find doesn't find the key, it will return bindingMap.end()
-	if (m_pressedKeys.find(key) == m_pressedKeys.end()) {
-		m_pressedKeys.insert(key);
+	OutputDebugString(L"Key Pressed: ");  OutputDebugString(std::to_wstring(key).c_str());  OutputDebugString(L"\n");
+	switch (key) {
+	case VK_SHIFT: {
+		ShiftDown(game);
+		break;
+	}
+	default: {
+		if (m_pressedKeys.find(key) == m_pressedKeys.end()) {
+			m_pressedKeys.insert(key);
+		}
+		break;
+	}
 	}
 }
 
 void InputController::HandleKeyUp(UINT key, Game* game) {
-	m_pressedKeys.erase(key);
+	switch (key) {
+	case VK_SHIFT: {
+		ShiftUp(game);
+		break;
+	}
+	default: {
+		m_pressedKeys.erase(key);
+		break;
+	}
+	}
 }
 
 void InputController::HandleRawInput(long x, long y, Game* game) {
@@ -76,27 +93,65 @@ void InputController::HandleRawInput(long x, long y, Game* game) {
 	}
 }
 
+void InputController::ChangeToToolOne(Game* game) {
+	m_gameTool.SetCurrentTool(1);
+	game->SetCurrentTool(1);
+}
+void InputController::ChangeToToolTwo(Game* game) {
+	m_gameTool.SetCurrentTool(2);
+	game->SetCurrentTool(2);
+}
+void InputController::ChangeToToolThree(Game* game) {
+	m_gameTool.SetCurrentTool(3);
+	game->SetCurrentTool(3);
+}
+
+void InputController::UseTool(Game* game) {
+	OutputDebugString(L"UseTool activated.\n");
+
+	switch (m_gameTool.GetCurrentTool()) {
+	case 1: {
+		if (m_gameTool.ChangeTerrain(game->m_planet1.get(), game->camera.get(), m_changePower)) {
+			game->updatePlanetGeometryFlag = 1;
+		}
+		break;
+	}
+	case 2: {
+		break;
+	}
+	case 3: {
+		break;
+	}
+	}
+}
+
 void InputController::RollClockwise(Game* game) {
-	game->camera->Roll(-rollSpeed);
+	game->camera->Roll(-m_rollSpeed);
 }
 void InputController::RollCounterClockwise(Game* game) {
-	game->camera->Roll(rollSpeed);
+	game->camera->Roll(m_rollSpeed);
 }
 void InputController::MoveUp(Game* game) {
-	game->camera->Up(cameraSpeed);
+	game->camera->Up(m_cameraSpeed);
 }
 void InputController::MoveDown(Game* game) {
-	game->camera->Down(cameraSpeed);
+	game->camera->Down(m_cameraSpeed);
 }
 void InputController::MoveForward(Game* game) {
-	game->camera->Forward(cameraSpeed);
+	game->camera->Forward(m_cameraSpeed);
 }
 void InputController::MoveBackward(Game* game) {
-	game->camera->Backward(cameraSpeed);
+	game->camera->Backward(m_cameraSpeed);
 }
 void InputController::MoveRight(Game* game) {
-	game->camera->Right(cameraSpeed);
+	game->camera->Right(m_cameraSpeed);
 }
 void InputController::MoveLeft(Game* game) {
-	game->camera->Left(cameraSpeed);
+	game->camera->Left(m_cameraSpeed);
+}
+void InputController::ShiftDown(Game* game) {
+	m_cameraSpeed = 0.3f;
+}
+void InputController::ShiftUp(Game* game) {
+	m_cameraSpeed = 0.1f;
 }
