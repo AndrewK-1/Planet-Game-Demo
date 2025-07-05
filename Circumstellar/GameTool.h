@@ -17,5 +17,5 @@ private:
 		block=1,
 		ship=2
 	};
-	int m_currentTool = 0;
+	int m_currentTool = 1;
 };

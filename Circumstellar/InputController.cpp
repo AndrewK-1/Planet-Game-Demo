@@ -29,13 +29,6 @@ InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_
 }
 
 
-void InputController::UseToolAlt(Game* game) {
-	OutputDebugString(L"UseTool activated.\n");
-	if (m_gameTool.ChangeTerrain(game->m_planet1.get(), game->camera.get(), -m_changePower)) {
-		game->updatePlanetGeometryFlag = 1;
-	}
-}
-
 void InputController::BindKey(UINT key, Action action) {
 	bindingMap[key] = action;
 }
@@ -112,6 +105,25 @@ void InputController::UseTool(Game* game) {
 	switch (m_gameTool.GetCurrentTool()) {
 	case 1: {
 		if (m_gameTool.ChangeTerrain(game->m_planet1.get(), game->camera.get(), m_changePower)) {
+			game->updatePlanetGeometryFlag = 1;
+		}
+		break;
+	}
+	case 2: {
+		break;
+	}
+	case 3: {
+		break;
+	}
+	}
+}
+
+void InputController::UseToolAlt(Game* game) {
+	OutputDebugString(L"UseTool activated.\n");
+	
+	switch (m_gameTool.GetCurrentTool()) {
+	case 1: {
+		if (m_gameTool.ChangeTerrain(game->m_planet1.get(), game->camera.get(), -m_changePower)) {
 			game->updatePlanetGeometryFlag = 1;
 		}
 		break;
