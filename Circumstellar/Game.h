@@ -6,6 +6,7 @@
 #include "GraphicsObject.h"
 #include "World.h"
 #include "Planet.h"
+#include "InputOutput.h"
 
 class Game {
 public:
@@ -38,10 +39,24 @@ public:
 	std::unique_ptr<Camera> camera;
 
 	std::unique_ptr<Planet> m_planet1;
+	
 	bool updatePlanetGeometryFlag;
 
 	void SetCurrentTool(int tool);
+	void SetWireframe(bool on);
 
+	void AddPlanet(DirectX::XMVECTOR position, float radius);
+	void RemovePlanet();
+	void AddBlock();
+	void RemoveBlock();
+	void AddShip();
+	void RemoveShip();
+
+	Planet* GetPlanet(int index);
+	World* GetWorld();
+
+	void LoadWorld();
+	void SaveWorld();
 private:
 	//Rendering and views methods
 	void Update();
@@ -89,6 +104,7 @@ private:
 	std::vector<WorldObject> m_worldObjects;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_instanceBuffer;
+	Microsoft::WRL::ComPtr<ID3D11GeometryShader>	m_createdGeometryShader;
 
 	void UpdateGraphicsBuffers();
 	int m_planetVertexCount;
@@ -102,4 +118,9 @@ private:
 	std::vector<CustomGeometry::Vertex> m_isoSphereVertices = CustomGeometry::IsoSphereArray;
 	std::vector<UINT> m_isoSphereIndices = CustomGeometry::IsoSphereIndexArray;
 	int m_currentTool;
+
+	//World holding all the objects currently present
+	std::unique_ptr<World> m_world1;
+
+	InputOutput m_IOHandler;
 };

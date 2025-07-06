@@ -20,6 +20,13 @@ public:
 	UINT GetClosestBlock(DirectX::XMFLOAT4 objPosition);
 	Planet* GetPlanet(UINT index);
 	Block* GetBlock(UINT index);
+	void AddPlanet(DirectX::XMVECTOR position, float radius);
+	void RemovePlanet(DirectX::XMVECTOR position);
+	void AddBlock(DirectX::XMVECTOR position, DirectX::XMVECTOR rotation);
+	void RemoveBlock(DirectX::XMVECTOR position);
+	int GetBlockCount();
+	int GetPlanetCount();
+	DirectX::XMMATRIX GetBlockMatrix(int index);
 private:
 	std::vector<Planet> m_planetArray;
 	std::vector<Block> m_blockArray;

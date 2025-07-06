@@ -164,6 +164,7 @@
     <ClCompile Include="GeometryStructures.h" />
     <ClCompile Include="GraphicsObject.cpp" />
     <ClCompile Include="InputController.cpp" />
+    <ClCompile Include="InputOutput.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
     <ClCompile Include="Game.h" />
     <ClCompile Include="pch.cpp">
@@ -181,6 +182,7 @@
     <ClInclude Include="ErrorHandling.h" />
     <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="InputController.h" />
+    <ClInclude Include="InputOutput.h" />
     <ClInclude Include="MessageHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />

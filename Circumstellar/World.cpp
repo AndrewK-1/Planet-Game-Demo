@@ -91,3 +91,38 @@ UINT World::GetClosestBlock(XMFLOAT4 objPosition) {
 	}
 	return lowestIndex;
 }
+
+void World::AddPlanet(XMVECTOR position, float radius) {
+	Planet newPlanet(radius, position, XMQuaternionIdentity(), XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f));
+	m_planetArray.push_back(newPlanet);
+}
+void World::RemovePlanet(XMVECTOR position) {
+	XMFLOAT4 positionFloat;
+	XMStoreFloat4(&positionFloat, position);
+	UINT closestPlanetIndex = GetClosestPlanet(positionFloat);
+	m_planetArray.erase(m_planetArray.begin() + closestPlanetIndex);
+}
+
+void World::AddBlock(XMVECTOR position, XMVECTOR rotation) {
+	Block newBlock(position, rotation, XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f));
+	m_blockArray.push_back(newBlock);
+}
+void World::RemoveBlock(XMVECTOR position) {
+	XMFLOAT4 positionFloat;
+	XMStoreFloat4(&positionFloat, position);
+	UINT closestBlockIndex = GetClosestBlock(positionFloat);
+	float distance = GetBlockDistance(closestBlockIndex, positionFloat);
+	if (distance < 3.0f) {
+		m_blockArray.erase(m_blockArray.begin() + closestBlockIndex);
+	}
+}
+
+int World::GetBlockCount() {
+	return m_blockArray.size();
+}
+int World::GetPlanetCount() {
+	return m_planetArray.size();
+}
+XMMATRIX World::GetBlockMatrix(int index) {
+	return m_blockArray[index].getObjectMatrix();
+}

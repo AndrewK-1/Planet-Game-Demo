@@ -11,7 +11,8 @@
 
 //bindingMap is a map containing a UINT key corresponding to a windows message, and an Action which is std::function<void()>
 
-InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_changePower(0.1f) {
+InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_changePower(0.1f), m_wireframeOn(1)
+{
 	//Note: VK_ is a prefix for some key codes.  All letters and numbers can be listed as '1' or 'A' instead of hexadecimal
 	BindKey(0x20, BindHelper(&InputController::MoveUp)); //VK_SPACE
 	BindKey(0x43, BindHelper(&InputController::MoveDown));	//C key
@@ -26,49 +27,55 @@ InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_
 	BindKey('3', BindHelper(&InputController::ChangeToToolThree)); //Two
 	BindKey('Q', BindHelper(&InputController::RollCounterClockwise));
 	BindKey('E', BindHelper(&InputController::RollClockwise));
+	BindKey(VK_OEM_PERIOD, BindHelper(&InputController::DebugWireframe));
+	BindKey(VK_SHIFT, BindHelper(&InputController::Sprint));
 }
 
 
 void InputController::BindKey(UINT key, Action action) {
-	bindingMap[key] = action;
+	bindingMap[key] = action, key;
+}
+
+void InputController::RemoveAllPressedKeys() {
+	m_pressedKeys.clear();
 }
 
 void InputController::PressedKeysExecute(Game* game) {
 	for (UINT key : m_pressedKeys) {
 		//If bindingMap.find doesn't find the key, it will return bindingMap.end()
 		if (bindingMap.find(key) != bindingMap.end()) {
-			bindingMap[key](game); //Call the method whose name is listed in the map at this key
+			//Call the method whose name is listed in the map at this key. Return 1 if the method should only trigger on click.  Return 0 for holding the button.
+			if (bindingMap[key](game) == 1) {
+				m_pressedKeys.erase(key);
+			}
 		}
 	}
 }
 
-void InputController::HandleKeyDown(UINT key, Game* game) {
+void InputController::HandleKeyDown(UINT key, long long lParam, Game* game) {
 	//If bindingMap.find doesn't find the key, it will return bindingMap.end()
+	std::wstring msg;
+
+	//Key flag becomes last 16 bits of lParam.  Useful since KF_REPEAT is 16-bit.
+	int keyFlag = HIWORD(lParam);
 	OutputDebugString(L"Key Pressed: ");  OutputDebugString(std::to_wstring(key).c_str());  OutputDebugString(L"\n");
-	switch (key) {
-	case VK_SHIFT: {
-		ShiftDown(game);
-		break;
-	}
-	default: {
+	msg = L"Was Key already pressed? "; msg += std::to_wstring((keyFlag & KF_REPEAT) == KF_REPEAT); msg += L"\n"; OutputDebugString(msg.c_str());
+	msg = L"lParam value: " + std::to_wstring(lParam); msg += L"\n"; OutputDebugString(msg.c_str());
+	
+	//If key was already pressed.  Prevent the array from being filled again until the button is released.
+	//In subsequent action methods, return 1 if the action should only be executed on the first press, not while held down.
+	//Otherwise, keys will remain in the key map and will continue to execute until the button is lifted up.
+	if ((keyFlag & KF_REPEAT) != KF_REPEAT) { //KF_REPEAT is used for bit masking
 		if (m_pressedKeys.find(key) == m_pressedKeys.end()) {
 			m_pressedKeys.insert(key);
 		}
-		break;
-	}
 	}
 }
 
 void InputController::HandleKeyUp(UINT key, Game* game) {
-	switch (key) {
-	case VK_SHIFT: {
-		ShiftUp(game);
-		break;
-	}
-	default: {
-		m_pressedKeys.erase(key);
-		break;
-	}
+	m_pressedKeys.erase(key);
+	if (key == VK_SHIFT) {
+		StopSprinting(game);
 	}
 }
 
@@ -86,84 +93,103 @@ void InputController::HandleRawInput(long x, long y, Game* game) {
 	}
 }
 
-void InputController::ChangeToToolOne(Game* game) {
+bool InputController::ChangeToToolOne(Game* game) {
 	m_gameTool.SetCurrentTool(1);
 	game->SetCurrentTool(1);
+	return 1;
 }
-void InputController::ChangeToToolTwo(Game* game) {
+bool InputController::ChangeToToolTwo(Game* game) {
 	m_gameTool.SetCurrentTool(2);
 	game->SetCurrentTool(2);
+	return 1;
 }
-void InputController::ChangeToToolThree(Game* game) {
+bool InputController::ChangeToToolThree(Game* game) {
 	m_gameTool.SetCurrentTool(3);
 	game->SetCurrentTool(3);
+	return 1;
 }
 
-void InputController::UseTool(Game* game) {
+bool InputController::UseTool(Game* game) {
 	OutputDebugString(L"UseTool activated.\n");
 
 	switch (m_gameTool.GetCurrentTool()) {
 	case 1: {
-		if (m_gameTool.ChangeTerrain(game->m_planet1.get(), game->camera.get(), m_changePower)) {
+
+		if (m_gameTool.ChangeTerrain(game->GetWorld()->GetPlanet(0), game->camera.get(), m_changePower)) {
 			game->updatePlanetGeometryFlag = 1;
 		}
-		break;
+		return 0;
 	}
 	case 2: {
-		break;
+		game->AddBlock();
+		return 1;
 	}
 	case 3: {
-		break;
+		return 1;
 	}
 	}
 }
 
-void InputController::UseToolAlt(Game* game) {
+bool InputController::UseToolAlt(Game* game) {
 	OutputDebugString(L"UseTool activated.\n");
 	
 	switch (m_gameTool.GetCurrentTool()) {
 	case 1: {
-		if (m_gameTool.ChangeTerrain(game->m_planet1.get(), game->camera.get(), -m_changePower)) {
+		if (m_gameTool.ChangeTerrain(game->GetWorld()->GetPlanet(0), game->camera.get(), -m_changePower)) {
 			game->updatePlanetGeometryFlag = 1;
 		}
-		break;
+		return 0;
 	}
 	case 2: {
-		break;
+		game->RemoveBlock();
+		return 1;
 	}
 	case 3: {
-		break;
+		return 1;
 	}
 	}
 }
 
-void InputController::RollClockwise(Game* game) {
-	game->camera->Roll(-m_rollSpeed);
+bool InputController::RollClockwise(Game* game) {
+	game->camera->Roll(-m_rollSpeed); return 0;
 }
-void InputController::RollCounterClockwise(Game* game) {
-	game->camera->Roll(m_rollSpeed);
+bool InputController::RollCounterClockwise(Game* game) {
+	game->camera->Roll(m_rollSpeed); return 0;
 }
-void InputController::MoveUp(Game* game) {
-	game->camera->Up(m_cameraSpeed);
+bool InputController::MoveUp(Game* game) {
+	game->camera->Up(m_cameraSpeed); return 0;
 }
-void InputController::MoveDown(Game* game) {
-	game->camera->Down(m_cameraSpeed);
+bool InputController::MoveDown(Game* game) {
+	game->camera->Down(m_cameraSpeed); return 0;
 }
-void InputController::MoveForward(Game* game) {
-	game->camera->Forward(m_cameraSpeed);
+bool InputController::MoveForward(Game* game) {
+	game->camera->Forward(m_cameraSpeed); return 0;
 }
-void InputController::MoveBackward(Game* game) {
-	game->camera->Backward(m_cameraSpeed);
+bool InputController::MoveBackward(Game* game) {
+	game->camera->Backward(m_cameraSpeed); return 0;
 }
-void InputController::MoveRight(Game* game) {
-	game->camera->Right(m_cameraSpeed);
+bool InputController::MoveRight(Game* game) {
+	game->camera->Right(m_cameraSpeed); return 0;
 }
-void InputController::MoveLeft(Game* game) {
-	game->camera->Left(m_cameraSpeed);
+bool InputController::MoveLeft(Game* game) {
+	game->camera->Left(m_cameraSpeed); return 0;
 }
-void InputController::ShiftDown(Game* game) {
-	m_cameraSpeed = 0.3f;
+bool InputController::Sprint(Game* game) {
+	m_cameraSpeed = 0.3f; return 1;
 }
-void InputController::ShiftUp(Game* game) {
-	m_cameraSpeed = 0.1f;
+bool InputController::StopSprinting(Game* game) {
+	m_cameraSpeed = 0.1f; return 1;
+}
+
+bool InputController::DebugWireframe(Game* game) {
+	if (m_wireframeOn == 0) {
+		m_wireframeOn = 1;
+		game->SetWireframe(1);
+
+	}
+	else {
+		m_wireframeOn = 0;
+		game->SetWireframe(0);
+	}
+	return 1;
 }

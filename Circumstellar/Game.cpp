@@ -9,6 +9,8 @@
 #include "Camera.h"
 #include "GraphicsObject.h"
 #include "WorldObject.h"
+#include "Block.h"
+#include "Planet.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -27,17 +29,23 @@ Game::Game() noexcept :
 	m_planetIndexCount(0),
 	m_currentTool(1)
 {
-	m_planet1 = std::make_unique<Planet>(10.0f);
+	m_world1 = std::make_unique<World>();
 	camera = std::make_unique<Camera>();
 	m_graphicsObj = std::make_unique<GraphicsObject>();
 }
 
 void Game::Initialize(HWND windowHandle) {
-
 	m_windowHandle = windowHandle;
 	CreateDevice();
 	CreateResources();
+
+	LoadWorld();
+	if (m_IOHandler.DoesPlanetExist() == 0) {
+		m_world1->AddPlanet(XMQuaternionIdentity(), 10.0f);
+	}
+
 	InitializeShaders();
+	
 }
 
 void Game::Tick() {
@@ -56,11 +64,19 @@ void Game::Update() {
 	XMMATRIX defaultInstanceMatrix = XMMatrixIdentity();
 	XMMATRIX camRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
 		camera->GetForwardRay(10.0f));
-	XMMATRIX cubeRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
-		camera->GetForwardRay(10.0f));
+	std::vector<XMMATRIX> cubeWorldMatrix;
+	for (int i = 0; i < m_world1->GetBlockCount(); i++) {
+		cubeWorldMatrix.push_back(m_world1->GetBlockMatrix(i));
+	}
+
 	std::vector<DirectX::XMMATRIX> instanceMatrices;
 	instanceMatrices.push_back(defaultInstanceMatrix);
 	instanceMatrices.push_back(camRayMatrix);
+	//Maybe change this later.  Right now each cube matrix is being added as its own instance.
+	//This is probably correct, but I'll have to be careful about specifying the instance index when addding additional multi-instanced objects
+	for (int i = 0; i < cubeWorldMatrix.size(); i++) {
+		instanceMatrices.push_back(cubeWorldMatrix[i]);
+	}
 
 	int instanceCounter = instanceMatrices.size();
 	D3D11_BUFFER_DESC instanceDesc = {};
@@ -73,12 +89,9 @@ void Game::Update() {
 
 
 	//If the planet was flagged as updated, reestablish its new geometry in the GPU
-	if (updatePlanetGeometryFlag == true) {
-		
-		updatePlanetGeometryFlag = false;
-		m_planetVertexCount = m_planet1->GetVertexCount();
-		m_planetIndexCount = m_planetVertexCount;
-	}
+	m_planetVertexCount = GetPlanet(0)->GetVertexCount();
+	m_planetIndexCount = m_planetVertexCount;
+	
 
 	MatrixData matData;
 
@@ -101,21 +114,26 @@ void Game::Render() {
 
 	//Render code
 
-	UINT currentIndex = 0;
-	UINT currentVertex = 0;
+	//Index for where each index array and vertex array start to tell the gpu how to draw shapes.
+	UINT planetIndex = 0;
+	UINT planetVertex = 0;
+
+	UINT cubeIndex = m_planetIndexCount;
+	UINT cubeVertex = m_planetVertexCount;
+
+	UINT isoSphereIndex = cubeIndex + m_cubeIndexCount;
+	UINT isoSphereVertex = cubeVertex + m_cubeVertexCount;
+
+	//Show planet
 	m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, 1, 0, 0, 0);
-	currentIndex += m_planetIndexCount;
-	currentVertex += m_planetVertexCount;
-	//choose which tool to show
+	//Choose which tool to show
 	switch (m_currentTool) {
 	case 1: {
-		currentIndex += m_cubeIndexCount;
-		currentVertex += m_cubeVertexCount;
-		m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, 1, currentIndex, currentVertex, 1);
+		m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, 1, isoSphereIndex, isoSphereVertex, 1);
 		break;
 	}
 	case 2: {
-		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, 1, currentIndex, currentVertex, 1);
+		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, 1, cubeIndex, cubeVertex, 1);
 
 		break;
 	}
@@ -123,6 +141,8 @@ void Game::Render() {
 		break;
 	}
 	}
+	//Show cubes
+	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, m_world1->GetBlockCount(), cubeIndex, cubeVertex, 2);
 
 	Present();
 }
@@ -131,7 +151,7 @@ void Game::Render() {
 void Game::Clear() {
 
 	//Clear views
-	float backgroundColor[4] = { 0.1f, 0.1f, 0.3f, 1.0f };
+	float backgroundColor[4] = { 0.05f, 0.05f, 0.05f, 1.0f };
 	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), /*DirectX::Colors::CornflowerBlue */  backgroundColor);
 	//Below statement is for depth stencils
 	////m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -297,10 +317,17 @@ void Game::OnWindowSizeChanged(int width, int height) {
 //Suggested message handlers by DirectX template
 void Game::OnActivated() {
 	//When game becomes active window (Opportunity to ignore the first message received, likely due to clicking into the window)
+	//Lock cursor to screen
+	RECT cursorBox = { m_screenWidth / 2, m_screenHeight / 2, m_screenWidth / 2 + 1, m_screenHeight / 2 + 1 };
+	ClipCursor(&cursorBox);
+	ShowCursor(false);
 }
 
 void Game::OnDeactivated() {
 	//Game becomes background window (Opportunity to auto-pause the game if necessary)
+	//Release cursor from screen
+	ClipCursor(NULL);
+	ShowCursor(true);
 }
 
 void Game::OnSuspending() {
@@ -318,14 +345,14 @@ void Game::OnClosing() {
 void Game::InitializeShaders() {
 	std::wstring msg;
 	//Retrieve vertex and index arrays, and add them to vertex buffer with AddGeometry()
-	m_planet1->GenerateGeometry();
-	m_planetVertexCount = m_planet1->GetVertexCount();
+	GetPlanet(0)->GenerateGeometry();
+	m_planetVertexCount = GetPlanet(0)->GetVertexCount();
 	m_planetIndexCount = m_planetVertexCount;
-	std::vector<UINT> planetIndexArray = m_planet1->GetIndexArray();
+	std::vector<UINT> planetIndexArray = GetPlanet(0)->GetIndexArray();
 	msg = L"Size of planet index array: " + std::to_wstring(planetIndexArray.size()); msg += L"\n";
-	msg += L"Size of planet vertex array: " + std::to_wstring(m_planet1->GetVertexCount()); msg += L"\n";
+	msg += L"Size of planet vertex array: " + std::to_wstring(GetPlanet(0)->GetVertexCount()); msg += L"\n";
 	msg += L"Size of m_planetIndexCount: " + std::to_wstring(m_planetIndexCount); msg += L"\n";
-	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry(), planetIndexArray);
+	m_graphicsObj->SetGeometry(*GetPlanet(0)->GetGeometry(), planetIndexArray);
 	msg += L"Size of cube index array: " + std::to_wstring(m_cubeIndices.size()); msg += L"\n";
 	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
 	msg += L"Size of isoSphere index array: " + std::to_wstring(m_isoSphereIndices.size()); msg += L"\n";
@@ -386,13 +413,13 @@ void Game::InitializeShaders() {
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> createdVertexShader;
 	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, &createdVertexShader));
 
+
 	OutputDebugString(L"Compiling and creating geometry shader.\n");
 	//Geometry Shader
 	Microsoft::WRL::ComPtr<ID3DBlob> GshaderBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> GerrorBlob = nullptr;
 	DX::ThrowIfFailed(D3DCompileFromFile(L"GeometryShader1.hlsl", nullptr, nullptr, "main", "gs_5_0", 0, 0, &GshaderBlob, &GerrorBlob));
-	Microsoft::WRL::ComPtr<ID3D11GeometryShader> createdGeometryShader;
-	DX::ThrowIfFailed(m_device->CreateGeometryShader(GshaderBlob->GetBufferPointer(), GshaderBlob->GetBufferSize(), NULL, &createdGeometryShader));
+	DX::ThrowIfFailed(m_device->CreateGeometryShader(GshaderBlob->GetBufferPointer(), GshaderBlob->GetBufferSize(), NULL, &m_createdGeometryShader));
 
 	OutputDebugString(L"Compiling and creating pixel shader.\n");
 	//Pixel Shader
@@ -407,7 +434,7 @@ void Game::InitializeShaders() {
 	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), &m_inputLayout));
 	//Set shaders to use
 	m_deviceContext->VSSetShader(createdVertexShader.Get(), NULL, 0);
-	m_deviceContext->GSSetShader(createdGeometryShader.Get(), NULL, 0);
+	m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
 	m_deviceContext->PSSetShader(createdPixelShader.Get(), NULL, 0);
 	
 	OutputDebugString(L"Binding vertices to context\n");
@@ -451,15 +478,9 @@ void Game::InitializeShaders() {
 
 void Game::UpdateGraphicsBuffers() {
 	//std::wstring msg;
-	//OutputDebugString(L"Updating render of planet.\n");
-	std::vector<UINT> planetIndexArray = m_planet1->GetIndexArray();
-	//msg = L"Size of planet index array: " + std::to_wstring(planetIndexArray.size()); msg += L"\n";
-	//msg = L"Size of planet vertex array: " + std::to_wstring(m_planet1->GetVertexCount()); msg += L"\n";
-	m_graphicsObj->SetGeometry(*m_planet1->GetGeometry(), planetIndexArray);
-	//msg += L"Size of cube index array: " + std::to_wstring(m_cubeIndices.size()); msg += L"\n";
+	std::vector<UINT> planetIndexArray = GetPlanet(0)->GetIndexArray();
+	m_graphicsObj->SetGeometry(*GetPlanet(0)->GetGeometry(), planetIndexArray);
 	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
-	//msg += L"Size of isoSphere index array: " + std::to_wstring(m_isoSphereIndices.size()); msg += L"\n";
-	//OutputDebugString(msg.c_str());
 	m_graphicsObj->AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
 	m_graphicsObj->SendToPipeline(m_device.Get());
 	m_graphicsObj->Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
@@ -468,4 +489,39 @@ void Game::UpdateGraphicsBuffers() {
 //1 to 3, indicates current tool for rendering purposes
 void Game::SetCurrentTool(int tool) {
 	m_currentTool = tool;
+}
+
+void Game::SetWireframe(bool on) {
+	if (on) {
+		m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
+	}
+	else {
+		m_deviceContext->GSSetShader(NULL, NULL, 0);
+	}
+}
+
+void Game::AddPlanet(DirectX::XMVECTOR position, float radius) {
+	m_world1->AddPlanet(position, radius);
+}
+//void Game::RemovePlanet() {
+
+//}
+void Game::AddBlock() {
+	m_world1->AddBlock(camera->GetForwardRay(10.0f), camera->GetOrientationVector());
+}
+void Game::RemoveBlock() {
+	m_world1->RemoveBlock(camera->GetForwardRay(10.0f));
+}
+Planet* Game::GetPlanet(int index) {
+	return m_world1->GetPlanet(index);
+}
+World* Game::GetWorld() {
+	return m_world1.get();
+}
+
+void Game::LoadWorld() {
+	m_IOHandler.ImportWorldInfo(L"TestWorldInfo.cwd", m_world1.get());
+}
+void Game::SaveWorld() {
+	m_IOHandler.ExportWorldInfo(L"TestWorldInfo.cwd", m_world1.get());
 }

@@ -39,6 +39,14 @@ std::vector<UINT> Planet::GetIndexArray() {
 	return m_indexArray;
 }
 
+std::vector<std::vector<std::vector<float>>>& Planet::GetVoxelData() {
+	return m_voxelData;
+}
+
+float Planet::GetPlanetRadius() {
+	return m_radius;
+}
+
 //Setting voxel array size and inserting float elements
 void Planet::GenerateData() {
 	OutputDebugString(L"Generating data...");

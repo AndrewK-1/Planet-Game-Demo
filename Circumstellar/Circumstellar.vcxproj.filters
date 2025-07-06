@@ -46,6 +46,12 @@
     <Filter Include="Header Files\GameWorld">
       <UniqueIdentifier>{5128c5f9-fcb4-438c-9af2-a376815c5791}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\InputOutput">
+      <UniqueIdentifier>{a9f1eacb-df99-48b5-a14b-7670cef8fd9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\InputOutput">
+      <UniqueIdentifier>{9ba68f92-fb5a-4b01-a9b5-77344796d841}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h">
@@ -84,6 +90,9 @@
     </ClInclude>
     <ClInclude Include="Block.h">
       <Filter>Header Files\GameWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="InputOutput.h">
+      <Filter>Header Files\InputOutput</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +138,9 @@
     </ClCompile>
     <ClCompile Include="Block.cpp">
       <Filter>Source Files\Game World</Filter>
+    </ClCompile>
+    <ClCompile Include="InputOutput.cpp">
+      <Filter>Source Files\InputOutput</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

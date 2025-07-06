@@ -16,6 +16,8 @@ public:
 	int GetArrayRadius();
 	int GetVertexCount();
 	std::vector<UINT> GetIndexArray();
+	std::vector<std::vector<std::vector<float>>>& GetVoxelData();
+	float GetPlanetRadius();
 private:
 	std::vector<std::vector<std::vector<float>>> m_voxelData;
 	std::vector<CustomGeometry::Vertex> m_geometry;

@@ -52,7 +52,7 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 	}
 
 	case WM_LBUTTONDOWN: {
-		inputController->HandleKeyDown(static_cast<UINT>(0x0001), game);
+		inputController->HandleKeyDown(static_cast<UINT>(0x0001), static_cast<long long>(lParam), game);
 		return 0;
 	}
 	case WM_LBUTTONUP: {
@@ -60,7 +60,7 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 		return 0;
 	}
 	case WM_RBUTTONDOWN: {
-		inputController->HandleKeyDown(static_cast<UINT>(0x0002), game);
+		inputController->HandleKeyDown(static_cast<UINT>(0x0002), static_cast<long long>(lParam), game);
 		return 0;
 	}
 	case WM_RBUTTONUP: {
@@ -69,7 +69,7 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 	}
 
 	case WM_KEYDOWN: {
-		inputController->HandleKeyDown(static_cast<UINT>(wParam), game);
+		inputController->HandleKeyDown(static_cast<UINT>(wParam), static_cast<long long>(lParam), game);
 		return 0;
 	}
 	case WM_KEYUP: {
@@ -77,7 +77,21 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 		return 0;
 	}
 
+	case WM_ACTIVATE: {
+		if (wParam == 0) {
+			game->OnDeactivated();
+			inputController->RemoveAllPressedKeys();
+		}
+		else {
+			game->OnActivated();
+		}
+		break;
+	}
+
 	case WM_CLOSE: {
+		game->SaveWorld();
+		ClipCursor(NULL);
+		ShowCursor(true);
 		DestroyWindow(hwnd);
 		return 0;
 	}
