@@ -12,6 +12,7 @@ public:
 	void GenerateData();
 	void GenerateGeometry();
 	void EditData(int x, int y, int z, float value);
+	void SetData(int x, int y, int z, float value);
 	std::vector<CustomGeometry::Vertex>* GetGeometry();
 	int GetArrayRadius();
 	int GetVertexCount();

@@ -69,7 +69,7 @@ bool InputOutput::ImportWorldInfo(std::wstring worldName, World* world) {
 						if (voxelData > 1.0f || voxelData < -1.0f) {
 							OutputDebugString(L"Float is out of bounds.\n");
 						}
-						world->GetPlanet(world->GetPlanetCount() - 1)->EditData(x, y, z, voxelData);
+						world->GetPlanet(world->GetPlanetCount() - 1)->SetData(x, y, z, voxelData);
 					}
 				}
 			}

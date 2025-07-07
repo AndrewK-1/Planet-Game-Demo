@@ -80,6 +80,11 @@ void Planet::EditData(int x, int y, int z, float value) {
 	GenerateGeometry();
 }
 
+void Planet::SetData(int x, int y, int z, float value) {
+	m_voxelData[x][y][z] = std::clamp(value, -1.0f, 1.0f);
+	GenerateGeometry();
+}
+
 void Planet::GenerateGeometry() {
 	m_vertexCount = 0;
 	#if DEBUG
