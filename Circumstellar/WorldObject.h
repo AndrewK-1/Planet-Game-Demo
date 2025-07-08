@@ -8,6 +8,8 @@ public:
 	WorldObject(DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale, int objType);
 	DirectX::XMFLOAT4 GetObjectPos() const;
 	DirectX::XMFLOAT4 GetObjectRot() const;
+	void SetObjectPos(DirectX::XMFLOAT4 newRot);
+	void SetObjectRot(DirectX::XMFLOAT4 newRot);
 	DirectX::XMMATRIX GetObjectMatrix() const;
 	void rotateAboutWorldAxisX(float angle);
 	void rotateAboutWorldAxisY(float angle);

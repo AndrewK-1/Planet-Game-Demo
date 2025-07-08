@@ -30,6 +30,12 @@ DirectX::XMFLOAT4 WorldObject::GetObjectPos() const {
 DirectX::XMFLOAT4 WorldObject::GetObjectRot() const {
 	return m_objectRot;
 }
+void WorldObject::SetObjectPos(XMFLOAT4 newPos) {
+	m_objectPos = newPos;
+}
+void WorldObject::SetObjectRot(XMFLOAT4 newRot) {
+	m_objectRot = newRot;
+}
 DirectX::XMMATRIX WorldObject::GetObjectMatrix() const {
 	return XMMatrixAffineTransformation(XMLoadFloat4(&m_objectScale), XMVectorZero(), XMLoadFloat4(&m_objectRot), XMLoadFloat4(&m_objectPos));
 }

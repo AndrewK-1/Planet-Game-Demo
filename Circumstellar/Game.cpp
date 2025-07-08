@@ -62,6 +62,13 @@ void Game::Update() {
 
 	//Instancing for terrain modification cursor (isosphere)
 	XMMATRIX defaultInstanceMatrix = XMMatrixIdentity();
+	XMFLOAT4 playerPos, playerRot;
+	playerPos = m_world1->GetPlayer()->GetObjectPos();
+	playerRot = m_world1->GetPlayer()->GetObjectRot();
+	XMVECTOR playerPosVec, playerRotVec;
+	playerPosVec = XMLoadFloat4(&playerPos);
+	playerRotVec = XMLoadFloat4(&playerRot);
+	camera->SetPosition(playerPosVec, playerRotVec);
 	XMMATRIX camRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
 		camera->GetForwardRay(10.0f));
 	std::vector<XMMATRIX> cubeWorldMatrix;

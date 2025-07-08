@@ -167,3 +167,10 @@ void Camera::UpdateMatrix()
 	//Create matrix and store as a float4x4
 	XMStoreFloat4x4(&posMatrix, XMMatrixLookAtLH(positionVec, target, up));
 }
+
+void Camera::SetPosition(XMVECTOR newPosition, XMVECTOR newOrientation) 
+{
+	XMStoreFloat4(&position, newPosition);
+	XMStoreFloat4(&orientQuaternion, newOrientation);
+	UpdateMatrix();
+}

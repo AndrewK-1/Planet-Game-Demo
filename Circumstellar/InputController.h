@@ -72,4 +72,6 @@ private:
 	bool PlayerRight(Game* game);
 	bool PlayerForward(Game* game);
 	bool PlayerBackward(Game* game);
+	bool PlayerRollClockwise(Game* game);
+	bool PlayerRollCounterClockwise(Game* game);
 };

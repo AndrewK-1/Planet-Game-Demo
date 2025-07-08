@@ -30,12 +30,14 @@ InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_
 	BindKey(VK_OEM_PERIOD, BindHelper(&InputController::DebugWireframe));
 	BindKey(VK_SHIFT, BindHelper(&InputController::Sprint));
 
-	BindKey('I', BindHelper(&InputController::PlayerForward));
-	BindKey('K', BindHelper(&InputController::PlayerBackward));
-	BindKey('J', BindHelper(&InputController::PlayerLeft));
-	BindKey('L', BindHelper(&InputController::PlayerRight));
-	BindKey('Y', BindHelper(&InputController::PlayerUp));
-	BindKey('H', BindHelper(&InputController::PlayerDown));
+	BindKey('W', BindHelper(&InputController::PlayerForward));
+	BindKey('S', BindHelper(&InputController::PlayerBackward));
+	BindKey('A', BindHelper(&InputController::PlayerLeft));
+	BindKey('D', BindHelper(&InputController::PlayerRight));
+	BindKey(VK_SPACE, BindHelper(&InputController::PlayerUp));
+	BindKey('C', BindHelper(&InputController::PlayerDown));
+	BindKey('E', BindHelper(&InputController::PlayerRollClockwise));
+	BindKey('Q', BindHelper(&InputController::PlayerRollCounterClockwise));
 }
 
 
@@ -91,12 +93,15 @@ void InputController::HandleRawInput(long x, long y, Game* game) {
 	
 	if (x == 0) {
 		game->camera->Pitch(static_cast<float>(y) * speed);
+		game->GetWorld()->GetPlayer()->Pitch(static_cast<float>(y) * speed);
 	}
 	else if (y == 0) {
 		game->camera->Yaw(static_cast<float>(x) * speed);
+		game->GetWorld()->GetPlayer()->Yaw(static_cast<float>(x) * speed);
 	}
 	else {
 		game->camera->YawAndPitch(static_cast<float>(x) * speed, static_cast<float>(y) * speed);
+		game->GetWorld()->GetPlayer()->YawAndPitch(static_cast<float>(x) * speed, static_cast<float>(y) * speed);
 	}
 }
 
@@ -224,4 +229,10 @@ bool InputController::PlayerForward(Game* game) {
 bool InputController::PlayerBackward(Game* game) {
 	game->GetWorld()->GetPlayer()->AccelerateBackward();
 	return 0;
+}
+bool InputController::PlayerRollClockwise(Game* game) {
+	game->GetWorld()->GetPlayer()->Roll(-m_rollSpeed); return 0;
+}
+bool InputController::PlayerRollCounterClockwise(Game* game) {
+	game->GetWorld()->GetPlayer()->Roll(m_rollSpeed); return 0;
 }

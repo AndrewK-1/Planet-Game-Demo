@@ -21,6 +21,8 @@ public:
 	void Backward(float distance);
 	void UpdateMatrix();
 	DirectX::XMVECTOR GetForwardRay(float distance);
+
+	void SetPosition(DirectX::XMVECTOR newPosition, DirectX::XMVECTOR newOrientation);
 private:
 	DirectX::XMFLOAT4X4 posMatrix;	//Actual rotation matrix of the camera.  For now I will work on the z and 
 	DirectX::XMFLOAT4 orientQuaternion;

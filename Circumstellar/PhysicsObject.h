@@ -13,6 +13,11 @@ public:
 	void AccelerateRight();
 	void AccelerateLeft();
 	void ApplyPhysics();	//Apply acceleration to velocity, and velocity to position
+
+	void YawAndPitch(float aYaw, float aPitch);
+	void Yaw(float angle);
+	void Pitch(float angle);
+	void Roll(float angle);
 private:
 	DirectX::XMFLOAT4 m_velocity;
 	bool m_activePhysics;	//Whether the object needs to have its physics update called
