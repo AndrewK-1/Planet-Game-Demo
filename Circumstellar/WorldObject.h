@@ -6,9 +6,9 @@ public:
 	WorldObject();
 	WorldObject(DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale);
 	WorldObject(DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale, int objType);
-	DirectX::XMFLOAT4 getObjectPos() const;
-	DirectX::XMFLOAT4 getObjectRot() const;
-	DirectX::XMMATRIX getObjectMatrix() const;
+	DirectX::XMFLOAT4 GetObjectPos() const;
+	DirectX::XMFLOAT4 GetObjectRot() const;
+	DirectX::XMMATRIX GetObjectMatrix() const;
 	void rotateAboutWorldAxisX(float angle);
 	void rotateAboutWorldAxisY(float angle);
 	void rotateAboutWorldAxisZ(float angle);
@@ -26,8 +26,8 @@ public:
 	void moveAlongVector(DirectX::XMVECTOR translationDirection, float distance);
 	void moveUsingVector(DirectX::XMVECTOR translationVector);
 private:
-	DirectX::XMFLOAT4 objectPos;
-	DirectX::XMFLOAT4 objectRot;
-	DirectX::XMFLOAT4 objectScale;
+	DirectX::XMFLOAT4 m_objectPos;
+	DirectX::XMFLOAT4 m_objectRot;
+	DirectX::XMFLOAT4 m_objectScale;
 	int m_objectType;
 };

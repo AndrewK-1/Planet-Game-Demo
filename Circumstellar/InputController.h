@@ -65,4 +65,11 @@ private:
 	bool ChangeToToolOne(Game* game);
 	bool ChangeToToolTwo(Game* game);
 	bool ChangeToToolThree(Game* game);
+
+	bool PlayerUp(Game* game);
+	bool PlayerDown(Game* game);
+	bool PlayerLeft(Game* game);
+	bool PlayerRight(Game* game);
+	bool PlayerForward(Game* game);
+	bool PlayerBackward(Game* game);
 };

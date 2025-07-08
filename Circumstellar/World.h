@@ -3,6 +3,7 @@
 #include "WorldObject.h"
 #include "Planet.h"
 #include "Block.h"
+#include "Player.h"
 
 class World {
 public:
@@ -20,6 +21,7 @@ public:
 	UINT GetClosestBlock(DirectX::XMFLOAT4 objPosition);
 	Planet* GetPlanet(UINT index);
 	Block* GetBlock(UINT index);
+	Player* GetPlayer();
 	void AddPlanet(DirectX::XMVECTOR position, float radius);
 	void RemovePlanet(DirectX::XMVECTOR position);
 	void AddBlock(DirectX::XMVECTOR position, DirectX::XMVECTOR rotation);
@@ -30,4 +32,5 @@ public:
 private:
 	std::vector<Planet> m_planetArray;
 	std::vector<Block> m_blockArray;
+	std::unique_ptr<Player> m_player;
 };

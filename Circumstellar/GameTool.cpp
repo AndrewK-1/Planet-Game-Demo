@@ -18,8 +18,8 @@ void GameTool::SetCurrentTool(int tool) {
 bool GameTool::ChangeTerrain(Planet* planet, Camera* currentCam, float changePower) {
 	std::wstring msg;
 
-	XMFLOAT4 tempLoadFloat = planet->getObjectRot();
-	XMVECTOR planetRot = XMLoadFloat4(&tempLoadFloat); tempLoadFloat = planet->getObjectPos();
+	XMFLOAT4 tempLoadFloat = planet->GetObjectRot();
+	XMVECTOR planetRot = XMLoadFloat4(&tempLoadFloat); tempLoadFloat = planet->GetObjectPos();
 	XMVECTOR planetPos = XMLoadFloat4(&tempLoadFloat); tempLoadFloat = currentCam->GetOrientation();
 
 	XMVECTOR invertedPlanetRot = XMQuaternionInverse(planetRot);

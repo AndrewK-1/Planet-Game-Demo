@@ -4,139 +4,139 @@
 
 using namespace DirectX;
 
-WorldObject::WorldObject() : objectScale(1.0f, 1.0f, 1.0f, 1.0f), objectPos(0.0f, 0.0f, 0.0f, 1.0f), objectRot(0.0f, 0.0f, 0.0f, 1.0f), m_objectType(0)
+WorldObject::WorldObject() : m_objectScale(1.0f, 1.0f, 1.0f, 1.0f), m_objectPos(0.0f, 0.0f, 0.0f, 1.0f), m_objectRot(0.0f, 0.0f, 0.0f, 1.0f), m_objectType(0)
 {
 
 }
 
 WorldObject::WorldObject(XMVECTOR position, XMVECTOR rotation, XMVECTOR scale) : m_objectType(0)
 {
-	XMStoreFloat4(&objectPos, position);
-	XMStoreFloat4(&objectRot, XMQuaternionRotationRollPitchYawFromVector(rotation));
-	XMStoreFloat4(&objectScale, scale);
+	XMStoreFloat4(&m_objectPos, position);
+	XMStoreFloat4(&m_objectRot, XMQuaternionRotationRollPitchYawFromVector(rotation));
+	XMStoreFloat4(&m_objectScale, scale);
 }
 
 WorldObject::WorldObject(XMVECTOR position, XMVECTOR rotation, XMVECTOR scale, int objType)
 {
-	XMStoreFloat4(&objectPos, position);
-	XMStoreFloat4(&objectRot, XMQuaternionRotationRollPitchYawFromVector(rotation));
-	XMStoreFloat4(&objectScale, scale);
+	XMStoreFloat4(&m_objectPos, position);
+	XMStoreFloat4(&m_objectRot, XMQuaternionRotationRollPitchYawFromVector(rotation));
+	XMStoreFloat4(&m_objectScale, scale);
 	m_objectType = objType;
 }
 
-DirectX::XMFLOAT4 WorldObject::getObjectPos() const {
-	return objectPos;
+DirectX::XMFLOAT4 WorldObject::GetObjectPos() const {
+	return m_objectPos;
 }
-DirectX::XMFLOAT4 WorldObject::getObjectRot() const {
-	return objectRot;
+DirectX::XMFLOAT4 WorldObject::GetObjectRot() const {
+	return m_objectRot;
 }
-DirectX::XMMATRIX WorldObject::getObjectMatrix() const {
-	return XMMatrixAffineTransformation(XMLoadFloat4(&objectScale), XMVectorZero(), XMLoadFloat4(&objectRot), XMLoadFloat4(&objectPos));
+DirectX::XMMATRIX WorldObject::GetObjectMatrix() const {
+	return XMMatrixAffineTransformation(XMLoadFloat4(&m_objectScale), XMVectorZero(), XMLoadFloat4(&m_objectRot), XMLoadFloat4(&m_objectPos));
 }
 //Rotate object about the current world origin
 void WorldObject::rotateAboutWorldAxisX(float angle) {
 	XMMATRIX matrix;
-	matrix = XMMatrixMultiply(XMMatrixRotationX(angle), getObjectMatrix());
+	matrix = XMMatrixMultiply(XMMatrixRotationX(angle), GetObjectMatrix());
 	XMVECTOR tScale, tPos, tRot;
 	XMMatrixDecompose(&tScale, &tPos, &tRot, matrix);
-	XMStoreFloat4(&objectScale, tScale);
-	XMStoreFloat4(&objectPos, tPos);
-	XMStoreFloat4(&objectRot, tRot);
+	XMStoreFloat4(&m_objectScale, tScale);
+	XMStoreFloat4(&m_objectPos, tPos);
+	XMStoreFloat4(&m_objectRot, tRot);
 }
 void WorldObject::rotateAboutWorldAxisY(float angle) {
 	XMMATRIX matrix;
-	matrix = XMMatrixMultiply(XMMatrixRotationY(angle), getObjectMatrix());
+	matrix = XMMatrixMultiply(XMMatrixRotationY(angle), GetObjectMatrix());
 	XMVECTOR tScale, tPos, tRot;
 	XMMatrixDecompose(&tScale, &tPos, &tRot, matrix);
-	XMStoreFloat4(&objectScale, tScale);
-	XMStoreFloat4(&objectPos, tPos);
-	XMStoreFloat4(&objectRot, tRot);
+	XMStoreFloat4(&m_objectScale, tScale);
+	XMStoreFloat4(&m_objectPos, tPos);
+	XMStoreFloat4(&m_objectRot, tRot);
 }
 void WorldObject::rotateAboutWorldAxisZ(float angle) {
 	XMMATRIX matrix;
-	matrix = XMMatrixMultiply(XMMatrixRotationZ(angle), getObjectMatrix());
+	matrix = XMMatrixMultiply(XMMatrixRotationZ(angle), GetObjectMatrix());
 	XMVECTOR tScale, tPos, tRot;
 	XMMatrixDecompose(&tScale, &tPos, &tRot, matrix);
-	XMStoreFloat4(&objectScale, tScale);
-	XMStoreFloat4(&objectPos, tPos);
-	XMStoreFloat4(&objectRot, tRot);
+	XMStoreFloat4(&m_objectScale, tScale);
+	XMStoreFloat4(&m_objectPos, tPos);
+	XMStoreFloat4(&m_objectRot, tRot);
 }
 void WorldObject::rotateAboutWorldVector(DirectX::XMVECTOR rotationVector, float angle) {
 	XMMATRIX matrix, rotation;
-	matrix = getObjectMatrix();
+	matrix = GetObjectMatrix();
 	rotation = XMMatrixRotationAxis(rotationVector, angle);
 	matrix = XMMatrixMultiply(rotation, matrix);
 	XMVECTOR tScale, tPos, tRot;
 	XMMatrixDecompose(&tScale, &tPos, &tRot, matrix);
-	XMStoreFloat4(&objectScale, tScale);
-	XMStoreFloat4(&objectPos, tPos);
-	XMStoreFloat4(&objectRot, tRot);
+	XMStoreFloat4(&m_objectScale, tScale);
+	XMStoreFloat4(&m_objectPos, tPos);
+	XMStoreFloat4(&m_objectRot, tRot);
 }
 //Rotate object about its local origin's axes
 void WorldObject::rotateAboutLocalAxisX(float angle) {
 	XMVECTOR localRotQuat;
-	localRotQuat = XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&objectRot), XMQuaternionRotationRollPitchYaw(0, angle, 0)));
-	XMStoreFloat4(&objectRot, localRotQuat);
+	localRotQuat = XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&m_objectRot), XMQuaternionRotationRollPitchYaw(0, angle, 0)));
+	XMStoreFloat4(&m_objectRot, localRotQuat);
 }
 void WorldObject::rotateAboutLocalAxisY(float angle) {
 	XMVECTOR localRotQuat;
-	localRotQuat = XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&objectRot), XMQuaternionRotationRollPitchYaw(angle, 0, 0)));
-	XMStoreFloat4(&objectRot, localRotQuat);
+	localRotQuat = XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&m_objectRot), XMQuaternionRotationRollPitchYaw(angle, 0, 0)));
+	XMStoreFloat4(&m_objectRot, localRotQuat);
 }
 void WorldObject::rotateAboutLocalAxisZ(float angle) {
 	XMVECTOR localRotQuat;
-	localRotQuat = XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&objectRot), XMQuaternionRotationRollPitchYaw(0, 0, angle)));
-	XMStoreFloat4(&objectRot, localRotQuat);
+	localRotQuat = XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&m_objectRot), XMQuaternionRotationRollPitchYaw(0, 0, angle)));
+	XMStoreFloat4(&m_objectRot, localRotQuat);
 }
 //Rotate object about its local origin using a vector as an axis
 void WorldObject::rotateAboutLocalVector(DirectX::XMVECTOR rotationVector, float angle) {
 	XMVECTOR localRotQuat;
-	localRotQuat = XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&objectRot), XMQuaternionRotationAxis(rotationVector, angle)));
-	XMStoreFloat4(&objectRot, localRotQuat);
+	localRotQuat = XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&m_objectRot), XMQuaternionRotationAxis(rotationVector, angle)));
+	XMStoreFloat4(&m_objectRot, localRotQuat);
 }
 //Rotate an object based on its local forward, up, and right axes
 void WorldObject::rotateYaw(float angle) {
 	XMVECTOR localRotQuat, rotation;
-	localRotQuat = XMLoadFloat4(&objectRot);
+	localRotQuat = XMLoadFloat4(&m_objectRot);
 	rotation = XMVector3Rotate(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), localRotQuat);
 	rotation = XMQuaternionRotationAxis(rotation, angle);
-	XMStoreFloat4(&objectRot, XMQuaternionNormalize(XMQuaternionMultiply(localRotQuat, rotation)));
+	XMStoreFloat4(&m_objectRot, XMQuaternionNormalize(XMQuaternionMultiply(localRotQuat, rotation)));
 
 }
 void WorldObject::rotatePitch(float angle) {
 	XMVECTOR localRotQuat, rotation;
-	localRotQuat = XMLoadFloat4(&objectRot);
+	localRotQuat = XMLoadFloat4(&m_objectRot);
 	rotation = XMVector3Rotate(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), localRotQuat);
 	rotation = XMQuaternionRotationAxis(rotation, angle);
-	XMStoreFloat4(&objectRot, XMQuaternionNormalize(XMQuaternionMultiply(localRotQuat, rotation)));
+	XMStoreFloat4(&m_objectRot, XMQuaternionNormalize(XMQuaternionMultiply(localRotQuat, rotation)));
 }
 void WorldObject::rotateRoll(float angle) {
 	XMVECTOR localRotQuat, rotation;
-	localRotQuat = XMLoadFloat4(&objectRot);
+	localRotQuat = XMLoadFloat4(&m_objectRot);
 	rotation = XMVector3Rotate(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), localRotQuat);
 	rotation = XMQuaternionRotationAxis(rotation, angle);
-	XMStoreFloat4(&objectRot, XMQuaternionNormalize(XMQuaternionMultiply(localRotQuat, rotation)));
+	XMStoreFloat4(&m_objectRot, XMQuaternionNormalize(XMQuaternionMultiply(localRotQuat, rotation)));
 }
 
 void WorldObject::moveAlongAxisX(float distance){
-	XMStoreFloat4(&objectPos, XMVectorAdd(XMLoadFloat4(&objectPos), XMVectorSet(distance, 0.0f, 0.0f, 0.0f)));
+	XMStoreFloat4(&m_objectPos, XMVectorAdd(XMLoadFloat4(&m_objectPos), XMVectorSet(distance, 0.0f, 0.0f, 0.0f)));
 }
 void WorldObject::moveAlongAxisY(float distance) {
-	XMStoreFloat4(&objectPos, XMVectorAdd(XMLoadFloat4(&objectPos), XMVectorSet(0.0f, distance, 0.0f, 0.0f)));
+	XMStoreFloat4(&m_objectPos, XMVectorAdd(XMLoadFloat4(&m_objectPos), XMVectorSet(0.0f, distance, 0.0f, 0.0f)));
 }
 void WorldObject::moveAlongAxisZ(float distance) {
-	XMStoreFloat4(&objectPos, XMVectorAdd(XMLoadFloat4(&objectPos), XMVectorSet(0.0f, 0.0f, distance, 0.0f)));
+	XMStoreFloat4(&m_objectPos, XMVectorAdd(XMLoadFloat4(&m_objectPos), XMVectorSet(0.0f, 0.0f, distance, 0.0f)));
 }
 //Move the object in the direction of the vector, with the specified distance
 void WorldObject::moveAlongVector(DirectX::XMVECTOR translationDirection, float distance) {
 	//Normalize the vector and scale it by distance desired.
 	//Add the object's current position to the scaled vector
 	//Store the result into the current position
-	XMStoreFloat4(&objectPos, XMVectorAdd(
-		XMLoadFloat4(&objectPos), XMVectorScale(
+	XMStoreFloat4(&m_objectPos, XMVectorAdd(
+		XMLoadFloat4(&m_objectPos), XMVectorScale(
 			XMQuaternionNormalize(translationDirection), distance)));
 }
 //Add the value of the vector to the current position
 void WorldObject::moveUsingVector(DirectX::XMVECTOR translationVector) {
-	XMStoreFloat4(&objectPos, XMVectorAdd(XMLoadFloat4(&objectPos), translationVector));
+	XMStoreFloat4(&m_objectPos, XMVectorAdd(XMLoadFloat4(&m_objectPos), translationVector));
 }

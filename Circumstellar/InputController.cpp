@@ -29,6 +29,13 @@ InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_
 	BindKey('E', BindHelper(&InputController::RollClockwise));
 	BindKey(VK_OEM_PERIOD, BindHelper(&InputController::DebugWireframe));
 	BindKey(VK_SHIFT, BindHelper(&InputController::Sprint));
+
+	BindKey('I', BindHelper(&InputController::PlayerForward));
+	BindKey('K', BindHelper(&InputController::PlayerBackward));
+	BindKey('J', BindHelper(&InputController::PlayerLeft));
+	BindKey('L', BindHelper(&InputController::PlayerRight));
+	BindKey('Y', BindHelper(&InputController::PlayerUp));
+	BindKey('H', BindHelper(&InputController::PlayerDown));
 }
 
 
@@ -192,4 +199,29 @@ bool InputController::DebugWireframe(Game* game) {
 		game->SetWireframe(0);
 	}
 	return 1;
+}
+
+bool InputController::PlayerUp(Game* game) {
+	game->GetWorld()->GetPlayer()->AccelerateUp();
+	return 0;
+}
+bool InputController::PlayerDown(Game* game) {
+	game->GetWorld()->GetPlayer()->AccelerateDown();
+	return 0;
+}
+bool InputController::PlayerLeft(Game* game) {
+	game->GetWorld()->GetPlayer()->AccelerateLeft();
+	return 0;
+}
+bool InputController::PlayerRight(Game* game) {
+	game->GetWorld()->GetPlayer()->AccelerateRight();
+	return 0;
+}
+bool InputController::PlayerForward(Game* game) {
+	game->GetWorld()->GetPlayer()->AccelerateForward();
+	return 0;
+}
+bool InputController::PlayerBackward(Game* game) {
+	game->GetWorld()->GetPlayer()->AccelerateBackward();
+	return 0;
 }

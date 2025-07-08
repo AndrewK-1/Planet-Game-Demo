@@ -94,11 +94,11 @@ bool InputOutput::ExportWorldInfo(std::wstring worldName, World* world) {
 	for (int i = 0; i < world->GetBlockCount(); i++) {
 		//Write block ID
 		outputStream.write(reinterpret_cast<char*>(&cubeID), sizeof(cubeID));
-		XMFLOAT4 blockPos = world->GetBlock(i)->getObjectPos();
+		XMFLOAT4 blockPos = world->GetBlock(i)->GetObjectPos();
 		outputStream.write(reinterpret_cast<char*>(&blockPos.x), sizeof(float));
 		outputStream.write(reinterpret_cast<char*>(&blockPos.y), sizeof(float));
 		outputStream.write(reinterpret_cast<char*>(&blockPos.z), sizeof(float));
-		XMFLOAT4 rotation = world->GetBlock(i)->getObjectRot();
+		XMFLOAT4 rotation = world->GetBlock(i)->GetObjectRot();
 		outputStream.write(reinterpret_cast<char*>(&rotation.x), sizeof(float));
 		outputStream.write(reinterpret_cast<char*>(&rotation.y), sizeof(float));
 		outputStream.write(reinterpret_cast<char*>(&rotation.z), sizeof(float));
@@ -110,7 +110,7 @@ bool InputOutput::ExportWorldInfo(std::wstring worldName, World* world) {
 	for (int i = 0; i < world->GetPlanetCount(); i++) {
 		//Write ID
 		outputStream.write(reinterpret_cast<char*>(&planetID), sizeof(planetID));
-		XMFLOAT4 planetPos = world->GetPlanet(i)->getObjectPos();
+		XMFLOAT4 planetPos = world->GetPlanet(i)->GetObjectPos();
 		//Write three position elements
 		outputStream.write(reinterpret_cast<char*>(&planetPos.x), sizeof(float));
 		outputStream.write(reinterpret_cast<char*>(&planetPos.y), sizeof(float));

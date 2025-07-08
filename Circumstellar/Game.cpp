@@ -72,6 +72,8 @@ void Game::Update() {
 	std::vector<DirectX::XMMATRIX> instanceMatrices;
 	instanceMatrices.push_back(defaultInstanceMatrix);
 	instanceMatrices.push_back(camRayMatrix);
+	m_world1->GetPlayer()->ApplyPhysics();
+	instanceMatrices.push_back(m_world1->GetPlayer()->GetObjectMatrix());
 	//Maybe change this later.  Right now each cube matrix is being added as its own instance.
 	//This is probably correct, but I'll have to be careful about specifying the instance index when addding additional multi-instanced objects
 	for (int i = 0; i < cubeWorldMatrix.size(); i++) {
@@ -88,11 +90,10 @@ void Game::Update() {
 	UpdateGraphicsBuffers();
 
 
-	//If the planet was flagged as updated, reestablish its new geometry in the GPU
+	//Reestablish its planet geometry in the GPU
 	m_planetVertexCount = GetPlanet(0)->GetVertexCount();
 	m_planetIndexCount = m_planetVertexCount;
 	
-
 	MatrixData matData;
 
 	//Load transform matrices
@@ -141,8 +142,10 @@ void Game::Render() {
 		break;
 	}
 	}
+	//Show Player
+	m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, 1, isoSphereIndex, isoSphereVertex, 2);
 	//Show cubes
-	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, m_world1->GetBlockCount(), cubeIndex, cubeVertex, 2);
+	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, m_world1->GetBlockCount(), cubeIndex, cubeVertex, 3);
 
 	Present();
 }
@@ -360,6 +363,7 @@ void Game::InitializeShaders() {
 	m_graphicsObj->SendToPipeline(m_device.Get());
 	OutputDebugString(msg.c_str());
 
+	
 	OutputDebugString(L"Beginning instancing information.\n");
 	//Instancing
 	int instanceCounter = 0;
@@ -375,7 +379,7 @@ void Game::InitializeShaders() {
 	//Instancing
 	std::vector<DirectX::XMMATRIX> instanceMatrices;
 	for (const auto& objIterator : m_worldObjects) {
-		instanceMatrices.push_back(objIterator.getObjectMatrix());
+		instanceMatrices.push_back(objIterator.GetObjectMatrix());
 		OutputDebugString(L"New instance Matrix\n");
 	}
 	//Instancing
@@ -388,6 +392,7 @@ void Game::InitializeShaders() {
 	m_device->CreateBuffer(&instanceDesc, &instanceData, &m_instanceBuffer);
 
 	OutputDebugString(L"Instancing properly instantiated.\n");
+	
 
 	OutputDebugString(L"Starting Input Element Desc.\n");
 	//Description of the vertex buffer to be submitted.  The semantic in argument 1 should match the .hlsl shader semantics it intends to use

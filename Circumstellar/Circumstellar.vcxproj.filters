@@ -52,6 +52,18 @@
     <Filter Include="Header Files\InputOutput">
       <UniqueIdentifier>{9ba68f92-fb5a-4b01-a9b5-77344796d841}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GameWorld\Templates">
+      <UniqueIdentifier>{a5ad7071-a2da-4628-8978-120ece8f1dd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GameWorld\Objects">
+      <UniqueIdentifier>{e819906c-60fc-49ed-8aa7-81d6514c2720}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game World\Objects">
+      <UniqueIdentifier>{49614457-5705-4e3a-a23e-47df6656ada8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game World\Templates">
+      <UniqueIdentifier>{0df54232-aaab-4a1c-88e0-1d054f6461f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h">
@@ -78,21 +90,27 @@
     <ClInclude Include="World.h">
       <Filter>Header Files\GameWorld</Filter>
     </ClInclude>
-    <ClInclude Include="WorldObject.h">
-      <Filter>Header Files\GameWorld</Filter>
-    </ClInclude>
     <ClInclude Include="GameTool.h">
       <Filter>Header Files\User Input</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Planet.h">
-      <Filter>Header Files\GameWorld</Filter>
-    </ClInclude>
-    <ClInclude Include="Block.h">
-      <Filter>Header Files\GameWorld</Filter>
-    </ClInclude>
     <ClInclude Include="InputOutput.h">
       <Filter>Header Files\InputOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldObject.h">
+      <Filter>Header Files\GameWorld\Templates</Filter>
+    </ClInclude>
+    <ClInclude Include="Mountable.h">
+      <Filter>Header Files\GameWorld\Templates</Filter>
+    </ClInclude>
+    <ClInclude Include="Block.h">
+      <Filter>Header Files\GameWorld\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Planet.h">
+      <Filter>Header Files\GameWorld\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsObject.h">
+      <Filter>Header Files\GameWorld\Templates</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -120,9 +138,6 @@
     <ClCompile Include="ErrorHandling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WorldObject.cpp">
-      <Filter>Source Files\Game World</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsObject.cpp">
       <Filter>Source Files\API Interaction\Rendering</Filter>
     </ClCompile>
@@ -133,14 +148,26 @@
       <Filter>Source Files\User Input</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Planet.cpp">
-      <Filter>Source Files\Game World</Filter>
-    </ClCompile>
-    <ClCompile Include="Block.cpp">
-      <Filter>Source Files\Game World</Filter>
-    </ClCompile>
     <ClCompile Include="InputOutput.cpp">
       <Filter>Source Files\InputOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.h">
+      <Filter>Header Files\GameWorld\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Block.cpp">
+      <Filter>Source Files\Game World\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Planet.cpp">
+      <Filter>Source Files\Game World\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldObject.cpp">
+      <Filter>Source Files\Game World\Templates</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsObject.cpp">
+      <Filter>Source Files\Game World\Templates</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files\Game World\Objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
