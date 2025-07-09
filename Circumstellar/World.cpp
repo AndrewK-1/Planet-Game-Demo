@@ -5,10 +5,10 @@
 
 using namespace DirectX;
 
-World::World() : m_planetArray(), m_blockArray() { m_player = std::make_unique<Player>(1.0f, 1.0f, 3.0f); }
-World::World(std::vector<Planet> planetArray) : m_planetArray(planetArray) { m_player = std::make_unique<Player>(1.0f, 1.0f, 3.0f); }
-World::World(std::vector<Block> blockArray) : m_blockArray(blockArray) { m_player = std::make_unique<Player>(1.0f, 1.0f, 3.0f); }
-World::World(std::vector<Planet> planetArray, std::vector<Block> blockArray) : m_planetArray(planetArray), m_blockArray(blockArray) { m_player = std::make_unique<Player>(1.0f, 1.0f, 3.0f); }
+World::World() : m_planetArray(), m_blockArray(), m_spaceshipArray() { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
+World::World(std::vector<Planet> planetArray) : m_planetArray(planetArray), m_spaceshipArray() { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
+World::World(std::vector<Block> blockArray) : m_blockArray(blockArray), m_spaceshipArray() { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
+World::World(std::vector<Planet> planetArray, std::vector<Block> blockArray) : m_planetArray(planetArray), m_blockArray(blockArray), m_spaceshipArray() { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
 
 void World::PushObject(Planet planet) {
 	m_planetArray.push_back(planet);
@@ -32,6 +32,9 @@ Block* World::GetBlock(UINT index) {
 Player* World::GetPlayer() {
 	return m_player.get();
 }
+Spaceship* World::GetSpaceship(UINT index) {
+	return &m_spaceshipArray[index];
+}
 
 float World::GetPlanetDistance(int index, XMFLOAT4 objPosition) {
 	XMFLOAT4 planetPos = m_planetArray[index].GetObjectPos();
@@ -46,6 +49,14 @@ float World::GetBlockDistance(int index, XMFLOAT4 objPosition){
 	objPosition.x -= blockPos.x;
 	objPosition.y -= blockPos.y;
 	objPosition.z -= blockPos.z;
+	return std::sqrt(std::pow(objPosition.x, 2.0f) + std::pow(objPosition.y, 2.0f) + std::pow(objPosition.z, 2.0f));
+}
+float World::GetSpaceshipDistance(int index, XMFLOAT4 objPosition) {
+	XMVECTOR objPos = XMLoadFloat4(&objPosition);
+	XMFLOAT4 spaceshipPos = m_spaceshipArray[index].GetObjectPos();
+	objPosition.x -= spaceshipPos.x;
+	objPosition.y -= spaceshipPos.y;
+	objPosition.z -= spaceshipPos.z;
 	return std::sqrt(std::pow(objPosition.x, 2.0f) + std::pow(objPosition.y, 2.0f) + std::pow(objPosition.z, 2.0f));
 }
 
@@ -94,6 +105,28 @@ UINT World::GetClosestBlock(XMFLOAT4 objPosition) {
 	}
 	return lowestIndex;
 }
+UINT World::GetClosestSpaceship(XMFLOAT4 objPosition) {
+	UINT lowestIndex = 0;
+	//Initialize lowestDistance with the first block's 'distance' without using expensive sqrt function.
+	XMFLOAT4 firstSpaceshipPos = m_spaceshipArray[0].GetObjectPos();
+	firstSpaceshipPos.x -= objPosition.x;
+	firstSpaceshipPos.y -= objPosition.y;
+	firstSpaceshipPos.z -= objPosition.z;
+	float lowestDistance = std::pow(firstSpaceshipPos.x, 2.0f) + std::pow(firstSpaceshipPos.y, 2.0f) + std::pow(firstSpaceshipPos.z, 2.0f);
+	float distanceCheck;
+	for (UINT i = 0; i < m_spaceshipArray.size(); i++) {
+		XMFLOAT4 spaceshipPos = m_spaceshipArray[i].GetObjectPos();
+		spaceshipPos.x -= objPosition.x;
+		spaceshipPos.y -= objPosition.y;
+		spaceshipPos.z -= objPosition.z;
+		distanceCheck = std::pow(spaceshipPos.x, 2.0f) + std::pow(spaceshipPos.y, 2.0f) + std::pow(spaceshipPos.z, 2.0f);
+		if (lowestDistance > distanceCheck) {
+			lowestDistance = distanceCheck;
+			lowestIndex = i;
+		}
+	}
+	return lowestIndex;
+}
 
 void World::AddPlanet(XMVECTOR position, float radius) {
 	Planet newPlanet(radius, position, XMQuaternionIdentity(), XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f));
@@ -120,12 +153,41 @@ void World::RemoveBlock(XMVECTOR position) {
 	}
 }
 
+void World::AddShip(DirectX::XMVECTOR position, DirectX::XMVECTOR rotation) {
+	Spaceship newSpaceship(10.0f, 3.0f, 5.0f, position, rotation, XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f));
+	m_spaceshipArray.push_back(newSpaceship);
+}
+void World::RemoveShip(DirectX::XMVECTOR position) {
+	XMFLOAT4 positionFloat;
+	XMStoreFloat4(&positionFloat, position);
+	UINT closestSpaceshipIndex = GetClosestSpaceship(positionFloat);
+	float distance = GetSpaceshipDistance(closestSpaceshipIndex, positionFloat);
+	if (distance < 3.0f) {
+		m_spaceshipArray.erase(m_spaceshipArray.begin() + closestSpaceshipIndex);
+	}
+}
+
+void World::BindPlayerPositionToNearestShip(Player* player) {
+	XMFLOAT4 positionFloat = player->GetObjectPos();
+	UINT closestSpaceshipIndex = GetClosestSpaceship(positionFloat);
+	float distance = GetSpaceshipDistance(closestSpaceshipIndex, positionFloat);
+	if (distance < 10.0f) {
+		player->MountShip(&m_spaceshipArray[closestSpaceshipIndex]);
+	}
+}
+
 int World::GetBlockCount() {
 	return m_blockArray.size();
 }
 int World::GetPlanetCount() {
 	return m_planetArray.size();
 }
+int World::GetSpaceshipCount() {
+	return m_spaceshipArray.size();
+}
 XMMATRIX World::GetBlockMatrix(int index) {
 	return m_blockArray[index].GetObjectMatrix();
+}
+XMMATRIX World::GetSpaceshipMatrix(int index) {
+	return m_spaceshipArray[index].GetObjectMatrix();
 }

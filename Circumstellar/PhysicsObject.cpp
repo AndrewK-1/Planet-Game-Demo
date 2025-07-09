@@ -4,7 +4,16 @@
 
 using namespace DirectX;
 
-PhysicsObject::PhysicsObject(float mass, float forcePower, float maxVelocity) : m_mass(mass), m_forcePower(forcePower), m_maxVelocity(maxVelocity), m_activePhysics(0) {}
+//Basic physics object constructor
+PhysicsObject::PhysicsObject(float mass, float forcePower, float maxVelocity) : m_mass(mass), m_forcePower(forcePower), m_maxVelocity(maxVelocity), m_activePhysics(0), 
+m_velocity(XMFLOAT4{0.0f, 0.0f, 0.0f, 1.0f}) {}
+
+//Constructor for physics object with starting position, rotation and scale values
+PhysicsObject::PhysicsObject(float mass, float forcePower, float maxVelocity, XMVECTOR position, XMVECTOR rotation, XMVECTOR scale) 
+	: m_mass(mass), m_forcePower(forcePower), m_maxVelocity(maxVelocity), m_activePhysics(0),
+	m_velocity(XMFLOAT4{ 0.0f, 0.0f, 0.0f, 1.0f }), WorldObject(position, rotation,  scale){
+}
+
 
 void PhysicsObject::AccelerateVector(DirectX::XMVECTOR accelerationVec) {
 	XMVECTOR momentum = XMLoadFloat4(&m_velocity);
@@ -12,6 +21,8 @@ void PhysicsObject::AccelerateVector(DirectX::XMVECTOR accelerationVec) {
 	XMVectorAdd(momentum, accelerationVec);
 	XMStoreFloat4(&m_velocity, momentum);
 }
+
+//Acceleration methods currently do not take into account the magnitude of other accelerations, meaning the object goes faster when moving along more than one axis at once.
 void PhysicsObject::AccelerateForward() {
 	XMFLOAT4 objectRot = GetObjectRot();
 	XMVECTOR forwardVec = XMVector3Rotate(XMVectorSet(0, 0, m_forcePower / 60.0f, 0), XMLoadFloat4(&objectRot));
@@ -47,12 +58,6 @@ void PhysicsObject::ApplyPhysics() {
 	moveUsingVector(velocityVec);
 	XMVECTOR newVelocity = XMVectorScale(velocityVec, 0.95f);
 	XMStoreFloat4(&m_velocity, newVelocity);
-	/*
-	XMVECTOR lengthVec = XMVector3Length(velocityVec);
-	XMFLOAT4 lengthFloat;
-	XMStoreFloat4(&lengthFloat, lengthVec);
-	XMVECTOR newVelocity = XMVectorScale(lengthVec, lengthFloat.x - (m_forcePower))
-	*/
 }
 
 
@@ -112,4 +117,8 @@ void PhysicsObject::Roll(float angle)
 	XMFLOAT4 returnRot;
 	XMStoreFloat4(&returnRot, XMQuaternionNormalize(XMQuaternionMultiply(orientQuatVec, rollQuat)));
 	SetObjectRot(returnRot);
+}
+
+void PhysicsObject::SetForcePower(float power) {
+	m_forcePower = power;
 }

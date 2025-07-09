@@ -38,6 +38,7 @@ InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_
 	BindKey('C', BindHelper(&InputController::PlayerDown));
 	BindKey('E', BindHelper(&InputController::PlayerRollClockwise));
 	BindKey('Q', BindHelper(&InputController::PlayerRollCounterClockwise));
+	BindKey(VK_RETURN, BindHelper(&InputController::PlayerMount));
 }
 
 
@@ -92,16 +93,40 @@ void InputController::HandleRawInput(long x, long y, Game* game) {
 	float speed = 0.001f;
 	
 	if (x == 0) {
-		game->camera->Pitch(static_cast<float>(y) * speed);
-		game->GetWorld()->GetPlayer()->Pitch(static_cast<float>(y) * speed);
+		//game->camera->Pitch(static_cast<float>(y) * speed);
+		//game->GetWorld()->GetPlayer()->Pitch(static_cast<float>(y) * speed);
+		Player* player = game->GetWorld()->GetPlayer();
+		Spaceship* ship = player->GetMounted();
+		if (player->IsMounted() == 0) {
+			player->Pitch(static_cast<float>(y) * speed);
+		}
+		else {
+			ship->Pitch(static_cast<float>(y) * speed);
+		}
 	}
 	else if (y == 0) {
-		game->camera->Yaw(static_cast<float>(x) * speed);
-		game->GetWorld()->GetPlayer()->Yaw(static_cast<float>(x) * speed);
+		//game->camera->Yaw(static_cast<float>(x) * speed);
+		//game->GetWorld()->GetPlayer()->Yaw(static_cast<float>(x) * speed);
+		Player* player = game->GetWorld()->GetPlayer();
+		Spaceship* ship = player->GetMounted();
+		if (player->IsMounted() == 0) {
+			player->Yaw(static_cast<float>(x) * speed);
+		}
+		else {
+			ship->Yaw(static_cast<float>(x) * speed);
+		}
 	}
 	else {
-		game->camera->YawAndPitch(static_cast<float>(x) * speed, static_cast<float>(y) * speed);
-		game->GetWorld()->GetPlayer()->YawAndPitch(static_cast<float>(x) * speed, static_cast<float>(y) * speed);
+		//game->camera->YawAndPitch(static_cast<float>(x) * speed, static_cast<float>(y) * speed);
+		//game->GetWorld()->GetPlayer()->YawAndPitch(static_cast<float>(x) * speed, static_cast<float>(y) * speed);
+		Player* player = game->GetWorld()->GetPlayer();
+		Spaceship* ship = player->GetMounted();
+		if (player->IsMounted() == 0) {
+			player->YawAndPitch(static_cast<float>(x) * speed, static_cast<float>(y) * speed);
+		}
+		else {
+			ship->YawAndPitch(static_cast<float>(x) * speed, static_cast<float>(y) * speed);
+		}
 	}
 }
 
@@ -137,6 +162,7 @@ bool InputController::UseTool(Game* game) {
 		return 1;
 	}
 	case 3: {
+		game->AddShip();
 		return 1;
 	}
 	}
@@ -157,6 +183,7 @@ bool InputController::UseToolAlt(Game* game) {
 		return 1;
 	}
 	case 3: {
+		game->RemoveShip();
 		return 1;
 	}
 	}
@@ -187,10 +214,12 @@ bool InputController::MoveLeft(Game* game) {
 	game->camera->Left(m_cameraSpeed); return 0;
 }
 bool InputController::Sprint(Game* game) {
-	m_cameraSpeed = 0.3f; return 1;
+	//m_cameraSpeed = 0.3f; return 1;
+	game->GetWorld()->GetPlayer()->SetForcePower(1.0f); return 1;
 }
 bool InputController::StopSprinting(Game* game) {
-	m_cameraSpeed = 0.1f; return 1;
+	//m_cameraSpeed = 0.1f; return 1;
+	game->GetWorld()->GetPlayer()->SetForcePower(0.5f); return 1;
 }
 
 bool InputController::DebugWireframe(Game* game) {
@@ -207,32 +236,99 @@ bool InputController::DebugWireframe(Game* game) {
 }
 
 bool InputController::PlayerUp(Game* game) {
-	game->GetWorld()->GetPlayer()->AccelerateUp();
+	Player* player = game->GetWorld()->GetPlayer();
+	Spaceship* ship = player->GetMounted();
+	if (player->IsMounted() == 0) {
+		player->AccelerateUp();
+	}
+	else {
+		ship->AccelerateUp();
+	}
 	return 0;
 }
 bool InputController::PlayerDown(Game* game) {
-	game->GetWorld()->GetPlayer()->AccelerateDown();
+	Player* player = game->GetWorld()->GetPlayer();
+	Spaceship* ship = player->GetMounted();
+	if (player->IsMounted() == 0) {
+		player->AccelerateDown();
+	}
+	else {
+		ship->AccelerateDown();
+	}
 	return 0;
 }
 bool InputController::PlayerLeft(Game* game) {
-	game->GetWorld()->GetPlayer()->AccelerateLeft();
+	Player* player = game->GetWorld()->GetPlayer();
+	Spaceship* ship = player->GetMounted();
+	if (player->IsMounted() == 0) {
+		player->AccelerateLeft();
+	}
+	else {
+		ship->AccelerateLeft();
+	}
 	return 0;
 }
 bool InputController::PlayerRight(Game* game) {
-	game->GetWorld()->GetPlayer()->AccelerateRight();
+	Player* player = game->GetWorld()->GetPlayer();
+	Spaceship* ship = player->GetMounted();
+	if (player->IsMounted() == 0) {
+		player->AccelerateRight();
+	}
+	else {
+		ship->AccelerateRight();
+	}
 	return 0;
 }
 bool InputController::PlayerForward(Game* game) {
-	game->GetWorld()->GetPlayer()->AccelerateForward();
+	Player* player = game->GetWorld()->GetPlayer();
+	Spaceship* ship = player->GetMounted();
+	if (player->IsMounted() == 0) {
+		player->AccelerateForward();
+	}
+	else {
+		ship->AccelerateForward();
+	}
 	return 0;
 }
 bool InputController::PlayerBackward(Game* game) {
-	game->GetWorld()->GetPlayer()->AccelerateBackward();
+	Player* player = game->GetWorld()->GetPlayer();
+	Spaceship* ship = player->GetMounted();
+	if (player->IsMounted() == 0) {
+		player->AccelerateBackward();
+	}
+	else {
+		ship->AccelerateBackward();
+	}
 	return 0;
 }
 bool InputController::PlayerRollClockwise(Game* game) {
-	game->GetWorld()->GetPlayer()->Roll(-m_rollSpeed); return 0;
+	Player* player = game->GetWorld()->GetPlayer();
+	Spaceship* ship = player->GetMounted();
+	if (player->IsMounted() == 0) {
+		player->Roll(-m_rollSpeed);
+	}
+	else {
+		ship->Roll(-m_rollSpeed);
+	}
+	return 0;
 }
 bool InputController::PlayerRollCounterClockwise(Game* game) {
-	game->GetWorld()->GetPlayer()->Roll(m_rollSpeed); return 0;
+	Player* player = game->GetWorld()->GetPlayer();
+	Spaceship* ship = player->GetMounted();
+	if (player->IsMounted() == 0) {
+		player->Roll(m_rollSpeed);
+	}
+	else {
+		ship->Roll(m_rollSpeed);
+	}
+	return 0;
+}
+bool InputController::PlayerMount(Game* game) {
+	if (game->GetWorld()->GetPlayer()->IsMounted() == 1) {
+		game->GetWorld()->GetPlayer()->Unmount();
+	}
+	else {
+		game->GetWorld()->BindPlayerPositionToNearestShip(game->GetWorld()->GetPlayer());
+	}
+	return 1;
 }

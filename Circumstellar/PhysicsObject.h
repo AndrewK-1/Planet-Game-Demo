@@ -5,6 +5,7 @@
 class PhysicsObject : public WorldObject {
 public:
 	PhysicsObject(float mass, float forcePower, float maxVelocity);
+	PhysicsObject(float mass, float forcePower, float maxVelocity, DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale);
 	void AccelerateVector(DirectX::XMVECTOR accelerationVec);
 	void AccelerateForward();
 	void AccelerateBackward();
@@ -18,6 +19,8 @@ public:
 	void Yaw(float angle);
 	void Pitch(float angle);
 	void Roll(float angle);
+
+	void SetForcePower(float power);
 private:
 	DirectX::XMFLOAT4 m_velocity;
 	bool m_activePhysics;	//Whether the object needs to have its physics update called

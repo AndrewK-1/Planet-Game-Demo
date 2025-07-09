@@ -175,6 +175,8 @@
     <ClCompile Include="Planet.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Player.h" />
+    <ClCompile Include="Spaceship.cpp" />
+    <ClCompile Include="Spaceship.h" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="WorldObject.cpp" />
   </ItemGroup>

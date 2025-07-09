@@ -169,6 +169,12 @@
     <ClCompile Include="Player.cpp">
       <Filter>Source Files\Game World\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="Spaceship.h">
+      <Filter>Header Files\GameWorld\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Spaceship.cpp">
+      <Filter>Source Files\Game World\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

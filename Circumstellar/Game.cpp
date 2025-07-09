@@ -58,10 +58,23 @@ void Game::Update() {
 	//Game logic.
 	//The goal is to let game logic to operate at its own pace,
 	//while rendering operates when it needs to.
+	
+	//Update physics
+	for (int i = 0; i < m_world1->GetSpaceshipCount(); i++) {
+		m_world1->GetSpaceship(i)->ApplyPhysics();
+	}
 
+	if (m_world1->GetPlayer()->GetMounted() == 0) {
+		m_world1->GetPlayer()->ApplyPhysics();
+	}
+	else {
+		m_world1->GetPlayer()->SetObjectPos(m_world1->GetPlayer()->GetMounted()->GetObjectPos());
+		m_world1->GetPlayer()->SetObjectRot(m_world1->GetPlayer()->GetMounted()->GetObjectRot());
+	}
 
 	//Instancing for terrain modification cursor (isosphere)
 	XMMATRIX defaultInstanceMatrix = XMMatrixIdentity();
+	//Getting the player position to lock camera to it
 	XMFLOAT4 playerPos, playerRot;
 	playerPos = m_world1->GetPlayer()->GetObjectPos();
 	playerRot = m_world1->GetPlayer()->GetObjectRot();
@@ -71,20 +84,31 @@ void Game::Update() {
 	camera->SetPosition(playerPosVec, playerRotVec);
 	XMMATRIX camRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
 		camera->GetForwardRay(10.0f));
+	//Get array of cube matrix positions
 	std::vector<XMMATRIX> cubeWorldMatrix;
 	for (int i = 0; i < m_world1->GetBlockCount(); i++) {
 		cubeWorldMatrix.push_back(m_world1->GetBlockMatrix(i));
 	}
-
+	//Get array of spaceship matrix positions
+	std::vector<XMMATRIX> spaceshipWorldMatrix;
+	for (int i = 0; i < m_world1->GetSpaceshipCount(); i++) {
+		cubeWorldMatrix.push_back(m_world1->GetSpaceshipMatrix(i));
+	}
+	
+	//Actually pushing matrices into the instance array
 	std::vector<DirectX::XMMATRIX> instanceMatrices;
 	instanceMatrices.push_back(defaultInstanceMatrix);
+	//Camera and player using the isosphere model
 	instanceMatrices.push_back(camRayMatrix);
-	m_world1->GetPlayer()->ApplyPhysics();
+
 	instanceMatrices.push_back(m_world1->GetPlayer()->GetObjectMatrix());
 	//Maybe change this later.  Right now each cube matrix is being added as its own instance.
 	//This is probably correct, but I'll have to be careful about specifying the instance index when addding additional multi-instanced objects
 	for (int i = 0; i < cubeWorldMatrix.size(); i++) {
 		instanceMatrices.push_back(cubeWorldMatrix[i]);
+	}
+	for (int i = 0; i < spaceshipWorldMatrix.size(); i++) {
+		instanceMatrices.push_back(spaceshipWorldMatrix[i]);
 	}
 
 	int instanceCounter = instanceMatrices.size();
@@ -132,28 +156,44 @@ void Game::Render() {
 	UINT isoSphereIndex = cubeIndex + m_cubeIndexCount;
 	UINT isoSphereVertex = cubeVertex + m_cubeVertexCount;
 
+	UINT spaceshipIndex = isoSphereIndex + m_isoSphereIndexCount;
+	UINT spaceshipVertex = isoSphereVertex + m_isoSphereVertexCount;
+
+	//Preparing proper alignment of instance data for drawing
+	UINT planetInstances = m_world1->GetPlanetCount();
+	UINT planetInstanceStart = 0;
+	UINT cameraToolRayInstances = 1;
+	UINT cameraToolRayInstanceStart = planetInstances;
+	UINT playerInstances = 1;
+	UINT playerInstanceStart = cameraToolRayInstanceStart + cameraToolRayInstances;
+	UINT cubeInstances = m_world1->GetBlockCount();
+	UINT cubeInstanceStart = playerInstanceStart + playerInstances;
+	UINT spaceshipInstances = m_world1->GetSpaceshipCount();
+	UINT spaceshipInstanceStart = cubeInstanceStart + cubeInstances;
+
 	//Show planet
-	m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, 1, 0, 0, 0);
+	m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, planetInstances, 0, 0, planetInstanceStart);
 	//Choose which tool to show
 	switch (m_currentTool) {
 	case 1: {
-		m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, 1, isoSphereIndex, isoSphereVertex, 1);
+		m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, cameraToolRayInstances, isoSphereIndex, isoSphereVertex, cameraToolRayInstanceStart);
 		break;
 	}
 	case 2: {
-		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, 1, cubeIndex, cubeVertex, 1);
-
+		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cameraToolRayInstances, cubeIndex, cubeVertex, cameraToolRayInstanceStart);
 		break;
 	}
 	case 3: {
+		m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, cameraToolRayInstances, spaceshipIndex, spaceshipVertex, cameraToolRayInstanceStart);
 		break;
 	}
 	}
 	//Show Player
-	m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, 1, isoSphereIndex, isoSphereVertex, 2);
+	m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, playerInstances, isoSphereIndex, isoSphereVertex, playerInstanceStart);
 	//Show cubes
-	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, m_world1->GetBlockCount(), cubeIndex, cubeVertex, 3);
-
+	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cubeInstances, cubeIndex, cubeVertex, cubeInstanceStart);
+	//Show spaceships
+	m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, spaceshipInstances, spaceshipIndex, spaceshipVertex, spaceshipInstanceStart);
 	Present();
 }
 
@@ -324,7 +364,7 @@ void Game::OnWindowSizeChanged(int width, int height) {
 	CreateResources();
 }
 
-//Suggested message handlers by DirectX template
+//Suggested methods to implement by DirectX template
 void Game::OnActivated() {
 	//When game becomes active window (Opportunity to ignore the first message received, likely due to clicking into the window)
 	//Lock cursor to screen
@@ -367,39 +407,10 @@ void Game::InitializeShaders() {
 	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
 	msg += L"Size of isoSphere index array: " + std::to_wstring(m_isoSphereIndices.size()); msg += L"\n";
 	m_graphicsObj->AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
+	//Add spaceship
+	m_graphicsObj->AddGeometry(m_spaceshipVertices, m_spaceshipIndices);
 	m_graphicsObj->SendToPipeline(m_device.Get());
 	OutputDebugString(msg.c_str());
-
-	
-	OutputDebugString(L"Beginning instancing information.\n");
-	//Instancing
-	int instanceCounter = 0;
-	for (int i = 0; i < 7; i++) {
-		instanceCounter++;
-		float ifloat = static_cast<float>(i);
-		XMVECTOR instpos = XMVectorSet(ifloat*15.0f, ifloat * 15.0f, ifloat * 15.0f, 1.0f);
-		XMVECTOR instrot = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-		XMVECTOR instscale = XMVectorSet(1.0f/(ifloat+1.0f), 1.0f/ (ifloat + 1.0f), 1.0f/ (ifloat + 1.0f), 1.0f);
-		WorldObject worldobj(instpos, instrot, instscale);
-		m_worldObjects.push_back(worldobj);
-	}
-	//Instancing
-	std::vector<DirectX::XMMATRIX> instanceMatrices;
-	for (const auto& objIterator : m_worldObjects) {
-		instanceMatrices.push_back(objIterator.GetObjectMatrix());
-		OutputDebugString(L"New instance Matrix\n");
-	}
-	//Instancing
-	D3D11_BUFFER_DESC instanceDesc = {};
-	instanceDesc.Usage = D3D11_USAGE_DEFAULT;
-	instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCounter;
-	OutputDebugString(L"Instance ByteWidth: "); OutputDebugString(std::to_wstring(sizeof(XMMATRIX) * instanceCounter).c_str()); OutputDebugString(L".\n");
-	instanceDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	D3D11_SUBRESOURCE_DATA instanceData = { instanceMatrices.data(), 0, 0 };
-	m_device->CreateBuffer(&instanceDesc, &instanceData, &m_instanceBuffer);
-
-	OutputDebugString(L"Instancing properly instantiated.\n");
-	
 
 	OutputDebugString(L"Starting Input Element Desc.\n");
 	//Description of the vertex buffer to be submitted.  The semantic in argument 1 should match the .hlsl shader semantics it intends to use
@@ -451,7 +462,7 @@ void Game::InitializeShaders() {
 	
 	OutputDebugString(L"Binding vertices to context\n");
 	//Bind Vertices to context
-	m_graphicsObj->Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
+	m_graphicsObj->Bind(m_deviceContext.Get());
 	//Set input layout
 	m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 	//Set topology type for primitive
@@ -478,11 +489,6 @@ void Game::InitializeShaders() {
 	XMStoreFloat4x4(&float4x4Data.worldMatrix, XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 3.0f), XMMatrixIdentity()));
 	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 1000.0f));
 	OutputDebugString(L"Matrices successfuly stored into float4x4.\n");
-	
-	msg = L"Vertex count per instance: ";
-	msg += std::to_wstring(m_graphicsObj->GetVertexCount());
-	msg += L".\n";
-	OutputDebugString(msg.c_str());
 
 	msg = L"Number of instances: "; msg += std::to_wstring(m_worldObjects.size()); msg += L".\n";
 	OutputDebugString(msg.c_str());
@@ -494,6 +500,7 @@ void Game::UpdateGraphicsBuffers() {
 	m_graphicsObj->SetGeometry(*GetPlanet(0)->GetGeometry(), planetIndexArray);
 	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
 	m_graphicsObj->AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
+	m_graphicsObj->AddGeometry(m_spaceshipVertices, m_spaceshipIndices);
 	m_graphicsObj->SendToPipeline(m_device.Get());
 	m_graphicsObj->Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
 }
@@ -515,14 +522,17 @@ void Game::SetWireframe(bool on) {
 void Game::AddPlanet(DirectX::XMVECTOR position, float radius) {
 	m_world1->AddPlanet(position, radius);
 }
-//void Game::RemovePlanet() {
-
-//}
 void Game::AddBlock() {
 	m_world1->AddBlock(camera->GetForwardRay(10.0f), camera->GetOrientationVector());
 }
 void Game::RemoveBlock() {
 	m_world1->RemoveBlock(camera->GetForwardRay(10.0f));
+}
+void Game::AddShip() {
+	m_world1->AddShip(camera->GetForwardRay(10.0f), camera->GetOrientationVector());
+}
+void Game::RemoveShip() {
+	m_world1->RemoveShip(camera->GetForwardRay(10.0f));
 }
 Planet* Game::GetPlanet(int index) {
 	return m_world1->GetPlanet(index);

@@ -117,6 +117,11 @@ private:
 	int m_isoSphereVertexCount = CustomGeometry::IsoSphereVertexCount;
 	std::vector<CustomGeometry::Vertex> m_isoSphereVertices = CustomGeometry::IsoSphereArray;
 	std::vector<UINT> m_isoSphereIndices = CustomGeometry::IsoSphereIndexArray;
+	int m_spaceshipIndexCount = CustomGeometry::SpaceshipIndexCount;
+	int m_spaceshipVertexCount = CustomGeometry::SpaceshipVertexCount;
+	std::vector<CustomGeometry::Vertex> m_spaceshipVertices = CustomGeometry::SpaceshipVertexArray;
+	std::vector<UINT> m_spaceshipIndices = CustomGeometry::SpaceshipIndexArray;
+
 	int m_currentTool;
 
 	//World holding all the objects currently present
