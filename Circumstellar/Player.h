@@ -6,6 +6,7 @@
 class Player : public PhysicsObject {
 public:
 	Player(float mass, float forcePower, float maxVelocity);
+	Player(float mass, float forcePower, float maxVelocity, DirectX::XMVECTOR position, DirectX::XMVECTOR rotation);
 	void MountShip(Spaceship* ship);
 	bool IsMounted();
 	void Unmount();

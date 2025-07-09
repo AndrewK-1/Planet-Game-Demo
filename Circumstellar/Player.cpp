@@ -6,6 +6,9 @@ using namespace DirectX;
 
 Player::Player(float mass, float forcePower, float maxVelocity) : PhysicsObject(mass, forcePower, maxVelocity), m_mounted(0), m_mountedShip(nullptr) {}
 
+Player::Player(float mass, float forcePower, float maxVelocity, XMVECTOR position, XMVECTOR rotation) 
+	: PhysicsObject(mass, forcePower, maxVelocity, position, rotation, XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f)) {}
+
 //Mounts the player to a ship
 void Player::MountShip(Spaceship* ship) {
 	m_mountedShip = ship;

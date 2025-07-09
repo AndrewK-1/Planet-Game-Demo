@@ -42,18 +42,23 @@ int WINAPI wWinMain(
 
 	//Creating the default window size
 	int sWidth, sHeight;
-	game->GetDefaultSize(sWidth, sHeight);
+	game->GetCurrentSize(sWidth, sHeight);
 	//Rectangle object can be resized depending on window styles to get the right dimensions for that style
 	RECT screenRect{ 0, 0, static_cast<LONG>(sWidth), static_cast<LONG>(sHeight)};
 	//Adjusting for window style
-	AdjustWindowRect(&screenRect, WS_OVERLAPPEDWINDOW, FALSE);
+	if (AdjustWindowRect(&screenRect, WS_OVERLAPPEDWINDOW, FALSE)) {
+		OutputDebugString(L"Window adjustment successful");
+	}
+	else {
+		OutputDebugString(L"Window adjustment not successful");
+	}
 
 	//Creating the window
 	HWND hWind = CreateWindowExW(
 		WS_EX_CLIENTEDGE, 
 		MAKEINTATOM(RegisteredWindowClass), 
 		L"Circumstellar", 
-		WS_OVERLAPPEDWINDOW, 
+		WS_OVERLAPPEDWINDOW | WS_SIZEBOX, 
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		screenRect.right - screenRect.left,
@@ -69,19 +74,19 @@ int WINAPI wWinMain(
 
 	game->Initialize(hWind);
 
+	//Locking cursor
+	int width;
+	int height;
+	game->GetCurrentSize(width, height);
+	RECT cursorBox = { width/2, height/2, width/2+1, height/2+1 };
+	ClipCursor(&cursorBox);
+	ShowCursor(false);
+
 	/*In Get Message, parameter 1 is pointing to the MSG structure receiving messages.
 	Parameter 2 is a handle to the window whose messages are to be retrieved, can be null to retrieve any messages on the current thread.
 	Parameter 3 specifies keyboard and mouse messages, more specifically, the "lowest" message value to be retrieved.
 		Can also use WM_INPUT for WM_INPUT messages.  Zero means no filtering.
 	Parameter 4 is "highest" value to be retrieved.  similar to previous parameter.*/
-
-	int width;
-	int height;
-	game->GetDefaultSize(width, height);
-	RECT cursorBox = { width/2, height/2, width/2+1, height/2+1 };
-	ClipCursor(&cursorBox);
-	ShowCursor(false);
-
 	MSG message = {};
 	while (WM_QUIT != message.message) 
 	{

@@ -74,6 +74,37 @@ bool InputOutput::ImportWorldInfo(std::wstring worldName, World* world) {
 				}
 			}
 		}
+		//If a player
+		if (static_cast<int>(ID[0]) == 3) {
+			//Getting positions
+			inputStream.read(reinterpret_cast<char*>(&posX), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&posY), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&posZ), sizeof(float));
+			//Getting rotations
+			inputStream.read(reinterpret_cast<char*>(&rotX), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&rotY), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&rotZ), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&rotW), sizeof(float));
+			XMFLOAT4 playerPos, playerRot; 
+			XMStoreFloat4(&playerPos, XMVectorSet(posX, posY, posZ, 1.0f));
+			world->GetPlayer()->SetObjectPos(playerPos);
+			XMStoreFloat4(&playerRot, XMVectorSet(rotX, rotY, rotZ, rotW));
+			world->GetPlayer()->SetObjectPos(playerPos);
+		}
+
+		//If a Spaceship
+		if (static_cast<int>(ID[0]) == 4) {
+			//Getting positions
+			inputStream.read(reinterpret_cast<char*>(&posX), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&posY), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&posZ), sizeof(float));
+			//Getting rotations
+			inputStream.read(reinterpret_cast<char*>(&rotX), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&rotY), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&rotZ), sizeof(float));
+			inputStream.read(reinterpret_cast<char*>(&rotW), sizeof(float));
+			world->AddShip(XMVectorSet(posX, posY, posZ, 1.0f), XMVectorSet(rotX, rotY, rotZ, rotW));
+		}
 	}
 	inputStream.close();
 	return 1;
@@ -134,6 +165,40 @@ bool InputOutput::ExportWorldInfo(std::wstring worldName, World* world) {
 			}
 		}
 	}
+
+	{
+		//Player is 00000011 or 3
+		char playerID = 0b00000011;
+		outputStream.write(reinterpret_cast<char*>(&playerID), sizeof(playerID));
+		Player* player = world->GetPlayer();
+		XMFLOAT4 playerPos = player->GetObjectPos();
+		//Write three position elements
+		outputStream.write(reinterpret_cast<char*>(&playerPos.x), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&playerPos.y), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&playerPos.z), sizeof(float));
+		XMFLOAT4 playerRot = player->GetObjectRot();
+		outputStream.write(reinterpret_cast<char*>(&playerRot.x), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&playerRot.y), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&playerRot.z), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&playerRot.w), sizeof(float));
+	}
+
+	//Spaceship is 00000100 or 4
+	char spaceshipID = 0b00000100;
+	for (int i = 0; i < world->GetSpaceshipCount(); i++) {
+		//Write block ID
+		outputStream.write(reinterpret_cast<char*>(&spaceshipID), sizeof(spaceshipID));
+		XMFLOAT4 spaceshipPos = world->GetSpaceship(i)->GetObjectPos();
+		outputStream.write(reinterpret_cast<char*>(&spaceshipPos.x), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&spaceshipPos.y), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&spaceshipPos.z), sizeof(float));
+		XMFLOAT4 spaceshipRot = world->GetSpaceship(i)->GetObjectRot();
+		outputStream.write(reinterpret_cast<char*>(&spaceshipRot.x), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&spaceshipRot.y), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&spaceshipRot.z), sizeof(float));
+		outputStream.write(reinterpret_cast<char*>(&spaceshipRot.w), sizeof(float));
+	}
+
 	outputStream.close();
 	return sucessfullyOpened;
 }

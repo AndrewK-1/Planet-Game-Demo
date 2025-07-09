@@ -36,6 +36,7 @@
 #include <wrl/client.h>
 
 #include <d3d11.h>
+#include <d2d1.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
@@ -55,6 +56,7 @@
 //Add libraries
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
+#pragma comment (lib, "d2d1.lib")
 
 
 //Template for catching DirectX API errors
@@ -65,6 +67,9 @@ namespace DX
 		if (FAILED(hr))
 		{
 			//A breakpoint can be set here to catch API errors.
+			char msg[64];
+            sprintf_s(msg, "HRESULT failed: 0x%08X", hr);
+            throw std::runtime_error(msg);
 			throw std::exception();
 		}
 	}

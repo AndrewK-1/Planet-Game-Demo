@@ -35,6 +35,7 @@ public:
 	void OnResuming();
 	void OnClosing();
 	void GetDefaultSize(int& width, int& height);
+	void GetCurrentSize(int& width, int& height);
 	void OnWindowSizeChanged(int width, int height);
 	std::unique_ptr<Camera> camera;
 
@@ -95,6 +96,8 @@ private:
 		DirectX::XMFLOAT4X4 perspectiveMatrix;
 	};
 
+	float m_FOV;
+
 	Float4x4Data float4x4Data;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
@@ -128,4 +131,9 @@ private:
 	std::unique_ptr<World> m_world1;
 
 	InputOutput m_IOHandler;
+
+	//2D graphics members
+	Microsoft::WRL::ComPtr<ID2D1Factory> m_2dFactory;
+	Microsoft::WRL::ComPtr<ID2D1RenderTarget> m_2dRenderTarget;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrush;
 };

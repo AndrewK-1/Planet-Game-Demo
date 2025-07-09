@@ -101,6 +101,20 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 		return 0;
 	}
 
+	case WM_SIZE: {
+		OutputDebugString(L"Window size changed.\n");
+		std::wstring msg = L"Window message wParam" + std::to_wstring(wParam); msg += L"\n"; OutputDebugString(msg.c_str());
+		if (wParam == SIZE_MAXIMIZED) {
+			int width, height;
+			game->GetDefaultSize(width, height);
+			game->OnWindowSizeChanged(width, height);
+		}
+		else {
+			game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
+		}
+		break;
+	}
+
 	default: {
 		return DefWindowProc(hwnd, ProcMSG, wParam, lParam);
 	}

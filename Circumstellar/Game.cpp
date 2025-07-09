@@ -17,9 +17,9 @@ using namespace DirectX;
 
 Game::Game() noexcept :
 	m_windowHandle(nullptr),
-	m_screenWidth(1920),
-	m_screenHeight(1080),
-	m_feature_level(D3D_FEATURE_LEVEL_9_1),
+	m_screenWidth(1440),
+	m_screenHeight(900),
+	m_feature_level(D3D_FEATURE_LEVEL_10_0),
 	float4x4Data(
 		{ {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
 		{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
@@ -27,7 +27,8 @@ Game::Game() noexcept :
 	updatePlanetGeometryFlag(0),
 	m_planetVertexCount(0),
 	m_planetIndexCount(0),
-	m_currentTool(1)
+	m_currentTool(1),
+	m_FOV(3.14159f / 4.0f)
 {
 	m_world1 = std::make_unique<World>();
 	camera = std::make_unique<Camera>();
@@ -194,6 +195,21 @@ void Game::Render() {
 	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cubeInstances, cubeIndex, cubeVertex, cubeInstanceStart);
 	//Show spaceships
 	m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, spaceshipInstances, spaceshipIndex, spaceshipVertex, spaceshipInstanceStart);
+
+	//2D Rendering
+	m_2dRenderTarget->BeginDraw();
+	//Size of drawing area
+	RECT drawBox;
+	drawBox = { 0, 0, m_screenWidth, m_screenHeight };
+	//Draw Rectangle
+	D2D1_RECT_F drawnRectangle = D2D1::RectF(10.0f,
+		20.0f,
+		40.0f,
+		40.0f);
+	m_2dRenderTarget->DrawRectangle(drawnRectangle, m_2dBrush.Get());
+	//End 2D drawing
+	m_2dRenderTarget->EndDraw();
+
 	Present();
 }
 
@@ -209,7 +225,7 @@ void Game::Clear() {
 	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), NULL);
 
 	//Set viewport
-	D3D11_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(m_screenWidth), static_cast<float>(m_screenHeight), 0.f, 1.f };
+	D3D11_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(m_screenWidth), static_cast<float>(m_screenHeight), 0.0f, 1.0f };
 	m_deviceContext->RSSetViewports(1, &viewport);
 }
 
@@ -227,7 +243,7 @@ void Game::Present() {
 }
 
 void Game::CreateDevice() {
-	UINT createFlags = 0;
+	UINT createFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
 #ifdef _DEBUG
 	createFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -240,10 +256,7 @@ void Game::CreateDevice() {
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_1,
-		D3D_FEATURE_LEVEL_10_0,
-		D3D_FEATURE_LEVEL_9_3,
-		D3D_FEATURE_LEVEL_9_2,
-		D3D_FEATURE_LEVEL_9_1,
+		D3D_FEATURE_LEVEL_10_0
 	};
 
 	//Create DX11 API device object.
@@ -276,11 +289,14 @@ void Game::CreateResources()
 	//m_depthStencilView.Reset();
 	m_deviceContext->Flush();
 
+	const UINT backBufferWidth = static_cast<UINT>(m_screenWidth);
+	const UINT backBufferHeight = static_cast<UINT>(m_screenHeight);
 	const DXGI_FORMAT backBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM; //32-bit color format RGBA
 	constexpr UINT backBufferCount = 2;
 	//If swap chain exists, do nothing, otherwise create it
 	if (m_swapChain) {
-
+		OutputDebugString(L" Resizing buffers.\n");
+		DX::ThrowIfFailed(m_swapChain->ResizeBuffers(backBufferCount, backBufferWidth, backBufferHeight, backBufferFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 	}
 	else {
 		//More DirectX template stuff
@@ -314,19 +330,41 @@ void Game::CreateResources()
 			&swapChainDesc,
 			m_swapChain.ReleaseAndGetAddressOf()
 		));
-
-		//COM pointers should be released, but WRL makes it so that this is not always necessary.
-		ComPtr<ID3D11Texture2D> backBuffer; //Stores a flat image
-		//IID_PPV_ARGS retrieves the Interface ID of a COM, and retrieves a pointer to the interface.
-		//Alternative line // DX::ThrowIfFailed(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf()));
-		DX::ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
-
-		//Use back buffer address to create a render target
-		DX::ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, m_renderTargetView.ReleaseAndGetAddressOf()));
-
-		//Set render target for device context to use in pipeline
-		m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), NULL);
 	}
+
+	//COM pointers should be released, but WRL makes it so that this is not always necessary.
+	//Also COM pointers should not use Release(), as the Com object will handle releasing, and if already released will cause an error on releasing a nullptr.
+	ComPtr<ID3D11Texture2D> backBuffer; //Stores a flat image
+	//IID_PPV_ARGS retrieves the Interface ID of a COM, and retrieves a pointer to the interface.
+	//Alternative line // DX::ThrowIfFailed(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf()));
+	DX::ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
+
+	//Use back buffer address to create a render target
+	DX::ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, m_renderTargetView.ReleaseAndGetAddressOf()));
+
+	//Set render target for device context to use in pipeline
+	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), NULL);
+
+
+	//Initiatizing 2D elements
+	DX::ThrowIfFailed(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_2dFactory.GetAddressOf()));
+
+	Microsoft::WRL::ComPtr<IDXGISurface> surfaceBackBuffer;
+	DX::ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(surfaceBackBuffer.GetAddressOf())));
+
+	//2D Render Target Properties
+	D2D1_RENDER_TARGET_PROPERTIES targetProperties2D = {};
+	targetProperties2D.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+	//DXIG surface render target and DXGI surface must use the same format. UNKNOWN automatically uses surface's format.
+	targetProperties2D.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	targetProperties2D.dpiX = 0;
+	targetProperties2D.dpiY = 0;
+
+	//Use factory to create render target
+	DX::ThrowIfFailed(m_2dFactory->CreateDxgiSurfaceRenderTarget(surfaceBackBuffer.Get(), &targetProperties2D, m_2dRenderTarget.ReleaseAndGetAddressOf()));
+
+	//Create a brush
+	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), m_2dBrush.GetAddressOf());
 }
 
 //If a device is somehow lost or disconnected, cleanup and creation of a new device and resources occurs
@@ -349,23 +387,35 @@ void Game::OnDeviceLost() {
 
 void Game::GetDefaultSize(int& width, int& height) 
 {
+	OutputDebugString(L"Copying default window size.");
 	width = 1920;
 	height = 1080;
+}
+
+void Game::GetCurrentSize(int& width, int& height) {
+	OutputDebugString(L"Copying current window size.");
+	width = m_screenWidth;
+	height = m_screenHeight;
 }
 
 void Game::OnWindowSizeChanged(int width, int height) {
 	if (!m_windowHandle) {
 		return;
 	}
-
+	OutputDebugString(L" Handle exists.\n");
 	m_screenWidth = std::max(width, 1); //Window width cannot be less than 1
+	OutputDebugString(L" New Width: "); OutputDebugString(std::to_wstring(m_screenWidth).c_str()); OutputDebugString(L"\n");
 	m_screenHeight = std::max(height, 1); //Window length cannot be less than 1
+	OutputDebugString(L" New Height: "); OutputDebugString(std::to_wstring(m_screenHeight).c_str()); OutputDebugString(L"\n");
+	//Resize perspective matrix
+	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, static_cast<float>(m_screenWidth / m_screenHeight), 0.1f, 1000.0f));
 
 	CreateResources();
 }
 
 //Suggested methods to implement by DirectX template
 void Game::OnActivated() {
+	OutputDebugString(L"Activated.\n");
 	//When game becomes active window (Opportunity to ignore the first message received, likely due to clicking into the window)
 	//Lock cursor to screen
 	RECT cursorBox = { m_screenWidth / 2, m_screenHeight / 2, m_screenWidth / 2 + 1, m_screenHeight / 2 + 1 };
@@ -376,8 +426,9 @@ void Game::OnActivated() {
 void Game::OnDeactivated() {
 	//Game becomes background window (Opportunity to auto-pause the game if necessary)
 	//Release cursor from screen
+	OutputDebugString(L"Deactivated.\n");
 	ClipCursor(NULL);
-	ShowCursor(true);
+	while(ShowCursor(true) < 0) {}
 }
 
 void Game::OnSuspending() {
@@ -487,7 +538,7 @@ void Game::InitializeShaders() {
 	
 	//Store matrices into members
 	XMStoreFloat4x4(&float4x4Data.worldMatrix, XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 3.0f), XMMatrixIdentity()));
-	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, 16.0f / 9.0f, 0.1f, 1000.0f));
+	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(m_FOV, static_cast<float>(m_screenWidth/m_screenHeight), 0.1f, 1000.0f));
 	OutputDebugString(L"Matrices successfuly stored into float4x4.\n");
 
 	msg = L"Number of instances: "; msg += std::to_wstring(m_worldObjects.size()); msg += L".\n";
