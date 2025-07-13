@@ -112,6 +112,12 @@
     <ClInclude Include="PhysicsObject.h">
       <Filter>Header Files\GameWorld\Templates</Filter>
     </ClInclude>
+    <ClInclude Include="Menus.h">
+      <Filter>Header Files\API Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsIO.h">
+      <Filter>Header Files\InputOutput</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CreateWindow.cpp">
@@ -174,6 +180,9 @@
     </ClCompile>
     <ClCompile Include="Spaceship.cpp">
       <Filter>Source Files\Game World\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="SettingsIO.cpp">
+      <Filter>Source Files\InputOutput</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

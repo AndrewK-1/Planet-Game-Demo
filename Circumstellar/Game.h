@@ -7,6 +7,7 @@
 #include "World.h"
 #include "Planet.h"
 #include "InputOutput.h"
+#include "SettingsIO.h"
 
 class Game {
 public:
@@ -58,6 +59,11 @@ public:
 
 	void LoadWorld();
 	void SaveWorld();
+
+	float GetFOV();
+	void SetFOV(float fov);
+	void GetResolution(int& width, int& height);
+	void SetResolution(int width, int height);
 private:
 	//Rendering and views methods
 	void Update();
@@ -136,4 +142,8 @@ private:
 	Microsoft::WRL::ComPtr<ID2D1Factory> m_2dFactory;
 	Microsoft::WRL::ComPtr<ID2D1RenderTarget> m_2dRenderTarget;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrush;
+
+	//Setting IO
+	std::unique_ptr<SettingsIO> m_settingsIO;
+	std::string m_settingsFileName;
 };

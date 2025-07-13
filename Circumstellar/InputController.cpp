@@ -5,7 +5,7 @@
 #include "Camera.h"
 #include <string>
 #include "Game.h"
-
+#include "SettingsIO.h"
 
 //Later, create a way to load input form an XML file into the class constructor
 

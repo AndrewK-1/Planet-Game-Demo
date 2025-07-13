@@ -4,7 +4,6 @@
 #include "MessageHandler.h"
 #include "InputController.h"
 #include "ErrorHandling.h"
-
 namespace {
 	std::unique_ptr<InputController> inputController;
 }

@@ -186,6 +186,7 @@
     <ClCompile Include="Planet.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Player.h" />
+    <ClCompile Include="SettingsIO.cpp" />
     <ClCompile Include="Spaceship.cpp" />
     <ClCompile Include="Spaceship.h" />
     <ClCompile Include="World.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="InputController.h" />
     <ClInclude Include="InputOutput.h" />
+    <ClInclude Include="Menus.h" />
     <ClInclude Include="MessageHandler.h" />
     <ClInclude Include="Mountable.h" />
     <ClInclude Include="pch.h" />
@@ -206,6 +208,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Planet.h" />
     <ClInclude Include="GameTool.h" />
+    <ClInclude Include="SettingsIO.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="WorldObject.h" />
   </ItemGroup>

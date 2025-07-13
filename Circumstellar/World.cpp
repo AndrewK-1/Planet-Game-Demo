@@ -17,10 +17,14 @@ void World::PushObject(Block block) {
 	m_blockArray.push_back(block);
 }
 void World::RemoveObject(Planet planet, UINT index) {
-	m_planetArray.erase(m_planetArray.begin() + index);
+	if (!m_planetArray.empty()) {
+		m_planetArray.erase(m_planetArray.begin() + index);
+	}
 }
 void World::RemoveObject(Block block, UINT index) {
-	m_blockArray.erase(m_blockArray.begin() + index);
+	if (!m_blockArray.empty()) {
+		m_blockArray.erase(m_blockArray.begin() + index);
+	}
 }
 
 Planet* World::GetPlanet(UINT index) {

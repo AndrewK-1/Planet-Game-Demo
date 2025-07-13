@@ -12,6 +12,7 @@
 #include "Block.h"
 #include "Planet.h"
 
+
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
@@ -28,11 +29,37 @@ Game::Game() noexcept :
 	m_planetVertexCount(0),
 	m_planetIndexCount(0),
 	m_currentTool(1),
-	m_FOV(3.14159f / 4.0f)
+	m_FOV(3.14159f / 4.0f),
+	m_settingsFileName("GraphicsSettings.txt")
 {
 	m_world1 = std::make_unique<World>();
 	camera = std::make_unique<Camera>();
 	m_graphicsObj = std::make_unique<GraphicsObject>();
+	OutputDebugString(L"Creating settings object\n");
+
+	//User Settings input
+	m_settingsIO = std::make_unique<SettingsIO>();
+	OutputDebugString(L"Receiving resolution settings.\n");
+	std::string setting;
+	if (m_settingsIO->GetSetting(m_settingsFileName, "ResolutionWidth", setting)){
+		m_screenWidth = std::stoi(setting);
+	}
+	else {
+		m_settingsIO->SetSetting(m_settingsFileName, "ResolutionWidth", std::to_string(m_screenWidth));
+	}
+	if (m_settingsIO->GetSetting(m_settingsFileName, "ResolutionHeight", setting)) {
+		m_screenHeight = std::stoi(setting);
+	}
+	else {
+		m_settingsIO->SetSetting(m_settingsFileName, "ResolutionHeight", std::to_string(m_screenHeight));
+	}
+	OutputDebugString(L"FOV settings.\n");
+	if (m_settingsIO->GetSetting(m_settingsFileName, "FieldOfView", setting)) {
+		m_FOV = std::stoi(setting);
+	}
+	else {
+		m_settingsIO->SetSetting(m_settingsFileName, "FieldOfView", std::to_string(m_FOV));
+	}
 }
 
 void Game::Initialize(HWND windowHandle) {
@@ -408,7 +435,7 @@ void Game::OnWindowSizeChanged(int width, int height) {
 	m_screenHeight = std::max(height, 1); //Window length cannot be less than 1
 	OutputDebugString(L" New Height: "); OutputDebugString(std::to_wstring(m_screenHeight).c_str()); OutputDebugString(L"\n");
 	//Resize perspective matrix
-	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(3.14159f / 4.0f, static_cast<float>(m_screenWidth / m_screenHeight), 0.1f, 1000.0f));
+	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(m_FOV, (static_cast<float>(m_screenWidth) / static_cast<float>(m_screenHeight)), 0.1f, 1000.0f));
 
 	CreateResources();
 }
@@ -538,7 +565,7 @@ void Game::InitializeShaders() {
 	
 	//Store matrices into members
 	XMStoreFloat4x4(&float4x4Data.worldMatrix, XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 3.0f), XMMatrixIdentity()));
-	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(m_FOV, static_cast<float>(m_screenWidth/m_screenHeight), 0.1f, 1000.0f));
+	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(m_FOV, (static_cast<float>(m_screenWidth) / static_cast<float>(m_screenHeight)), 0.1f, 1000.0f));
 	OutputDebugString(L"Matrices successfuly stored into float4x4.\n");
 
 	msg = L"Number of instances: "; msg += std::to_wstring(m_worldObjects.size()); msg += L".\n";
@@ -593,8 +620,27 @@ World* Game::GetWorld() {
 }
 
 void Game::LoadWorld() {
-	m_IOHandler.ImportWorldInfo(L"TestWorldInfo.cwd", m_world1.get());
+	m_IOHandler.ImportWorldInfo(L"Worlds\TestWorld.cwd", m_world1.get());
 }
 void Game::SaveWorld() {
-	m_IOHandler.ExportWorldInfo(L"TestWorldInfo.cwd", m_world1.get());
+	m_IOHandler.ExportWorldInfo(L"Worlds\TestWorld.cwd", m_world1.get());
+}
+
+float Game::GetFOV() {
+	return m_FOV;
+}
+void Game::SetFOV(float fov) {
+	m_settingsIO->SetSetting(m_settingsFileName, "FieldOfView", std::to_string(fov));
+	m_FOV = fov;
+}
+
+void Game::GetResolution(int& width, int& height) {
+	width = m_screenWidth;
+	height = m_screenHeight;
+}
+//Possibly a placeholder for more robust resolution system.
+void Game::SetResolution(int width, int height) {
+	m_settingsIO->SetSetting(m_settingsFileName, "ResolutionWidth", std::to_string(width));
+	m_settingsIO->SetSetting(m_settingsFileName, "ResolutionHeight", std::to_string(height));
+	OnWindowSizeChanged(width, height);
 }
