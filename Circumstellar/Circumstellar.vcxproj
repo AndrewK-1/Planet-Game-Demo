@@ -168,6 +168,7 @@
   <ItemGroup>
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="ControlSettingsIO.cpp" />
     <ClCompile Include="CreateWindow.cpp" />
     <ClCompile Include="ErrorHandling.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -186,7 +187,7 @@
     <ClCompile Include="Planet.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Player.h" />
-    <ClCompile Include="SettingsIO.cpp" />
+    <ClCompile Include="GraphicsSettingsIO.cpp" />
     <ClCompile Include="Spaceship.cpp" />
     <ClCompile Include="Spaceship.h" />
     <ClCompile Include="World.cpp" />
@@ -195,6 +196,7 @@
   <ItemGroup>
     <ClInclude Include="Block.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="ControlSettingsIO.h" />
     <ClInclude Include="CreateWindow.h" />
     <ClInclude Include="ErrorHandling.h" />
     <ClInclude Include="GraphicsObject.h" />
@@ -208,7 +210,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Planet.h" />
     <ClInclude Include="GameTool.h" />
-    <ClInclude Include="SettingsIO.h" />
+    <ClInclude Include="GraphicsSettingsIO.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="WorldObject.h" />
   </ItemGroup>

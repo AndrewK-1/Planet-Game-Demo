@@ -115,7 +115,10 @@
     <ClInclude Include="Menus.h">
       <Filter>Header Files\API Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="SettingsIO.h">
+    <ClInclude Include="GraphicsSettingsIO.h">
+      <Filter>Header Files\InputOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="ControlSettingsIO.h">
       <Filter>Header Files\InputOutput</Filter>
     </ClInclude>
   </ItemGroup>
@@ -181,7 +184,10 @@
     <ClCompile Include="Spaceship.cpp">
       <Filter>Source Files\Game World\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="SettingsIO.cpp">
+    <ClCompile Include="GraphicsSettingsIO.cpp">
+      <Filter>Source Files\InputOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="ControlSettingsIO.cpp">
       <Filter>Source Files\InputOutput</Filter>
     </ClCompile>
   </ItemGroup>

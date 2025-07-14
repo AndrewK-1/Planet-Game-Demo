@@ -6,6 +6,7 @@
 #include "Game.h"
 #include <unordered_set>
 #include "GameTool.h"
+#include "ControlSettingsIO.h"
 
 //Function alias Action that takes no parameters and returns void.
 //When Action is used from here on, it means std::function<void()>.
@@ -27,25 +28,17 @@ public:
 	void PressedKeysExecute(Game* game);
 	void HandleRawInput(long x, long y, Game* game);
 	
-	void ChangeCameraSpeed(float speed);
-	
 	//Helper to improve readability of source binds while moving callable methods to the class
 	template<typename T>
 	Action BindHelper(T methodName) {
 		return [this, methodName](Game* game) -> bool{
 			return (this->*methodName)(game); };
 	}
+
+	template<typename T>
+	void InitializeSetting(T methodName, UINT settingID, UINT settingValue);
 private:
 	std::map<UINT, Action> bindingMap;	//Handles binding virtual keys to actions
-	bool MoveUp(Game* game);			//space
-	bool MoveDown(Game* game);		//shift
-	bool MoveForward(Game* game);		//w
-	bool MoveBackward(Game* game);	//s
-	bool MoveRight(Game* game);		//d
-	bool MoveLeft(Game* game);		//a
-	bool RollCounterClockwise(Game* game);
-	bool RollClockwise(Game* game);
-	bool DebugWireframe(Game* game);
 	bool m_wireframeButtonStillPressed;
 	bool m_wireframeOn;
 	float m_cameraSpeed;
@@ -53,19 +46,17 @@ private:
 	std::unordered_set<UINT> m_pressedKeys;
 	float m_changePower;
 	GameTool m_gameTool;
+	ControlSettingsIO m_controlSettingsIO;
+	std::string m_controlSettingsFileName = "ControlSettings.txt";
 
+	bool DebugWireframe(Game* game);
 	bool UseTool(Game* game);
 	bool UseToolAlt(Game* game);
-
-	//Change these later.  There needs to be a way to have different actions on press versus release.
-	//This is different from taking an action on press, and stopping that action on release.
 	bool Sprint(Game* game);
 	bool StopSprinting(Game* game);
-
 	bool ChangeToToolOne(Game* game);
 	bool ChangeToToolTwo(Game* game);
 	bool ChangeToToolThree(Game* game);
-
 	bool PlayerUp(Game* game);
 	bool PlayerDown(Game* game);
 	bool PlayerLeft(Game* game);
@@ -74,6 +65,27 @@ private:
 	bool PlayerBackward(Game* game);
 	bool PlayerRollClockwise(Game* game);
 	bool PlayerRollCounterClockwise(Game* game);
-
 	bool PlayerMount(Game* game);
+
+	//Enumerator for the setting IDs used in the binary settings file.
+	enum SettingIDs {
+		ID_PlayerUp = 0x01,
+		ID_PlayerDown = 0x02,
+		ID_PlayerLeft = 0x03,
+		ID_PlayerRight = 0x04,
+		ID_PlayerForward = 0x05,
+		ID_PlayerBackward = 0x06,
+		ID_PlayerRollClockwise = 0x07,
+		ID_PlayerRollCounterClockwise = 0x08,
+		ID_PlayerMount = 0x09,
+		ID_UseTool = 0x0A,
+		ID_UseToolAlt = 0x0B,
+		ID_Sprint = 0x0C,
+		ID_StopSprinting = 0x0D,
+		ID_ChangeToToolOne = 0x0E,
+		ID_ChangeToToolTwo = 0x0F,
+		ID_ChangeToToolThree = 0x10,
+		ID_ChangeToToolOff = 0x11,
+		ID_DebugWireframe = 0x12
+	};
 };

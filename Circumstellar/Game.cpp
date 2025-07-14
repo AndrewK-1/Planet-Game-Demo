@@ -38,7 +38,7 @@ Game::Game() noexcept :
 	OutputDebugString(L"Creating settings object\n");
 
 	//User Settings input
-	m_settingsIO = std::make_unique<SettingsIO>();
+	m_settingsIO = std::make_unique<GraphicsSettingsIO>();
 	OutputDebugString(L"Receiving resolution settings.\n");
 	std::string setting;
 	if (m_settingsIO->GetSetting(m_settingsFileName, "ResolutionWidth", setting)){
@@ -217,7 +217,7 @@ void Game::Render() {
 	}
 	}
 	//Show Player
-	m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, playerInstances, isoSphereIndex, isoSphereVertex, playerInstanceStart);
+	////m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, playerInstances, isoSphereIndex, isoSphereVertex, playerInstanceStart);
 	//Show cubes
 	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cubeInstances, cubeIndex, cubeVertex, cubeInstanceStart);
 	//Show spaceships

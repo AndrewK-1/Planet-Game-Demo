@@ -5,7 +5,6 @@
 #include "Camera.h"
 #include <string>
 #include "Game.h"
-#include "SettingsIO.h"
 
 //Later, create a way to load input form an XML file into the class constructor
 
@@ -13,37 +12,44 @@
 
 InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_changePower(0.1f), m_wireframeOn(1)
 {
-	//Note: VK_ is a prefix for some key codes.  All letters and numbers can be listed as '1' or 'A' instead of hexadecimal
-	BindKey(0x20, BindHelper(&InputController::MoveUp)); //VK_SPACE
-	BindKey(0x43, BindHelper(&InputController::MoveDown));	//C key
-	BindKey(0x57, BindHelper(&InputController::MoveForward));	//W key
-	BindKey(0x53, BindHelper(&InputController::MoveBackward));	//S key
-	BindKey(0x44, BindHelper(&InputController::MoveRight));	//D key
-	BindKey(0x41, BindHelper(&InputController::MoveLeft));	//A key
-	BindKey(0x0001, BindHelper(&InputController::UseTool)); //Left Mouse Button 0x0001
-	BindKey(0x0002, BindHelper(&InputController::UseToolAlt)); //Right Mouse Button 0x010
-	BindKey('1', BindHelper(&InputController::ChangeToToolOne)); //One
-	BindKey('2', BindHelper(&InputController::ChangeToToolTwo)); //Two
-	BindKey('3', BindHelper(&InputController::ChangeToToolThree)); //Two
-	BindKey('Q', BindHelper(&InputController::RollCounterClockwise));
-	BindKey('E', BindHelper(&InputController::RollClockwise));
-	BindKey(VK_OEM_PERIOD, BindHelper(&InputController::DebugWireframe));
-	BindKey(VK_SHIFT, BindHelper(&InputController::Sprint));
-
-	BindKey('W', BindHelper(&InputController::PlayerForward));
-	BindKey('S', BindHelper(&InputController::PlayerBackward));
-	BindKey('A', BindHelper(&InputController::PlayerLeft));
-	BindKey('D', BindHelper(&InputController::PlayerRight));
-	BindKey(VK_SPACE, BindHelper(&InputController::PlayerUp));
-	BindKey('C', BindHelper(&InputController::PlayerDown));
-	BindKey('E', BindHelper(&InputController::PlayerRollClockwise));
-	BindKey('Q', BindHelper(&InputController::PlayerRollCounterClockwise));
-	BindKey(VK_RETURN, BindHelper(&InputController::PlayerMount));
+	//Note: VK_ is a prefix for some key codes.  All letters and numbers can be listed as '1' or 'A' instead of hexadecimal	
+	OutputDebugString(L"InputController: Receiving Keybind settings.\n");
+	//InitializeSetting will use the file setting if avaiable, otherwise it will add teh setting to the file with the default value.
+	InitializeSetting(&InputController::PlayerForward, ID_PlayerForward, 'W');
+	InitializeSetting(&InputController::PlayerBackward, ID_PlayerBackward, 'S');
+	InitializeSetting(&InputController::PlayerLeft, ID_PlayerLeft, 'A');
+	InitializeSetting(&InputController::PlayerRight, ID_PlayerRight, 'D');
+	InitializeSetting(&InputController::PlayerUp, ID_PlayerUp, VK_SPACE);
+	InitializeSetting(&InputController::PlayerDown, ID_PlayerDown, 'C');
+	InitializeSetting(&InputController::UseTool, ID_UseTool, 0x001);
+	InitializeSetting(&InputController::UseToolAlt, ID_UseToolAlt, 0x002);
+	InitializeSetting(&InputController::ChangeToToolOne, ID_ChangeToToolOne, '1');
+	InitializeSetting(&InputController::ChangeToToolTwo, ID_ChangeToToolTwo, '2');
+	InitializeSetting(&InputController::ChangeToToolThree, ID_ChangeToToolThree, '3');
+	InitializeSetting(&InputController::DebugWireframe, ID_DebugWireframe, VK_OEM_PERIOD);
+	InitializeSetting(&InputController::Sprint, ID_Sprint, VK_SHIFT);
+	InitializeSetting(&InputController::PlayerRollClockwise, ID_PlayerRollClockwise, 'E');
+	InitializeSetting(&InputController::PlayerRollCounterClockwise, ID_PlayerRollCounterClockwise, 'Q');
+	InitializeSetting(&InputController::PlayerMount, ID_PlayerMount, VK_RETURN);
 }
 
 
 void InputController::BindKey(UINT key, Action action) {
 	bindingMap[key] = action, key;
+}
+
+template<typename T>
+void InputController::InitializeSetting(T methodName, UINT settingID, UINT settingValue) {
+	UINT setting;
+	if (m_controlSettingsIO.GetSetting(m_controlSettingsFileName, settingID, setting)) {
+		OutputDebugString(L"InputController: Setting found, using file value.\n");
+		BindKey(setting, BindHelper(methodName));
+	}
+	else {
+		OutputDebugString(L"InputController: Setting not found, setting new value.\n");
+		m_controlSettingsIO.SetSetting(m_controlSettingsFileName, settingID, settingValue);
+		BindKey(settingValue, BindHelper(methodName));
+	}
 }
 
 void InputController::RemoveAllPressedKeys() {
@@ -188,7 +194,7 @@ bool InputController::UseToolAlt(Game* game) {
 	}
 	}
 }
-
+/*
 bool InputController::RollClockwise(Game* game) {
 	game->camera->Roll(-m_rollSpeed); return 0;
 }
@@ -213,6 +219,7 @@ bool InputController::MoveRight(Game* game) {
 bool InputController::MoveLeft(Game* game) {
 	game->camera->Left(m_cameraSpeed); return 0;
 }
+*/
 bool InputController::Sprint(Game* game) {
 	//m_cameraSpeed = 0.3f; return 1;
 	game->GetWorld()->GetPlayer()->SetForcePower(1.0f); return 1;

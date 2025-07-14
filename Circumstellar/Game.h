@@ -7,7 +7,7 @@
 #include "World.h"
 #include "Planet.h"
 #include "InputOutput.h"
-#include "SettingsIO.h"
+#include "GraphicsSettingsIO.h"
 
 class Game {
 public:
@@ -144,6 +144,6 @@ private:
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrush;
 
 	//Setting IO
-	std::unique_ptr<SettingsIO> m_settingsIO;
+	std::unique_ptr<GraphicsSettingsIO> m_settingsIO;
 	std::string m_settingsFileName;
 };

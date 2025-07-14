@@ -1,12 +1,12 @@
 #pragma once
 #include "pch.h"
-#include "SettingsIO.h"
+#include "GraphicsSettingsIO.h"
 #include <fstream>
 
 using namespace std;
 
 //Returns the setting at the line specified by the type.  Returns empty string if setting is empty.
-bool SettingsIO::GetSetting(string fileName, string settingType, string& stringOutput) {
+bool GraphicsSettingsIO::GetSetting(string fileName, string settingType, string& stringOutput) {
 	string line;
 	size_t equalsPos;
 	if (GetSettingString(fileName, settingType, line)) {
@@ -22,7 +22,7 @@ bool SettingsIO::GetSetting(string fileName, string settingType, string& stringO
 }
 
 //Sets the setting at the line specified by the type.
-void SettingsIO::SetSetting(string fileName, string settingType, string settingValue) {
+void GraphicsSettingsIO::SetSetting(string fileName, string settingType, string settingValue) {
 	string line, fileContents = "", newLine = settingType + "=" + settingValue;
 	int linePos;
 	OutputDebugString(L"SetSetting(): Starting loop\n");
@@ -72,7 +72,7 @@ void SettingsIO::SetSetting(string fileName, string settingType, string settingV
 }
 
 //First string is the setting, second string will be modified to the found string, third setting is which line it's on.  Returns one if found, zero if not found.
-bool SettingsIO::GetSettingString(string fileName, string settingType, string& lineString, int& lineCount) {
+bool GraphicsSettingsIO::GetSettingString(string fileName, string settingType, string& lineString, int& lineCount) {
 	string type;
 	ifstream inputStream(fileName, std::ios::in);
 	size_t equalsPos;
@@ -107,7 +107,7 @@ bool SettingsIO::GetSettingString(string fileName, string settingType, string& l
 }
 
 //First string is the setting, second string will be modified to the found string.  Returns one if found, zero if not found.
-bool SettingsIO::GetSettingString(string fileName, string settingType, string& lineString) {
+bool GraphicsSettingsIO::GetSettingString(string fileName, string settingType, string& lineString) {
 	string type;
 	ifstream inputStream(fileName, std::ios::in);
 	size_t equalsPos;
@@ -143,4 +143,3 @@ bool SettingsIO::GetSettingString(string fileName, string settingType, string& l
 	lineString = "";
 	return 0;
 }
-

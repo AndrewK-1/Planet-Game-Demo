@@ -355,6 +355,7 @@ void Planet::CalculateVertex(int x, int y, int z, char axis) {
 		int wrap = Wraparound(x);
 		float air = std::abs(m_cubeValues[x][y][z]);
 		float solid = std::abs(m_cubeValues[wrap][y][z]);
+		//Determines which direction along the x axis the vertex is being calculated.
 		if (x == 0) {
 			m_tempVertices.push_back({ { (m_currentCoords[0] + (air / (air + solid))),
 			(m_currentCoords[1]) + static_cast<float>(y), (m_currentCoords[2]) + static_cast<float>(z), 1.0f }, Color });
