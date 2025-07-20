@@ -166,7 +166,6 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Block.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ControlSettingsIO.cpp" />
     <ClCompile Include="CreateWindow.cpp" />
@@ -177,6 +176,7 @@
     <ClCompile Include="GraphicsObject.cpp" />
     <ClCompile Include="InputController.cpp" />
     <ClCompile Include="InputOutput.cpp" />
+    <ClCompile Include="Menus.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
     <ClCompile Include="Game.h" />
     <ClCompile Include="pch.cpp">

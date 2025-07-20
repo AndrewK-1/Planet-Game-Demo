@@ -22,7 +22,8 @@ class InputController {
 public:
 	InputController();
 	void RemoveAllPressedKeys();
-	void BindKey(UINT key, Action action);
+	void BindGameKey(UINT key, Action action);
+	void BindMenuKey(UINT key, Action action);
 	void HandleKeyDown(UINT key, long long lParam, Game* game);
 	void HandleKeyUp(UINT key, Game* game);
 	void PressedKeysExecute(Game* game);
@@ -34,13 +35,19 @@ public:
 		return [this, methodName](Game* game) -> bool{
 			return (this->*methodName)(game); };
 	}
+	//Helper to make generic the retrieval or setting of control settings in regards to a file.
+	template<typename T>
+	void InitializeGameBindSetting(T methodName, UINT settingID, UINT settingValue);
 
 	template<typename T>
-	void InitializeSetting(T methodName, UINT settingID, UINT settingValue);
+	void InitializeMenuBindSetting(T methodName, UINT settingID, UINT settingValue);
+
 private:
-	std::map<UINT, Action> bindingMap;	//Handles binding virtual keys to actions
+	std::map<UINT, Action> bindingMap;	//Handles binding virtual keys to in-game actions
+	std::map<UINT, Action> menuBindingMap;	//A binding map for menu actions.  These don't need to be rebound.
 	bool m_wireframeButtonStillPressed;
 	bool m_wireframeOn;
+	bool m_menuContextEnabled;
 	float m_cameraSpeed;
 	float m_rollSpeed;
 	std::unordered_set<UINT> m_pressedKeys;
@@ -66,6 +73,10 @@ private:
 	bool PlayerRollClockwise(Game* game);
 	bool PlayerRollCounterClockwise(Game* game);
 	bool PlayerMount(Game* game);
+	bool InGameMenu(Game* game);
+
+	bool MenuLeftClick(Game* game);
+	bool MenuClosing(Game* game);
 
 	//Enumerator for the setting IDs used in the binary settings file.
 	enum SettingIDs {
@@ -86,6 +97,10 @@ private:
 		ID_ChangeToToolTwo = 0x0F,
 		ID_ChangeToToolThree = 0x10,
 		ID_ChangeToToolOff = 0x11,
-		ID_DebugWireframe = 0x12
+		ID_DebugWireframe = 0x12,
+		ID_GameMenu = 0x13
 	};
+
+	int m_lastMouseClickPosH;
+	int m_lastMouseClickPosV;
 };

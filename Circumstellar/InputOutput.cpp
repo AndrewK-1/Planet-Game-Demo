@@ -49,6 +49,7 @@ bool InputOutput::ImportWorldInfo(std::wstring worldName, World* world) {
 		}
 		//If a planet
 		else if (static_cast<int>(ID[0]) == 2) {
+			OutputDebugString(L"Planet imported.\n");
 			m_planetExists = 1;
 			//Get position
 			inputStream.read(reinterpret_cast<char*>(&posX), sizeof(float));

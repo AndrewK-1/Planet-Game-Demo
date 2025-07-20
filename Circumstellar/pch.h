@@ -15,9 +15,10 @@
 #define NOMINMAX
 
 //DirectX doesn't use GDI.  These macros disable GDI to reduce compile time.
-#define NODRAWTEXT
-#define NOGDI
-#define NOBITMAP
+// These macros are, however, necessary for <dwrite.h> to use LOGFONTW.
+//#define NODRAWTEXT
+//#define NOGDI
+//#define NOBITMAP
 
 //Can be included by <mcx.h>
 #define NOMCX
@@ -40,6 +41,7 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
+#include <dwrite.h>
 
 //Recommended standard files by DirectX VS template
 #include <algorithm>
@@ -57,6 +59,7 @@
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 #pragma comment (lib, "d2d1.lib")
+#pragma comment (lib, "dwrite.lib")
 
 
 //Template for catching DirectX API errors

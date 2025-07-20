@@ -38,9 +38,13 @@ public:
 	int GetSpaceshipCount();
 	DirectX::XMMATRIX GetBlockMatrix(int index);
 	DirectX::XMMATRIX GetSpaceshipMatrix(int index);
+	bool CheckIfLoaded();
+	void Loaded();
+	void Unloaded();
 private:
 	std::vector<Planet> m_planetArray;
 	std::vector<Block> m_blockArray;
 	std::vector<Spaceship> m_spaceshipArray;
 	std::unique_ptr<Player> m_player;
+	bool m_isLoaded;
 };

@@ -64,6 +64,12 @@
     <Filter Include="Source Files\Game World\Templates">
       <UniqueIdentifier>{0df54232-aaab-4a1c-88e0-1d054f6461f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{381c2016-c324-4cfe-978b-e6ae43216f6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{2ee081b2-0c76-4d09-a7b7-1e7331a457c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CreateWindow.h">
@@ -112,14 +118,14 @@
     <ClInclude Include="PhysicsObject.h">
       <Filter>Header Files\GameWorld\Templates</Filter>
     </ClInclude>
-    <ClInclude Include="Menus.h">
-      <Filter>Header Files\API Interaction</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicsSettingsIO.h">
       <Filter>Header Files\InputOutput</Filter>
     </ClInclude>
     <ClInclude Include="ControlSettingsIO.h">
       <Filter>Header Files\InputOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="Menus.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -163,9 +169,6 @@
     <ClCompile Include="Player.h">
       <Filter>Header Files\GameWorld\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="Block.cpp">
-      <Filter>Source Files\Game World\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="Planet.cpp">
       <Filter>Source Files\Game World\Objects</Filter>
     </ClCompile>
@@ -189,6 +192,9 @@
     </ClCompile>
     <ClCompile Include="ControlSettingsIO.cpp">
       <Filter>Source Files\InputOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="Menus.cpp">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

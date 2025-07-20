@@ -4,6 +4,8 @@
 #include "MessageHandler.h"
 #include "InputController.h"
 #include "ErrorHandling.h"
+#include <iostream>
+
 namespace {
 	std::unique_ptr<InputController> inputController;
 }
@@ -51,6 +53,11 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 	}
 
 	case WM_LBUTTONDOWN: {
+		OutputDebugString(L"Left mouse button pressed: ");
+		OutputDebugString(std::to_wstring(static_cast<UINT>(wParam)).c_str());
+		OutputDebugString(L"\nLeft mouse button message size: ");
+		OutputDebugString(std::to_wstring(sizeof(wParam)).c_str());
+		OutputDebugString(L"\n");
 		inputController->HandleKeyDown(static_cast<UINT>(0x0001), static_cast<long long>(lParam), game);
 		return 0;
 	}
@@ -68,6 +75,11 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 	}
 
 	case WM_KEYDOWN: {
+		OutputDebugString(L"Keyboard button pressed: ");
+		OutputDebugString(std::to_wstring(static_cast<UINT>(wParam)).c_str());
+		OutputDebugString(L"\nKeyboard button message size: ");
+		OutputDebugString(std::to_wstring(sizeof(wParam)).c_str());
+		OutputDebugString(L"\n");
 		inputController->HandleKeyDown(static_cast<UINT>(wParam), static_cast<long long>(lParam), game);
 		return 0;
 	}

@@ -74,6 +74,7 @@ int WINAPI wWinMain(
 
 	game->Initialize(hWind);
 
+	/*
 	//Locking cursor
 	int width;
 	int height;
@@ -81,6 +82,7 @@ int WINAPI wWinMain(
 	RECT cursorBox = { width/2, height/2, width/2+1, height/2+1 };
 	ClipCursor(&cursorBox);
 	ShowCursor(false);
+	*/
 
 	/*In Get Message, parameter 1 is pointing to the MSG structure receiving messages.
 	Parameter 2 is a handle to the window whose messages are to be retrieved, can be null to retrieve any messages on the current thread.

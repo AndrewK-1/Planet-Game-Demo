@@ -30,11 +30,13 @@ Game::Game() noexcept :
 	m_planetIndexCount(0),
 	m_currentTool(1),
 	m_FOV(3.14159f / 4.0f),
-	m_settingsFileName("GraphicsSettings.txt")
+	m_settingsFileName("GraphicsSettings.txt"),
+	m_worldLoaded(false),
+	m_menuActive(true)
 {
+	OpenMainMenu();
 	m_world1 = std::make_unique<World>();
 	camera = std::make_unique<Camera>();
-	m_graphicsObj = std::make_unique<GraphicsObject>();
 	OutputDebugString(L"Creating settings object\n");
 
 	//User Settings input
@@ -47,12 +49,14 @@ Game::Game() noexcept :
 	else {
 		m_settingsIO->SetSetting(m_settingsFileName, "ResolutionWidth", std::to_string(m_screenWidth));
 	}
+
 	if (m_settingsIO->GetSetting(m_settingsFileName, "ResolutionHeight", setting)) {
 		m_screenHeight = std::stoi(setting);
 	}
 	else {
 		m_settingsIO->SetSetting(m_settingsFileName, "ResolutionHeight", std::to_string(m_screenHeight));
 	}
+
 	OutputDebugString(L"FOV settings.\n");
 	if (m_settingsIO->GetSetting(m_settingsFileName, "FieldOfView", setting)) {
 		m_FOV = std::stoi(setting);
@@ -67,13 +71,12 @@ void Game::Initialize(HWND windowHandle) {
 	CreateDevice();
 	CreateResources();
 
-	LoadWorld();
-	if (m_IOHandler.DoesPlanetExist() == 0) {
-		m_world1->AddPlanet(XMQuaternionIdentity(), 10.0f);
+	//if (m_IOHandler.DoesPlanetExist() == 0) {
+	//	m_world1->AddPlanet(XMQuaternionIdentity(), 10.0f);
+	//}
+	if (m_world1->CheckIfLoaded()) {
+		InitializeShaders();
 	}
-
-	InitializeShaders();
-	
 }
 
 void Game::Tick() {
@@ -87,86 +90,87 @@ void Game::Update() {
 	//The goal is to let game logic to operate at its own pace,
 	//while rendering operates when it needs to.
 	
-	//Update physics
-	for (int i = 0; i < m_world1->GetSpaceshipCount(); i++) {
-		m_world1->GetSpaceship(i)->ApplyPhysics();
+	if (m_worldLoaded == true) {
+		//Update physics
+		for (int i = 0; i < m_world1->GetSpaceshipCount(); i++) {
+			m_world1->GetSpaceship(i)->ApplyPhysics();
+		}
+
+		if (m_world1->GetPlayer()->GetMounted() == 0) {
+			m_world1->GetPlayer()->ApplyPhysics();
+		}
+		else {
+			m_world1->GetPlayer()->SetObjectPos(m_world1->GetPlayer()->GetMounted()->GetObjectPos());
+			m_world1->GetPlayer()->SetObjectRot(m_world1->GetPlayer()->GetMounted()->GetObjectRot());
+		}
+
+		//Instancing for terrain modification cursor (isosphere)
+		XMMATRIX defaultInstanceMatrix = XMMatrixIdentity();
+		//Getting the player position to lock camera to it
+		XMFLOAT4 playerPos, playerRot;
+		playerPos = m_world1->GetPlayer()->GetObjectPos();
+		playerRot = m_world1->GetPlayer()->GetObjectRot();
+		XMVECTOR playerPosVec, playerRotVec;
+		playerPosVec = XMLoadFloat4(&playerPos);
+		playerRotVec = XMLoadFloat4(&playerRot);
+		camera->SetPosition(playerPosVec, playerRotVec);
+		XMMATRIX camRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
+			camera->GetForwardRay(10.0f));
+		//Get array of cube matrix positions
+		std::vector<XMMATRIX> cubeWorldMatrix;
+		for (int i = 0; i < m_world1->GetBlockCount(); i++) {
+			cubeWorldMatrix.push_back(m_world1->GetBlockMatrix(i));
+		}
+		//Get array of spaceship matrix positions
+		std::vector<XMMATRIX> spaceshipWorldMatrix;
+		for (int i = 0; i < m_world1->GetSpaceshipCount(); i++) {
+			cubeWorldMatrix.push_back(m_world1->GetSpaceshipMatrix(i));
+		}
+
+		//Actually pushing matrices into the instance array
+		std::vector<DirectX::XMMATRIX> instanceMatrices;
+		instanceMatrices.push_back(defaultInstanceMatrix);
+		//Camera and player using the isosphere model
+		instanceMatrices.push_back(camRayMatrix);
+
+		instanceMatrices.push_back(m_world1->GetPlayer()->GetObjectMatrix());
+		//Maybe change this later.  Right now each cube matrix is being added as its own instance.
+		//This is probably correct, but I'll have to be careful about specifying the instance index when addding additional multi-instanced objects
+		for (int i = 0; i < cubeWorldMatrix.size(); i++) {
+			instanceMatrices.push_back(cubeWorldMatrix[i]);
+		}
+		for (int i = 0; i < spaceshipWorldMatrix.size(); i++) {
+			instanceMatrices.push_back(spaceshipWorldMatrix[i]);
+		}
+
+		int instanceCounter = instanceMatrices.size();
+		D3D11_BUFFER_DESC instanceDesc = {};
+		instanceDesc.Usage = D3D11_USAGE_DEFAULT;
+		instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCounter;
+		instanceDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		D3D11_SUBRESOURCE_DATA instanceData = { instanceMatrices.data(), 0, 0 };
+		m_device->CreateBuffer(&instanceDesc, &instanceData, &m_instanceBuffer);
+		UpdateGraphicsBuffers();
+
+
+		//Reestablish its planet geometry in the GPU
+		m_planetVertexCount = GetPlanet(0)->GetVertexCount();
+		m_planetIndexCount = m_planetVertexCount;
+
+		MatrixData matData;
+		//Load transform matrices
+		matData.worldMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.worldMatrix));
+		matData.viewMatrix = camera->getCameraMatrix();
+		matData.viewMatrix = XMMatrixTranspose(matData.viewMatrix);
+		matData.perspectiveMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.perspectiveMatrix));
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		DX::ThrowIfFailed(m_deviceContext->Map(m_constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
+		CopyMemory(mappedResource.pData, &matData, sizeof(MatrixData));
+		m_deviceContext->Unmap(m_constBuffer.Get(), 0);
+
+		m_deviceContext->VSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
 	}
-
-	if (m_world1->GetPlayer()->GetMounted() == 0) {
-		m_world1->GetPlayer()->ApplyPhysics();
-	}
-	else {
-		m_world1->GetPlayer()->SetObjectPos(m_world1->GetPlayer()->GetMounted()->GetObjectPos());
-		m_world1->GetPlayer()->SetObjectRot(m_world1->GetPlayer()->GetMounted()->GetObjectRot());
-	}
-
-	//Instancing for terrain modification cursor (isosphere)
-	XMMATRIX defaultInstanceMatrix = XMMatrixIdentity();
-	//Getting the player position to lock camera to it
-	XMFLOAT4 playerPos, playerRot;
-	playerPos = m_world1->GetPlayer()->GetObjectPos();
-	playerRot = m_world1->GetPlayer()->GetObjectRot();
-	XMVECTOR playerPosVec, playerRotVec;
-	playerPosVec = XMLoadFloat4(&playerPos);
-	playerRotVec = XMLoadFloat4(&playerRot);
-	camera->SetPosition(playerPosVec, playerRotVec);
-	XMMATRIX camRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
-		camera->GetForwardRay(10.0f));
-	//Get array of cube matrix positions
-	std::vector<XMMATRIX> cubeWorldMatrix;
-	for (int i = 0; i < m_world1->GetBlockCount(); i++) {
-		cubeWorldMatrix.push_back(m_world1->GetBlockMatrix(i));
-	}
-	//Get array of spaceship matrix positions
-	std::vector<XMMATRIX> spaceshipWorldMatrix;
-	for (int i = 0; i < m_world1->GetSpaceshipCount(); i++) {
-		cubeWorldMatrix.push_back(m_world1->GetSpaceshipMatrix(i));
-	}
-	
-	//Actually pushing matrices into the instance array
-	std::vector<DirectX::XMMATRIX> instanceMatrices;
-	instanceMatrices.push_back(defaultInstanceMatrix);
-	//Camera and player using the isosphere model
-	instanceMatrices.push_back(camRayMatrix);
-
-	instanceMatrices.push_back(m_world1->GetPlayer()->GetObjectMatrix());
-	//Maybe change this later.  Right now each cube matrix is being added as its own instance.
-	//This is probably correct, but I'll have to be careful about specifying the instance index when addding additional multi-instanced objects
-	for (int i = 0; i < cubeWorldMatrix.size(); i++) {
-		instanceMatrices.push_back(cubeWorldMatrix[i]);
-	}
-	for (int i = 0; i < spaceshipWorldMatrix.size(); i++) {
-		instanceMatrices.push_back(spaceshipWorldMatrix[i]);
-	}
-
-	int instanceCounter = instanceMatrices.size();
-	D3D11_BUFFER_DESC instanceDesc = {};
-	instanceDesc.Usage = D3D11_USAGE_DEFAULT;
-	instanceDesc.ByteWidth = sizeof(XMMATRIX) * instanceCounter;
-	instanceDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	D3D11_SUBRESOURCE_DATA instanceData = { instanceMatrices.data(), 0, 0};
-	m_device->CreateBuffer(&instanceDesc, &instanceData, &m_instanceBuffer);
-	UpdateGraphicsBuffers();
-
-
-	//Reestablish its planet geometry in the GPU
-	m_planetVertexCount = GetPlanet(0)->GetVertexCount();
-	m_planetIndexCount = m_planetVertexCount;
-	
-	MatrixData matData;
-
-	//Load transform matrices
-	matData.worldMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.worldMatrix));
-	matData.viewMatrix = camera->getCameraMatrix();
-	matData.viewMatrix = XMMatrixTranspose(matData.viewMatrix);
-	matData.perspectiveMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.perspectiveMatrix));
-
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	DX::ThrowIfFailed(m_deviceContext->Map(m_constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
-	CopyMemory(mappedResource.pData, &matData, sizeof(MatrixData));
-	m_deviceContext->Unmap(m_constBuffer.Get(), 0);
-
-	m_deviceContext->VSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
 }
 
 void Game::Render() {
@@ -174,66 +178,77 @@ void Game::Render() {
 
 	//Render code
 
-	//Index for where each index array and vertex array start to tell the gpu how to draw shapes.
-	UINT planetIndex = 0;
-	UINT planetVertex = 0;
+	if (m_worldLoaded == true) {
+		//Index for where each index array and vertex array start to tell the gpu how to draw shapes.
+		UINT planetIndex = 0;
+		UINT planetVertex = 0;
 
-	UINT cubeIndex = m_planetIndexCount;
-	UINT cubeVertex = m_planetVertexCount;
+		UINT cubeIndex = m_planetIndexCount;
+		UINT cubeVertex = m_planetVertexCount;
 
-	UINT isoSphereIndex = cubeIndex + m_cubeIndexCount;
-	UINT isoSphereVertex = cubeVertex + m_cubeVertexCount;
+		UINT isoSphereIndex = cubeIndex + m_cubeIndexCount;
+		UINT isoSphereVertex = cubeVertex + m_cubeVertexCount;
 
-	UINT spaceshipIndex = isoSphereIndex + m_isoSphereIndexCount;
-	UINT spaceshipVertex = isoSphereVertex + m_isoSphereVertexCount;
+		UINT spaceshipIndex = isoSphereIndex + m_isoSphereIndexCount;
+		UINT spaceshipVertex = isoSphereVertex + m_isoSphereVertexCount;
 
-	//Preparing proper alignment of instance data for drawing
-	UINT planetInstances = m_world1->GetPlanetCount();
-	UINT planetInstanceStart = 0;
-	UINT cameraToolRayInstances = 1;
-	UINT cameraToolRayInstanceStart = planetInstances;
-	UINT playerInstances = 1;
-	UINT playerInstanceStart = cameraToolRayInstanceStart + cameraToolRayInstances;
-	UINT cubeInstances = m_world1->GetBlockCount();
-	UINT cubeInstanceStart = playerInstanceStart + playerInstances;
-	UINT spaceshipInstances = m_world1->GetSpaceshipCount();
-	UINT spaceshipInstanceStart = cubeInstanceStart + cubeInstances;
+		//Preparing proper alignment of instance data for drawing
+		UINT planetInstances = m_world1->GetPlanetCount();
+		UINT planetInstanceStart = 0;
+		UINT cameraToolRayInstances = 1;
+		UINT cameraToolRayInstanceStart = planetInstances;
+		UINT playerInstances = 1;
+		UINT playerInstanceStart = cameraToolRayInstanceStart + cameraToolRayInstances;
+		UINT cubeInstances = m_world1->GetBlockCount();
+		UINT cubeInstanceStart = playerInstanceStart + playerInstances;
+		UINT spaceshipInstances = m_world1->GetSpaceshipCount();
+		UINT spaceshipInstanceStart = cubeInstanceStart + cubeInstances;
 
-	//Show planet
-	m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, planetInstances, 0, 0, planetInstanceStart);
-	//Choose which tool to show
-	switch (m_currentTool) {
-	case 1: {
-		m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, cameraToolRayInstances, isoSphereIndex, isoSphereVertex, cameraToolRayInstanceStart);
-		break;
+		//Show planet
+		m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, planetInstances, 0, 0, planetInstanceStart);
+		//Choose which tool to show
+		switch (m_currentTool) {
+		case 1: {
+			m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, cameraToolRayInstances, isoSphereIndex, isoSphereVertex, cameraToolRayInstanceStart);
+			break;
+		}
+		case 2: {
+			m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cameraToolRayInstances, cubeIndex, cubeVertex, cameraToolRayInstanceStart);
+			break;
+		}
+		case 3: {
+			m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, cameraToolRayInstances, spaceshipIndex, spaceshipVertex, cameraToolRayInstanceStart);
+			break;
+		}
+		}
+		//Show Player
+		////m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, playerInstances, isoSphereIndex, isoSphereVertex, playerInstanceStart);
+		//Show cubes
+		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cubeInstances, cubeIndex, cubeVertex, cubeInstanceStart);
+		//Show spaceships
+		m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, spaceshipInstances, spaceshipIndex, spaceshipVertex, spaceshipInstanceStart);
 	}
-	case 2: {
-		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cameraToolRayInstances, cubeIndex, cubeVertex, cameraToolRayInstanceStart);
-		break;
-	}
-	case 3: {
-		m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, cameraToolRayInstances, spaceshipIndex, spaceshipVertex, cameraToolRayInstanceStart);
-		break;
-	}
-	}
-	//Show Player
-	////m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, playerInstances, isoSphereIndex, isoSphereVertex, playerInstanceStart);
-	//Show cubes
-	m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cubeInstances, cubeIndex, cubeVertex, cubeInstanceStart);
-	//Show spaceships
-	m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, spaceshipInstances, spaceshipIndex, spaceshipVertex, spaceshipInstanceStart);
-
+	
 	//2D Rendering
 	m_2dRenderTarget->BeginDraw();
-	//Size of drawing area
-	RECT drawBox;
-	drawBox = { 0, 0, m_screenWidth, m_screenHeight };
-	//Draw Rectangle
-	D2D1_RECT_F drawnRectangle = D2D1::RectF(10.0f,
-		20.0f,
-		40.0f,
-		40.0f);
-	m_2dRenderTarget->DrawRectangle(drawnRectangle, m_2dBrush.Get());
+	
+	//Draw menus
+	for (int i = 0; i < m_menuStack.size(); i++) {
+		//Draw menu frame, then menu buttons
+		m_2dRenderTarget->FillRectangle(m_menuStack.at(i)->GetMenuFrame(), m_2dBrushSolidBlue.Get());
+		m_2dRenderTarget->DrawRectangle(m_menuStack.at(i)->GetMenuFrame(), m_2dBrush.Get());
+		for (int j = 0; j < m_menuStack.at(i)->GetButtonCount(); j++) {
+			MenuButton button = m_menuStack.at(i)->GetButton(j);
+			//Draw button rectangle
+			m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrush.Get());
+			m_2dRenderTarget->DrawText(
+				button.GetButtonText().c_str(), 
+				button.GetButtonText().length(), 
+				m_textFormat.Get(), 
+				button.GetButtonRectangle(),
+				m_2dBrush.Get());
+		}
+	}
 	//End 2D drawing
 	m_2dRenderTarget->EndDraw();
 
@@ -245,7 +260,7 @@ void Game::Clear() {
 
 	//Clear views
 	float backgroundColor[4] = { 0.05f, 0.05f, 0.05f, 1.0f };
-	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), /*DirectX::Colors::CornflowerBlue */  backgroundColor);
+	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), backgroundColor);
 	//Below statement is for depth stencils
 	////m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	//Set render targets
@@ -391,7 +406,22 @@ void Game::CreateResources()
 	DX::ThrowIfFailed(m_2dFactory->CreateDxgiSurfaceRenderTarget(surfaceBackBuffer.Get(), &targetProperties2D, m_2dRenderTarget.ReleaseAndGetAddressOf()));
 
 	//Create a brush
-	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), m_2dBrush.GetAddressOf());
+	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Cyan), m_2dBrush.GetAddressOf());
+	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkBlue), m_2dBrushSolidBlue.GetAddressOf());
+
+	//Text formatting
+	ComPtr<IDWriteFactory> writeFactory;
+	DX::ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(writeFactory.GetAddressOf())));
+	writeFactory->CreateTextFormat(
+		L"Helvetica",
+		NULL,
+		DWRITE_FONT_WEIGHT_REGULAR,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		32.0f,
+		L"en-us",
+		m_textFormat.ReleaseAndGetAddressOf()
+	);
 }
 
 //If a device is somehow lost or disconnected, cleanup and creation of a new device and resources occurs
@@ -409,7 +439,9 @@ void Game::OnDeviceLost() {
 
 	CreateDevice();
 	CreateResources();
-	InitializeShaders();
+	if (m_world1->CheckIfLoaded()) {
+		InitializeShaders();
+	}
 }
 
 void Game::GetDefaultSize(int& width, int& height) 
@@ -446,8 +478,15 @@ void Game::OnActivated() {
 	//When game becomes active window (Opportunity to ignore the first message received, likely due to clicking into the window)
 	//Lock cursor to screen
 	RECT cursorBox = { m_screenWidth / 2, m_screenHeight / 2, m_screenWidth / 2 + 1, m_screenHeight / 2 + 1 };
-	ClipCursor(&cursorBox);
-	ShowCursor(false);
+	//If a menu is active, release and show the cursor, otherwise lock it
+	if (m_menuActive == 1) {
+		while (ShowCursor(true) < 0) {};
+		ClipCursor(NULL);
+	}
+	else {
+		ClipCursor(&cursorBox);
+		ShowCursor(false);
+	}
 }
 
 void Game::OnDeactivated() {
@@ -473,6 +512,12 @@ void Game::OnClosing() {
 void Game::InitializeShaders() {
 	std::wstring msg;
 	//Retrieve vertex and index arrays, and add them to vertex buffer with AddGeometry()
+	if (m_world1->GetPlanetCount() == 0) {
+		OutputDebugString(L"No planet to initialize\n");
+	}
+	else {
+		OutputDebugString(L"Planet exists.\n");
+	}
 	GetPlanet(0)->GenerateGeometry();
 	m_planetVertexCount = GetPlanet(0)->GetVertexCount();
 	m_planetIndexCount = m_planetVertexCount;
@@ -480,14 +525,14 @@ void Game::InitializeShaders() {
 	msg = L"Size of planet index array: " + std::to_wstring(planetIndexArray.size()); msg += L"\n";
 	msg += L"Size of planet vertex array: " + std::to_wstring(GetPlanet(0)->GetVertexCount()); msg += L"\n";
 	msg += L"Size of m_planetIndexCount: " + std::to_wstring(m_planetIndexCount); msg += L"\n";
-	m_graphicsObj->SetGeometry(*GetPlanet(0)->GetGeometry(), planetIndexArray);
+	m_graphicsObj.SetGeometry(*GetPlanet(0)->GetGeometry(), planetIndexArray);
 	msg += L"Size of cube index array: " + std::to_wstring(m_cubeIndices.size()); msg += L"\n";
-	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
+	m_graphicsObj.AddGeometry(m_cubeVertices, m_cubeIndices);
 	msg += L"Size of isoSphere index array: " + std::to_wstring(m_isoSphereIndices.size()); msg += L"\n";
-	m_graphicsObj->AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
+	m_graphicsObj.AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
 	//Add spaceship
-	m_graphicsObj->AddGeometry(m_spaceshipVertices, m_spaceshipIndices);
-	m_graphicsObj->SendToPipeline(m_device.Get());
+	m_graphicsObj.AddGeometry(m_spaceshipVertices, m_spaceshipIndices);
+	m_graphicsObj.SendToPipeline(m_device.Get());
 	OutputDebugString(msg.c_str());
 
 	OutputDebugString(L"Starting Input Element Desc.\n");
@@ -540,7 +585,7 @@ void Game::InitializeShaders() {
 	
 	OutputDebugString(L"Binding vertices to context\n");
 	//Bind Vertices to context
-	m_graphicsObj->Bind(m_deviceContext.Get());
+	m_graphicsObj.Bind(m_deviceContext.Get());
 	//Set input layout
 	m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 	//Set topology type for primitive
@@ -575,12 +620,12 @@ void Game::InitializeShaders() {
 void Game::UpdateGraphicsBuffers() {
 	//std::wstring msg;
 	std::vector<UINT> planetIndexArray = GetPlanet(0)->GetIndexArray();
-	m_graphicsObj->SetGeometry(*GetPlanet(0)->GetGeometry(), planetIndexArray);
-	m_graphicsObj->AddGeometry(m_cubeVertices, m_cubeIndices);
-	m_graphicsObj->AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
-	m_graphicsObj->AddGeometry(m_spaceshipVertices, m_spaceshipIndices);
-	m_graphicsObj->SendToPipeline(m_device.Get());
-	m_graphicsObj->Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
+	m_graphicsObj.SetGeometry(*GetPlanet(0)->GetGeometry(), planetIndexArray);
+	m_graphicsObj.AddGeometry(m_cubeVertices, m_cubeIndices);
+	m_graphicsObj.AddGeometry(m_isoSphereVertices, m_isoSphereIndices);
+	m_graphicsObj.AddGeometry(m_spaceshipVertices, m_spaceshipIndices);
+	m_graphicsObj.SendToPipeline(m_device.Get());
+	m_graphicsObj.Bind(m_deviceContext.Get(), m_instanceBuffer.Get());
 }
 
 //1 to 3, indicates current tool for rendering purposes
@@ -620,10 +665,29 @@ World* Game::GetWorld() {
 }
 
 void Game::LoadWorld() {
-	m_IOHandler.ImportWorldInfo(L"Worlds\TestWorld.cwd", m_world1.get());
+	OutputDebugString(L"World Load Activated.\n");
+	m_menuStack.clear();
+	m_IOHandler.ImportWorldInfo(L"TestWorld.cwd", m_world1.get());
+	m_world1->Loaded();
+	m_worldLoaded = true;
+	InitializeShaders();
 }
 void Game::SaveWorld() {
-	m_IOHandler.ExportWorldInfo(L"Worlds\TestWorld.cwd", m_world1.get());
+	m_IOHandler.ExportWorldInfo(L"TestWorld.cwd", m_world1.get());
+}
+void Game::NewWorld() {
+	OutputDebugString(L"Creating new world\n");
+	m_menuStack.clear();
+	m_world1->AddPlanet(XMQuaternionIdentity(), 10.0f);
+	m_worldLoaded = true;
+	InitializeShaders();
+}
+void Game::ExitWorld() {
+	OutputDebugString(L"Exiting world to main menu\n");
+	m_IOHandler.ExportWorldInfo(L"TestWorld.cwd", m_world1.get());
+	m_world1->Unloaded();
+	m_worldLoaded = false;
+	OpenMainMenu();
 }
 
 float Game::GetFOV() {
@@ -643,4 +707,63 @@ void Game::SetResolution(int width, int height) {
 	m_settingsIO->SetSetting(m_settingsFileName, "ResolutionWidth", std::to_string(width));
 	m_settingsIO->SetSetting(m_settingsFileName, "ResolutionHeight", std::to_string(height));
 	OnWindowSizeChanged(width, height);
+}
+
+void Game::Exit() {
+	PostMessage(m_windowHandle, WM_CLOSE, 0, 0);
+}
+
+void Game::CheckMenuClick(int posX, int posY){
+	/*
+	for (auto menu : m_menuStack) {
+		//OutputDebugString(L"Menu clicked.\n");
+		menu->GetClickedButton(posX, posY).OnClick();
+	}
+	*/
+	
+	MenuButton button(L"", 0, 0, 0, 0, 0, 0, 0, 0);
+	if (!m_menuStack.empty()) {
+		m_menuStack.back()->ClickButton(posX, posY);
+		OutputDebugString(L"Button clicked.\n");
+	}
+	OutputDebugString(L"No menu to click.\n");
+	
+}
+
+bool Game::CheckMenuState() {
+	if (m_menuStack.empty()) {
+		m_menuActive = false;
+		while (ShowCursor(false) >= 0) {};
+		RECT cursorBox = { m_screenWidth / 2, m_screenHeight / 2, m_screenWidth / 2 + 1, m_screenHeight / 2 + 1 };
+		ClipCursor(&cursorBox);
+	}
+	else {
+		m_menuActive = true;
+		while (ShowCursor(true) < 0) {};
+		ClipCursor(NULL);
+	}
+	return m_menuActive;
+}
+
+
+void Game::OpenMainMenu() {
+	m_menuStack.push_back(std::make_shared<MainMenu>(m_screenWidth, m_screenHeight, this));
+	OutputDebugString(L"Opening main menu.\n");
+}
+void Game::OpenInGameMenu() {
+	m_menuStack.push_back(std::make_unique<InGameMenu>(m_screenWidth, m_screenHeight, this));
+}
+void Game::CloseMenus() {
+	OutputDebugString(L"Clearing menus\n");
+	if (m_worldLoaded == true) {
+		m_menuStack.clear();
+	}
+	else {
+		for(int i = 1; i < m_menuStack.size(); i++){
+			m_menuStack.pop_back();
+		}
+	}
+}
+void Game::OpenSettingsMenu() {
+	m_menuStack.push_back(std::make_unique<SettingsMenu>(m_screenWidth, m_screenHeight, this));
 }

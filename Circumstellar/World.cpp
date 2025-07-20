@@ -5,10 +5,10 @@
 
 using namespace DirectX;
 
-World::World() : m_planetArray(), m_blockArray(), m_spaceshipArray() { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
-World::World(std::vector<Planet> planetArray) : m_planetArray(planetArray), m_spaceshipArray() { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
-World::World(std::vector<Block> blockArray) : m_blockArray(blockArray), m_spaceshipArray() { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
-World::World(std::vector<Planet> planetArray, std::vector<Block> blockArray) : m_planetArray(planetArray), m_blockArray(blockArray), m_spaceshipArray() { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
+World::World() : m_planetArray(), m_blockArray(), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
+World::World(std::vector<Planet> planetArray) : m_planetArray(planetArray), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
+World::World(std::vector<Block> blockArray) : m_blockArray(blockArray), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
+World::World(std::vector<Planet> planetArray, std::vector<Block> blockArray) : m_planetArray(planetArray), m_blockArray(blockArray), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
 
 void World::PushObject(Planet planet) {
 	m_planetArray.push_back(planet);
@@ -194,4 +194,17 @@ XMMATRIX World::GetBlockMatrix(int index) {
 }
 XMMATRIX World::GetSpaceshipMatrix(int index) {
 	return m_spaceshipArray[index].GetObjectMatrix();
+}
+
+bool World::CheckIfLoaded() {
+	return m_isLoaded;
+}
+void World::Loaded() {
+	m_isLoaded = 1;
+}
+void World::Unloaded(){
+	m_isLoaded = 0;
+	m_planetArray.clear();
+	m_blockArray.clear();
+	m_spaceshipArray.clear();
 }

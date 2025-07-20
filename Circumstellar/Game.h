@@ -8,6 +8,7 @@
 #include "Planet.h"
 #include "InputOutput.h"
 #include "GraphicsSettingsIO.h"
+#include "Menus.h"
 
 class Game {
 public:
@@ -59,11 +60,21 @@ public:
 
 	void LoadWorld();
 	void SaveWorld();
+	void NewWorld();
+	void ExitWorld();
 
 	float GetFOV();
 	void SetFOV(float fov);
 	void GetResolution(int& width, int& height);
 	void SetResolution(int width, int height);
+
+	void Exit();
+	void CheckMenuClick(int posX, int posY);
+	bool CheckMenuState();
+	void OpenMainMenu();
+	void OpenInGameMenu();
+	void CloseMenus();
+	void OpenSettingsMenu();
 private:
 	//Rendering and views methods
 	void Update();
@@ -75,7 +86,6 @@ private:
 	
 	void OnDeviceLost();
 	void InitializeShaders();
-	
 	//Resources
 	HWND											m_windowHandle;
 	int												m_screenWidth;
@@ -108,7 +118,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
 
-	std::unique_ptr<GraphicsObject> m_graphicsObj;
+	GraphicsObject m_graphicsObj;
 
 	std::vector<WorldObject> m_worldObjects;
 
@@ -142,8 +152,15 @@ private:
 	Microsoft::WRL::ComPtr<ID2D1Factory> m_2dFactory;
 	Microsoft::WRL::ComPtr<ID2D1RenderTarget> m_2dRenderTarget;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrush;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrushSolidBlue;
+	Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
 
 	//Setting IO
 	std::unique_ptr<GraphicsSettingsIO> m_settingsIO;
 	std::string m_settingsFileName;
+
+	//Menus
+	bool m_worldLoaded;
+	bool m_menuActive;
+	std::vector<std::shared_ptr<Menus>> m_menuStack;
 };
