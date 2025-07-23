@@ -22,8 +22,6 @@ int WINAPI wWinMain(
 	_In_ int nCmdShow
 	)
 {
-
-	
 	//To create a window: define a window class, register it, and create the window with CreateWindow or CreateWindowEx functions
 	
 	//Defining the Window Class

@@ -74,7 +74,11 @@ public:
 	void OpenMainMenu();
 	void OpenInGameMenu();
 	void CloseMenus();
+	void CloseTopmostMenu();
 	void OpenSettingsMenu();
+	void OpenGraphicsSettingsMenu();
+	void OpenKeybindMenu();
+	void ChangeFontSize(float fontSize);
 private:
 	//Rendering and views methods
 	void Update();

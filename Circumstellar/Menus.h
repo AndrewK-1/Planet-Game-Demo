@@ -6,13 +6,15 @@ class Game;
 
 class MenuButton {
 public:
-	MenuButton(std::wstring text, int buttonPlacementH, int buttonPlacementV, int paddingH, int paddingV, int width, int height, int screenSizeH, int screenSizeV);
+	MenuButton(std::wstring text, int buttonPlacementH, int buttonPlacementV, int paddingH, int paddingV, int width, int height, D2D1_RECT_F menuFrame, float menuScale);
+	MenuButton(std::wstring text, int buttonPlacementH, int buttonPlacementV, int paddingH, int paddingV, int width, int height, D2D1_RECT_F menuFrame, std::function<void()> onClickFunction, float menuScale);
 	void SetText(std::wstring text);
 	D2D1_RECT_F GetButtonRectangle();
 	std::wstring GetButtonText();
 	bool IsPointInButton(int posX, int posY);
 	void SetOnClickFunction(std::function<void()> callbackFunction); //Function to set the function that a button will call when clicked
 	void OnClick();
+	void RecalculateButtonSize(float menuScale, D2D1_RECT_F menuFrame); //Recalculate button size and position when resolution changes
 	enum ButtonHorizontalPlacement {
 		BUTTON_H_LEFT = 0,
 		BUTTON_H_CENTER = 1,
@@ -27,42 +29,43 @@ private:
 	D2D1_RECT_F m_buttonRectangle;
 	std::wstring m_buttonText;
 	std::function<void()> m_onClickFunction; //Function to call when the button is clicked
+	int m_buttonAlignentH, m_buttonAlignentV;
+	int m_paddingH, m_paddingV;
+	int m_width, m_height;
 };
+
+/*
+class MenuDropDownMenu : public MenuButton {
+public:
+	MenuDropDownMenu(std::wstring text, int buttonPlacementH, int buttonPlacementV, int paddingH, int paddingV, int width, int height, D2D1_RECT_F menuFrame);
+	void AddButton(std::wstring text, int width, int height, std::function<void()> onClickFunction);
+private:
+	std::vector<MenuButton> m_buttonList;
+};
+*/
+
 
 class Menus {
 public:
-	Menus(int screenSizeH, int screenSizeV, Game* game); //Initialize with the proper InputController format
-
+	Menus(int screenSizeH, int screenSizeV, int width, int height, Game* game); //Initialize with the proper InputController format
 	void AddButton(MenuButton button);
-	MenuButton GetButton(int index) {
-		return p_buttons.at(index);
-	}
-
-	bool ClickButton(int posX, int posY) {
-		for (auto button : p_buttons) {
-			if (button.IsPointInButton(posX, posY)) {
-				std::wstring msg = L"Button clicked: " + button.GetButtonText() + L"\n";
-				OutputDebugString(msg.c_str());
-				button.OnClick();
-				return true;
-			}
-		}
-		return false;
-	}
-	int GetButtonCount() {
-		return static_cast<int>(p_buttons.size());
-	}
-	void SetMenuFrame(int posX1, int posY1, int posX2, int poxY2);
-	D2D1_RECT_F GetMenuFrame() {
-		return m_menuFrame;
-	};
+	MenuButton GetButton(int index);
+	bool ClickButton(int posX, int posY);
+	int GetButtonCount();
+	void SetMenuFrame(float posX1, float posY1, float posX2, float poxY2);
+	float CalculateMenuScale(int screenWidth, int screenHeight);
+	void RecalculateMenuFrame(int screenWidth, int screenHeight); //Recalculate menu frame size based on screen when resolution changes.
+	D2D1_RECT_F GetMenuFrame();
+	float GetMenuScale();
 	std::vector<MenuButton> p_buttons;
 	Game* m_game;
 private:
-	unsigned int m_inputContext; //Determine which input formatting to use from the InputController class.
 	int m_screenSizeH;
 	int m_screenSizeV;
+	int m_menuWidth;
+	int m_menuHeight;
 	D2D1_RECT_F m_menuFrame;
+	float m_menuScale;
 };
 
 class MainMenu : public Menus {
@@ -79,4 +82,14 @@ public:
 class SettingsMenu : public Menus {
 public:
 	SettingsMenu(int screenSizeH, int screeSizeV, Game* game);
+};
+
+class GraphicsSettingsMenu : public Menus {
+public:
+	GraphicsSettingsMenu(int screenSizeH, int screeSizeV, Game* game);
+};
+
+class KeybindMenu : public Menus {
+public:
+	KeybindMenu(int screenSizeH, int screeSizeV, Game* game);
 };

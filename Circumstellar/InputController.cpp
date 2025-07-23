@@ -364,5 +364,6 @@ bool InputController::MenuLeftClick(Game* game) {
 }
 bool InputController::MenuClosing(Game* game) {
 	game->CloseMenus();
+	m_menuContextEnabled = game->CheckMenuState();
 	return 1;
 }

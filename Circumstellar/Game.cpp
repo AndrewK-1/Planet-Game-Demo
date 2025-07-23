@@ -34,9 +34,8 @@ Game::Game() noexcept :
 	m_worldLoaded(false),
 	m_menuActive(true)
 {
-	OpenMainMenu();
-	m_world1 = std::make_unique<World>();
-	camera = std::make_unique<Camera>();
+	
+	
 	OutputDebugString(L"Creating settings object\n");
 
 	//User Settings input
@@ -55,8 +54,8 @@ Game::Game() noexcept :
 	}
 	else {
 		m_settingsIO->SetSetting(m_settingsFileName, "ResolutionHeight", std::to_string(m_screenHeight));
-	}
 
+	}
 	OutputDebugString(L"FOV settings.\n");
 	if (m_settingsIO->GetSetting(m_settingsFileName, "FieldOfView", setting)) {
 		m_FOV = std::stoi(setting);
@@ -64,6 +63,10 @@ Game::Game() noexcept :
 	else {
 		m_settingsIO->SetSetting(m_settingsFileName, "FieldOfView", std::to_string(m_FOV));
 	}
+
+	OpenMainMenu();
+	m_world1 = std::make_unique<World>();
+	camera = std::make_unique<Camera>();
 }
 
 void Game::Initialize(HWND windowHandle) {
@@ -237,6 +240,7 @@ void Game::Render() {
 		//Draw menu frame, then menu buttons
 		m_2dRenderTarget->FillRectangle(m_menuStack.at(i)->GetMenuFrame(), m_2dBrushSolidBlue.Get());
 		m_2dRenderTarget->DrawRectangle(m_menuStack.at(i)->GetMenuFrame(), m_2dBrush.Get());
+		ChangeFontSize(m_menuStack.at(i)->GetMenuScale()*36.0f);
 		for (int j = 0; j < m_menuStack.at(i)->GetButtonCount(); j++) {
 			MenuButton button = m_menuStack.at(i)->GetButton(j);
 			//Draw button rectangle
@@ -328,6 +332,7 @@ void Game::CreateResources()
 	//Clear previous window size-specific contexts
 	m_deviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 	m_renderTargetView.Reset();
+	m_2dRenderTarget.Reset();
 	//m_depthStencilView.Reset();
 	m_deviceContext->Flush();
 
@@ -335,7 +340,7 @@ void Game::CreateResources()
 	const UINT backBufferHeight = static_cast<UINT>(m_screenHeight);
 	const DXGI_FORMAT backBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM; //32-bit color format RGBA
 	constexpr UINT backBufferCount = 2;
-	//If swap chain exists, do nothing, otherwise create it
+	//If swap chain exists, resize it, otherwise create it
 	if (m_swapChain) {
 		OutputDebugString(L" Resizing buffers.\n");
 		DX::ThrowIfFailed(m_swapChain->ResizeBuffers(backBufferCount, backBufferWidth, backBufferHeight, backBufferFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
@@ -353,8 +358,8 @@ void Game::CreateResources()
 		DX::ThrowIfFailed(dxgiAdapter->GetParent(IID_PPV_ARGS(dxgiFactory.GetAddressOf())));
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-		swapChainDesc.BufferDesc.Width = m_screenWidth;					//UINT
-		swapChainDesc.BufferDesc.Height = m_screenHeight;				//UINT
+		swapChainDesc.BufferDesc.Width = backBufferWidth;					//UINT
+		swapChainDesc.BufferDesc.Height = backBufferHeight;				//UINT
 		swapChainDesc.BufferDesc.Format = backBufferFormat;				//DXGI_FORMAT
 		swapChainDesc.BufferDesc.RefreshRate;							//DXGI_RATIONAL
 		swapChainDesc.SampleDesc.Count = 1;								//Part of DXGI_SAMPLE_DESC, for anti-aliasing sampling count
@@ -468,6 +473,10 @@ void Game::OnWindowSizeChanged(int width, int height) {
 	OutputDebugString(L" New Height: "); OutputDebugString(std::to_wstring(m_screenHeight).c_str()); OutputDebugString(L"\n");
 	//Resize perspective matrix
 	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(m_FOV, (static_cast<float>(m_screenWidth) / static_cast<float>(m_screenHeight)), 0.1f, 1000.0f));
+
+	for(auto menu : m_menuStack) {
+		menu->RecalculateMenuFrame(m_screenWidth, m_screenHeight);
+	}
 
 	CreateResources();
 }
@@ -707,6 +716,9 @@ void Game::SetResolution(int width, int height) {
 	m_settingsIO->SetSetting(m_settingsFileName, "ResolutionWidth", std::to_string(width));
 	m_settingsIO->SetSetting(m_settingsFileName, "ResolutionHeight", std::to_string(height));
 	OnWindowSizeChanged(width, height);
+	RECT windowRect;
+	GetWindowRect(m_windowHandle, &windowRect);
+	MoveWindow(m_windowHandle, 100, 100, m_screenWidth, m_screenHeight, TRUE);
 }
 
 void Game::Exit() {
@@ -721,7 +733,6 @@ void Game::CheckMenuClick(int posX, int posY){
 	}
 	*/
 	
-	MenuButton button(L"", 0, 0, 0, 0, 0, 0, 0, 0);
 	if (!m_menuStack.empty()) {
 		m_menuStack.back()->ClickButton(posX, posY);
 		OutputDebugString(L"Button clicked.\n");
@@ -764,6 +775,35 @@ void Game::CloseMenus() {
 		}
 	}
 }
+void Game::CloseTopmostMenu() {
+	if (!m_menuStack.empty()) {
+		m_menuStack.pop_back();
+	}
+	else {
+		OutputDebugString(L"Menu stack empty, cannot close topmost menu.\n");
+	}
+}
 void Game::OpenSettingsMenu() {
 	m_menuStack.push_back(std::make_unique<SettingsMenu>(m_screenWidth, m_screenHeight, this));
+}
+void Game::OpenGraphicsSettingsMenu() {
+	m_menuStack.push_back(std::make_unique<GraphicsSettingsMenu>(m_screenWidth, m_screenHeight, this));
+}
+void Game::OpenKeybindMenu() {
+	m_menuStack.push_back(std::make_unique<KeybindMenu>(m_screenWidth, m_screenHeight, this));
+}
+
+void Game::ChangeFontSize(float fontSize) {
+	ComPtr<IDWriteFactory> writeFactory;
+	DX::ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(writeFactory.GetAddressOf())));
+	writeFactory->CreateTextFormat(
+		L"Helvetica",
+		NULL,
+		DWRITE_FONT_WEIGHT_REGULAR,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		fontSize,
+		L"en-us",
+		m_textFormat.ReleaseAndGetAddressOf()
+	);
 }
