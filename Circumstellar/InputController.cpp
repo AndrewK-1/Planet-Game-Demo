@@ -27,6 +27,7 @@ InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_
 	InitializeGameBindSetting(&InputController::ChangeToToolOne, ID_ChangeToToolOne, '1');
 	InitializeGameBindSetting(&InputController::ChangeToToolTwo, ID_ChangeToToolTwo, '2');
 	InitializeGameBindSetting(&InputController::ChangeToToolThree, ID_ChangeToToolThree, '3');
+	InitializeGameBindSetting(&InputController::ChangeToToolOff, ID_ChangeToToolOff, VK_OEM_3);
 	InitializeGameBindSetting(&InputController::DebugWireframe, ID_DebugWireframe, VK_OEM_PERIOD);
 	InitializeGameBindSetting(&InputController::Sprint, ID_Sprint, VK_SHIFT);
 	InitializeGameBindSetting(&InputController::PlayerRollClockwise, ID_PlayerRollClockwise, 'E');
@@ -211,6 +212,11 @@ bool InputController::ChangeToToolThree(Game* game) {
 	game->SetCurrentTool(3);
 	return 1;
 }
+bool InputController::ChangeToToolOff(Game* game) {
+	m_gameTool.SetCurrentTool(0);
+	game->SetCurrentTool(0);
+	return 1;
+}
 
 bool InputController::UseTool(Game* game) {
 	OutputDebugString(L"UseTool activated.\n");
@@ -230,6 +236,9 @@ bool InputController::UseTool(Game* game) {
 	case 3: {
 		game->AddShip();
 		return 1;
+	}
+	case 0: {
+		return 1; //No tool, do nothing.
 	}
 	}
 }

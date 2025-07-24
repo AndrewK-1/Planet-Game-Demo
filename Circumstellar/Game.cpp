@@ -680,17 +680,16 @@ Planet* Game::GetPlanet(int index) {
 World* Game::GetWorld() {
 	return m_world1.get();
 }
-
-void Game::LoadWorld() {
+void Game::LoadWorld(std::wstring worldName) {
 	OutputDebugString(L"World Load Activated.\n");
 	m_menuStack.clear();
-	m_IOHandler.ImportWorldInfo(L"TestWorld.cwd", m_world1.get());
+	m_IOHandler.ImportWorldInfo(worldName, m_world1.get());
 	m_world1->Loaded();
 	m_worldLoaded = true;
 	InitializeShaders();
 }
-void Game::SaveWorld() {
-	m_IOHandler.ExportWorldInfo(L"TestWorld.cwd", m_world1.get());
+void Game::SaveWorld(std::wstring worldName) {
+	m_IOHandler.ExportWorldInfo(worldName, m_world1.get());
 }
 void Game::NewWorld() {
 	OutputDebugString(L"Creating new world\n");
@@ -811,6 +810,12 @@ void Game::OpenKeybindMenu() {
 }
 void Game::OpenKeybindPromptMenu() {
 	m_menuStack.push_back(std::make_unique<KeybindPromptMenu>(m_screenWidth, m_screenHeight, this));
+}
+void Game::OpenSaveMenu() {
+	m_menuStack.push_back(std::make_unique<SaveGameMenu>(m_screenWidth, m_screenHeight, this));
+}
+void Game::OpenLoadMenu() {
+	m_menuStack.push_back(std::make_unique<LoadGameMenu>(m_screenWidth, m_screenHeight, this));
 }
 
 void Game::ChangeFontSize(float fontSize) {

@@ -135,4 +135,14 @@ public:
 	KeybindPromptMenu(int screenSizeH, int screeSizeV, Game* game);
 };
 
+class LoadGameMenu : public Menus {
+public:
+	LoadGameMenu(int screenSizeH, int screeSizeV, Game* game);
+};
+
+class SaveGameMenu : public Menus {
+public:
+	SaveGameMenu(int screenSizeH, int screenSizeV, Game* game);
+};
+
 std::wstring ConvertVirtualKeyToString(UINT key);

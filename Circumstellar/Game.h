@@ -55,7 +55,6 @@ public:
 	void SetWireframe(bool on);
 
 	void AddPlanet(DirectX::XMVECTOR position, float radius);
-	void RemovePlanet();
 	void AddBlock();
 	void RemoveBlock();
 	void AddShip();
@@ -64,8 +63,8 @@ public:
 	Planet* GetPlanet(int index);
 	World* GetWorld();
 
-	void LoadWorld();
-	void SaveWorld();
+	void LoadWorld(std::wstring worldName);
+	void SaveWorld(std::wstring worldName);
 	void NewWorld();
 	void ExitWorld();
 
@@ -86,6 +85,8 @@ public:
 	void OpenGraphicsSettingsMenu();
 	void OpenKeybindMenu();
 	void OpenKeybindPromptMenu();
+	void OpenSaveMenu();
+	void OpenLoadMenu();
 	void ChangeFontSize(float fontSize);
 private:
 	//Rendering and views methods

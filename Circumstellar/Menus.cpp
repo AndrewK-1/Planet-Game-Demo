@@ -225,13 +225,14 @@ bool Menus::ClickButton(int posX, int posY) {
 	return false;
 }
 
-MainMenu::MainMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 1920, 1080, game) {
+MainMenu::MainMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 1800, 1000, game) {
 	D2D1_RECT_F menuFrame = GetMenuFrame();
+	float menuScale = GetMenuScale();
 
-	MenuButton exitButton(L"Exit", 0, 2, 100, 100, 200, 50, menuFrame, [this]() {m_game->Exit(); }, GetMenuScale());
-	MenuButton settingsMenuButton(L"Settings", 0, 2, 100, 200, 200, 50, menuFrame, [this]() {m_game->OpenSettingsMenu(); }, GetMenuScale());
-	MenuButton loadButton(L"Load Game", 0, 2, 100, 300, 200, 50, menuFrame, [this]() {m_game->LoadWorld(); }, GetMenuScale());
-	MenuButton newGameButton(L"New Game", 0, 2, 100, 400, 200, 50, menuFrame, [this]() {m_game->NewWorld(); }, GetMenuScale());
+	MenuButton exitButton(L"Exit", 0, 2, 100, 100, 200, 50, menuFrame, [this]() {m_game->Exit(); }, menuScale);
+	MenuButton settingsMenuButton(L"Settings", 0, 2, 100, 200, 200, 50, menuFrame, [this]() {m_game->OpenSettingsMenu(); }, menuScale);
+	MenuButton loadButton(L"Load Game", 0, 2, 100, 300, 200, 50, menuFrame, [this]() {m_game->OpenLoadMenu(); }, menuScale);
+	MenuButton newGameButton(L"New Game", 0, 2, 100, 400, 200, 50, menuFrame, [this]() {m_game->NewWorld(); }, menuScale);
 
 	p_buttons.push_back(exitButton);
 	p_buttons.push_back(settingsMenuButton);
@@ -241,18 +242,12 @@ MainMenu::MainMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenS
 
 InGameMenu::InGameMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 400, 450, game) {
 	D2D1_RECT_F menuFrame = GetMenuFrame();
+	float menuScale = GetMenuScale();
 
-	MenuButton saveGameButton(L"Save Game", 1, 1, 0, -150, 300, 50, menuFrame, GetMenuScale());
-	saveGameButton.SetOnClickFunction([this]() {m_game->SaveWorld(); });
-
-	MenuButton settingsButton(L"Settings", 1, 1, 0, -50, 300, 50, menuFrame, GetMenuScale());
-	settingsButton.SetOnClickFunction([this]() {m_game->OpenSettingsMenu(); });
-
-	MenuButton closeButton(L"Close Menu", 1, 1, 0, 50, 300, 50, menuFrame, GetMenuScale());
-	closeButton.SetOnClickFunction([this]() {m_game->CloseTopmostMenu(); });
-
-	MenuButton exitButton(L"Exit Game", 1, 1, 0, 150, 300, 50, menuFrame, GetMenuScale());
-	exitButton.SetOnClickFunction([this]() {m_game->ExitWorld(); });
+	MenuButton saveGameButton(L"Save Game", 1, 1, 0, -150, 300, 50, menuFrame, [this]() {m_game->OpenSaveMenu(); }, menuScale);
+	MenuButton settingsButton(L"Settings", 1, 1, 0, -50, 300, 50, menuFrame, [this]() {m_game->OpenSettingsMenu(); }, menuScale);
+	MenuButton closeButton(L"Close Menu", 1, 1, 0, 50, 300, 50, menuFrame, [this]() {m_game->CloseTopmostMenu(); }, menuScale);
+	MenuButton exitButton(L"Exit Game", 1, 1, 0, 150, 300, 50, menuFrame, [this]() {m_game->ExitWorld(); }, menuScale);
 
 	p_buttons.push_back(saveGameButton);
 	p_buttons.push_back(settingsButton);
@@ -262,34 +257,34 @@ InGameMenu::InGameMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(scr
 
 SettingsMenu::SettingsMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 500, 500, game) {
 	D2D1_RECT_F menuFrame = GetMenuFrame();
+	float menuScale = GetMenuScale();
 
-	MenuButton graphicsButton(L"Graphics Settings", 1, 1, 0, -100, 300, 50, menuFrame, GetMenuScale());
-	graphicsButton.SetOnClickFunction([this]() {m_game->OpenGraphicsSettingsMenu(); });
-
-	MenuButton keybindButton(L"Key Bindings", 1, 1, 0, 0, 300, 50, menuFrame, GetMenuScale());
-	keybindButton.SetOnClickFunction([this]() {m_game->OpenKeybindMenu(); });
-
-	MenuButton closeButton(L"Close Menu", 1, 1, 0, 100, 300, 50, menuFrame, GetMenuScale());
-	closeButton.SetOnClickFunction([this]() {m_game->CloseTopmostMenu(); });
+	MenuButton graphicsButton(L"Graphics Settings", 1, 1, 0, -100, 300, 50, menuFrame, [this]() {m_game->OpenGraphicsSettingsMenu(); }, menuScale);
+	MenuButton keybindButton(L"Key Bindings", 1, 1, 0, 0, 300, 50, menuFrame, [this]() {m_game->OpenKeybindMenu(); }, menuScale);
+	MenuButton closeButton(L"Close Menu", 1, 1, 0, 100, 300, 50, menuFrame, [this]() {m_game->CloseTopmostMenu(); }, menuScale);
 
 	p_buttons.push_back(graphicsButton);
 	p_buttons.push_back(keybindButton);
 	p_buttons.push_back(closeButton);
 }
 
-GraphicsSettingsMenu::GraphicsSettingsMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 800, 800, game) {
+GraphicsSettingsMenu::GraphicsSettingsMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 1000, 800, game) {
 	D2D1_RECT_F menuFrame = GetMenuFrame();
+	float menuScale = GetMenuScale();
 
-	MenuButton res1920x1080Button(L"1920 x 1080", 0, 0, 50, 100, 300, 50, menuFrame, [this]() {m_game->SetResolution(1920, 1080); }, GetMenuScale());
-	MenuButton res1440x900Button(L"1440 x 900", 0, 0, 50, 150, 300, 50, menuFrame, [this]() {m_game->SetResolution(1440, 900); }, GetMenuScale());
-	MenuButton res800x600Button(L"800 x 600", 0, 0, 50, 200, 300, 50, menuFrame, [this]() {m_game->SetResolution(800, 600); }, GetMenuScale());
+	MenuButton res1920x1080Button(L"1920 x 1080", 0, 0, 50, 100, 300, 50, menuFrame, [this]() {m_game->SetResolution(1920, 1080); }, menuScale);
+	MenuButton res1440x900Button(L"1440 x 900", 0, 0, 50, 150, 300, 50, menuFrame, [this]() {m_game->SetResolution(1440, 900); }, menuScale);
+	MenuButton res800x600Button(L"800 x 600", 0, 0, 50, 200, 300, 50, menuFrame, [this]() {m_game->SetResolution(800, 600); }, menuScale);
 
 	p_buttons.push_back(res1920x1080Button);
 	p_buttons.push_back(res1440x900Button);
 	p_buttons.push_back(res800x600Button);
+
+	MenuButton closeButton(L"Close Menu", 1, 0, 0, 700, 300, 50, menuFrame, [this, game]() {m_game->CloseTopmostMenu(); }, menuScale);
+	p_buttons.push_back(closeButton);
 }
 
-KeybindMenu::KeybindMenu(int screenSizeH, int screenSizeV, Game* game, InputController* inputCon) : Menus(screenSizeH, screenSizeV, 1000, 1000, game) {
+KeybindMenu::KeybindMenu(int screenSizeH, int screenSizeV, Game* game, InputController* inputCon) : Menus(screenSizeH, screenSizeV, 1000, 1050, game) {
 	D2D1_RECT_F menuFrame = GetMenuFrame();
 	float menuScale = GetMenuScale();
 	UINT oldKey;
@@ -370,6 +365,9 @@ KeybindMenu::KeybindMenu(int screenSizeH, int screenSizeV, Game* game, InputCont
 	p_buttons.push_back(titleChangeToToolOff);
 	p_buttons.push_back(titleDebugWireframe);
 	p_buttons.push_back(titleGameMenu);
+
+	MenuButton closeButton(L"Close Menu", 1, 0, 0, 950, 300, 50, menuFrame, [this, game]() {m_game->CloseTopmostMenu(); }, menuScale);
+	p_buttons.push_back(closeButton);
 }
 
 void KeybindMenu::ButtonFunction(int buttonIndex, UINT settingID, Game* game) {
@@ -392,6 +390,29 @@ KeybindPromptMenu::KeybindPromptMenu(int screenSizeH, int screenSizeV, Game* gam
 	MenuButton promptButton(L"Press a key to bind new control.", 1, 1, 0, 0, 600, 50, menuFrame, menuScale);
 
 	p_buttons.push_back(promptButton);
+}
+
+LoadGameMenu::LoadGameMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 800, 800, game) {
+	D2D1_RECT_F menuFrame = GetMenuFrame();
+	float menuScale = GetMenuScale();
+
+	MenuButton loadGameOneButton(L"Load World One", 1, 1, 0, -200, 300, 100, menuFrame, [this]() {m_game->LoadWorld(L"World One.cwd"); }, menuScale);
+	MenuButton loadGameTwoButton(L"Load World Two", 1, 1, 0, 0, 300, 100, menuFrame, [this]() {m_game->LoadWorld(L"World Two.cwd"); }, menuScale);
+	MenuButton loadGameThreeButton(L"Load World Three", 1, 1, 0, 200, 300, 100, menuFrame, [this]() {m_game->LoadWorld(L"World Three.cwd"); }, menuScale);
+
+	p_buttons.push_back(loadGameOneButton);
+	p_buttons.push_back(loadGameTwoButton);
+	p_buttons.push_back(loadGameThreeButton);
+}
+
+SaveGameMenu::SaveGameMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 800, 800, game) {
+	MenuButton saveGameOneButton(L"Save World One", 1, 1, 0, -200, 300, 100, GetMenuFrame(), [this]() {m_game->SaveWorld(L"World One.cwd"); m_game->CloseTopmostMenu(); }, GetMenuScale());
+	MenuButton saveGameTwoButton(L"Save World Two", 1, 1, 0, 0, 300, 100, GetMenuFrame(), [this]() {m_game->SaveWorld(L"World Two.cwd"); m_game->CloseTopmostMenu(); }, GetMenuScale());
+	MenuButton saveGameThreeButton(L"Save World Three", 1, 1, 0, 200, 300, 100, GetMenuFrame(), [this]() {m_game->SaveWorld(L"World Three.cwd"); m_game->CloseTopmostMenu(); }, GetMenuScale());
+
+	p_buttons.push_back(saveGameOneButton);
+	p_buttons.push_back(saveGameTwoButton);
+	p_buttons.push_back(saveGameThreeButton);
 }
 
 std::wstring ConvertVirtualKeyToString(UINT key) {

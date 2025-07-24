@@ -100,7 +100,6 @@ LRESULT CustomWinMessageHandler::processMessage(HWND hwnd, UINT ProcMSG, WPARAM 
 	}
 
 	case WM_CLOSE: {
-		game->SaveWorld();
 		ClipCursor(NULL);
 		ShowCursor(true);
 		DestroyWindow(hwnd);
