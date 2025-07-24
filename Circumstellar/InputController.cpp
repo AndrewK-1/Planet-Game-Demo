@@ -11,11 +11,11 @@
 //bindingMap is a map containing a UINT key corresponding to a windows message, and an Action which is std::function<void()>
 
 InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_changePower(0.1f), m_wireframeOn(1), m_menuContextEnabled(1),
-	m_lastMouseClickPosH(0), m_lastMouseClickPosV(0)
+	m_lastMouseClickPosH(0), m_lastMouseClickPosV(0), m_keyChangeInputContextEnabled(0)
 {
 	//Note: VK_ is a prefix for some key codes.  All letters and numbers can be listed as '1' or 'A' as a char instead of hexadecimal	
 	OutputDebugString(L"InputController: Receiving Keybind settings.\n");
-	//InitializeSetting will use the file setting if avaiable, otherwise it will add teh setting to the file with the default value.
+	//InitializeSetting will use the file setting if available, otherwise it will add the setting to the file with the default value.
 	InitializeGameBindSetting(&InputController::PlayerForward, ID_PlayerForward, 'W');
 	InitializeGameBindSetting(&InputController::PlayerBackward, ID_PlayerBackward, 'S');
 	InitializeGameBindSetting(&InputController::PlayerLeft, ID_PlayerLeft, 'A');
@@ -40,12 +40,20 @@ InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_
 }
 
 
+
 void InputController::BindGameKey(UINT key, Action action) {
 	bindingMap[key] = action, key;
 }
 
 void InputController::BindMenuKey(UINT key, Action action) {
 	menuBindingMap[key] = action;
+}
+
+void InputController::SetGameBindSetting(UINT oldKey, UINT newKey, UINT settingID) {
+	Action action = bindingMap[oldKey];
+	bindingMap.erase(oldKey);
+	BindGameKey(newKey, action);
+	m_controlSettingsIO.SetSetting(m_controlSettingsFileName, settingID, newKey);
 }
 
 template<typename T>
@@ -62,16 +70,31 @@ void InputController::InitializeGameBindSetting(T methodName, UINT settingID, UI
 	}
 }
 
+UINT InputController::GetGameBindSetting(UINT settingID) {
+	UINT setting;
+	m_controlSettingsIO.GetSetting(m_controlSettingsFileName, settingID, setting);
+	return setting;
+}
+
 void InputController::RemoveAllPressedKeys() {
 	m_pressedKeys.clear();
 }
 
+void InputController::PrepareKeybindChange(int buttonIndex, UINT settingID) {
+	std::wstring msg = L"InputController: Preparing to change keybind for SettingID: " + std::to_wstring(settingID) + L"\n";
+	OutputDebugString(msg.c_str());
+	m_keyChangeInputContextEnabled = true;
+	m_nextKeyToChangeSettingID = settingID;
+	m_buttonChangeIndex = buttonIndex;
+}
+
 void InputController::PressedKeysExecute(Game* game) {
+	std::vector<UINT> keysToErase;
 	for (UINT key : m_pressedKeys) {
 		if (m_menuContextEnabled == 1) {
 			if (menuBindingMap.find(key) != menuBindingMap.end()) {
 				if (menuBindingMap[key](game) == 1) {
-					m_pressedKeys.erase(key);
+					keysToErase.push_back(key);
 				}
 			}
 		}
@@ -80,16 +103,28 @@ void InputController::PressedKeysExecute(Game* game) {
 			if (bindingMap.find(key) != bindingMap.end()) {
 				//Call the method whose name is listed in the map at this key. Return 1 if the method should only trigger on click.  Return 0 for holding the button.
 				if (bindingMap[key](game) == 1) {
-					m_pressedKeys.erase(key);
+					keysToErase.push_back(key);
 				}
 			}
 		}
+	}
+	for(int i = 0; i < keysToErase.size(); i++) {
+		m_pressedKeys.erase(keysToErase[i]);
 	}
 }
 
 void InputController::HandleKeyDown(UINT key, long long lParam, Game* game) {
 	//If bindingMap.find doesn't find the key, it will return bindingMap.end()
 	std::wstring msg;
+
+	if (m_keyChangeInputContextEnabled == true) {
+		UINT oldKey = GetGameBindSetting(m_nextKeyToChangeSettingID);
+		std::wstring msg = L"InputController: Changing keybind for SettingID: " + std::to_wstring(m_nextKeyToChangeSettingID) + L" from " + std::to_wstring(oldKey) + L" to " + std::to_wstring(key) + L"\n";
+		OutputDebugString(msg.c_str());
+		SetGameBindSetting(oldKey, key, m_nextKeyToChangeSettingID);
+		m_keyChangeInputContextEnabled = false;
+		game->CloseTopmostMenu();
+	}
 
 	//Key flag becomes last 16 bits of lParam.  Useful since KF_REPEAT is 16-bit.
 	int keyFlag = HIWORD(lParam);

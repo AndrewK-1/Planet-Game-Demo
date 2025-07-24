@@ -10,6 +10,9 @@
 #include "GraphicsSettingsIO.h"
 #include "Menus.h"
 
+class InputController;
+class Menus;
+
 class Game {
 public:
 	//Constructor that is declared as not expecting exceptions
@@ -25,6 +28,9 @@ public:
 	//A Game pointer would take this Game's contents and move it to the new Game pointer without copying it.
 	Game(Game&&) = default;
 	Game& operator=(Game&&) = default;
+
+	void SetInputController(InputController* inputController);
+	InputController* GetInputController();
 
 	//Initilization and game tick
 	void Initialize(HWND windowHandle);
@@ -75,9 +81,11 @@ public:
 	void OpenInGameMenu();
 	void CloseMenus();
 	void CloseTopmostMenu();
+	Menus& GetTopmostMenu();
 	void OpenSettingsMenu();
 	void OpenGraphicsSettingsMenu();
 	void OpenKeybindMenu();
+	void OpenKeybindPromptMenu();
 	void ChangeFontSize(float fontSize);
 private:
 	//Rendering and views methods
@@ -167,4 +175,5 @@ private:
 	bool m_worldLoaded;
 	bool m_menuActive;
 	std::vector<std::shared_ptr<Menus>> m_menuStack;
+	InputController* m_inputController;
 };

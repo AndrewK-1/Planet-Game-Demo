@@ -11,6 +11,7 @@
 #include "WorldObject.h"
 #include "Block.h"
 #include "Planet.h"
+#include "Menus.h"
 
 
 using Microsoft::WRL::ComPtr;
@@ -67,6 +68,13 @@ Game::Game() noexcept :
 	OpenMainMenu();
 	m_world1 = std::make_unique<World>();
 	camera = std::make_unique<Camera>();
+}
+
+void Game::SetInputController(InputController* inputController) {
+	m_inputController = inputController;
+}
+InputController* Game::GetInputController() {
+	return m_inputController;
 }
 
 void Game::Initialize(HWND windowHandle) {
@@ -783,6 +791,15 @@ void Game::CloseTopmostMenu() {
 		OutputDebugString(L"Menu stack empty, cannot close topmost menu.\n");
 	}
 }
+Menus& Game::GetTopmostMenu() {
+	if (!m_menuStack.empty()) {
+		return *m_menuStack.back();
+	}
+	else {
+		OutputDebugString(L"Menu stack empty, cannot get topmost menu.\n");
+		throw std::runtime_error("Menu stack is empty, cannot get topmost menu.");
+	}
+}
 void Game::OpenSettingsMenu() {
 	m_menuStack.push_back(std::make_unique<SettingsMenu>(m_screenWidth, m_screenHeight, this));
 }
@@ -790,7 +807,10 @@ void Game::OpenGraphicsSettingsMenu() {
 	m_menuStack.push_back(std::make_unique<GraphicsSettingsMenu>(m_screenWidth, m_screenHeight, this));
 }
 void Game::OpenKeybindMenu() {
-	m_menuStack.push_back(std::make_unique<KeybindMenu>(m_screenWidth, m_screenHeight, this));
+	m_menuStack.push_back(std::make_unique<KeybindMenu>(m_screenWidth, m_screenHeight, this, m_inputController));
+}
+void Game::OpenKeybindPromptMenu() {
+	m_menuStack.push_back(std::make_unique<KeybindPromptMenu>(m_screenWidth, m_screenHeight, this));
 }
 
 void Game::ChangeFontSize(float fontSize) {

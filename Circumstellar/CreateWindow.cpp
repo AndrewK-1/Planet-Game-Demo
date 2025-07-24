@@ -29,6 +29,7 @@ int WINAPI wWinMain(
 	//Defining game object
 	game = std::make_unique<Game>();
 	mHandler = std::make_unique<CustomWinMessageHandler>();
+	game->SetInputController(mHandler->getInputController());
 	//Call to custom function to define the window class
 	WNDCLASSEX wClassX = WindowDefine(handle);
 	

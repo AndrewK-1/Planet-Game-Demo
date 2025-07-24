@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Menus.h"
 #include "Game.h"
+#include "InputController.h"
 
 bool MenuButton::IsPointInButton(int posX, int posY) {
 	if (posX >= m_buttonRectangle.left && posX <= m_buttonRectangle.right &&
@@ -200,6 +201,10 @@ MenuButton Menus::GetButton(int index) {
 	return p_buttons.at(index);
 }
 
+MenuButton& Menus::GetButtonReference(int index) {
+	return p_buttons.at(index);
+}
+
 D2D1_RECT_F Menus::GetMenuFrame() {
 	return m_menuFrame;
 };
@@ -283,6 +288,276 @@ GraphicsSettingsMenu::GraphicsSettingsMenu(int screenSizeH, int screenSizeV, Gam
 	p_buttons.push_back(res1440x900Button);
 	p_buttons.push_back(res800x600Button);
 }
-KeybindMenu::KeybindMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 600, 800, game) {
 
+KeybindMenu::KeybindMenu(int screenSizeH, int screenSizeV, Game* game, InputController* inputCon) : Menus(screenSizeH, screenSizeV, 1000, 1000, game) {
+	D2D1_RECT_F menuFrame = GetMenuFrame();
+	float menuScale = GetMenuScale();
+	UINT oldKey;
+	m_inputController = inputCon;
+	
+	MenuButton setUp(SettingText(ID_PlayerUp), 1, 0, 225, 50, 450, 50, menuFrame, [this, game]() { ButtonFunction(0, ID_PlayerUp, game); }, menuScale);
+	MenuButton setDown(SettingText(ID_PlayerDown), 1, 0, 225, 100, 450, 50, menuFrame, [this, game]() { ButtonFunction(1, ID_PlayerDown, game); }, menuScale);
+	MenuButton setLeft(SettingText(ID_PlayerLeft), 1, 0, 225, 150, 450, 50, menuFrame, [this, game]() { ButtonFunction(2, ID_PlayerLeft, game); }, menuScale);
+	MenuButton setRight(SettingText(ID_PlayerRight), 1, 0, 225, 200, 450, 50, menuFrame, [this, game]() { ButtonFunction(3, ID_PlayerRight, game); }, menuScale);
+	MenuButton setForward(SettingText(ID_PlayerForward), 1, 0, 225, 250, 450, 50, menuFrame, [this, game]() { ButtonFunction(4, ID_PlayerForward, game); }, menuScale);
+	MenuButton setBackward(SettingText(ID_PlayerBackward), 1, 0, 225, 300, 450, 50, menuFrame, [this, game]() { ButtonFunction(5, ID_PlayerBackward, game); }, menuScale);
+	MenuButton setRollClockwise(SettingText(ID_PlayerRollClockwise), 1, 0, 225, 350, 450, 50, menuFrame, [this, game]() { ButtonFunction(6, ID_PlayerRollClockwise, game); }, menuScale);
+	MenuButton setRollCounterClockwise(SettingText(ID_PlayerRollCounterClockwise), 1, 0, 225, 400, 450, 50, menuFrame, [this, game]() { ButtonFunction(7, ID_PlayerRollCounterClockwise, game); }, menuScale);
+	MenuButton setMount(SettingText(ID_PlayerMount), 1, 0, 225, 450, 450, 50, menuFrame, [this, game]() { ButtonFunction(8, ID_PlayerMount, game); }, menuScale);
+	MenuButton setUseTool(SettingText(ID_UseTool), 1, 0, 225, 500, 450, 50, menuFrame, [this, game]() { ButtonFunction(9, ID_UseTool, game); }, menuScale);
+	MenuButton setUseToolAlt(SettingText(ID_UseToolAlt), 1, 0, 225, 550, 450, 50, menuFrame, [this, game]() { ButtonFunction(10, ID_UseToolAlt, game); }, menuScale);
+	MenuButton setSpringt(SettingText(ID_Sprint), 1, 0, 225, 600, 450, 50, menuFrame, [this, game]() { ButtonFunction(11, ID_Sprint, game); }, menuScale);
+	MenuButton setChangeToToolOne(SettingText(ID_ChangeToToolOne), 1, 0, 225, 650, 450, 50, menuFrame, [this, game]() { ButtonFunction(12, ID_ChangeToToolOne, game); }, menuScale);
+	MenuButton setChangeTotoolTwo(SettingText(ID_ChangeToToolTwo), 1, 0, 225, 700, 450, 50, menuFrame, [this, game]() { ButtonFunction(13, ID_ChangeToToolTwo, game); }, menuScale);
+	MenuButton setChangeToToolThree(SettingText(ID_ChangeToToolThree), 1, 0, 225, 750, 450, 50, menuFrame, [this, game]() { ButtonFunction(14, ID_ChangeToToolThree, game); }, menuScale);
+	MenuButton setChangeToToolOff(SettingText(ID_ChangeToToolOff), 1, 0, 225, 800, 450, 50, menuFrame, [this, game]() { ButtonFunction(15, ID_ChangeToToolOff, game); }, menuScale);
+	MenuButton setDebugWireframe(SettingText(ID_DebugWireframe), 1, 0, 225, 850, 450, 50, menuFrame, [this, game]() { ButtonFunction(16, ID_DebugWireframe, game); }, menuScale);
+	MenuButton setGameMenu(SettingText(ID_GameMenu), 1, 0, 225, 900, 450, 50, menuFrame, [this, game]() { ButtonFunction(17, ID_GameMenu, game); }, menuScale);
+
+	MenuButton titleUp(L"Up: ", 1, 0, -225, 50, 450, 50, menuFrame, menuScale);
+	MenuButton titleDown(L"Down: ", 1, 0, -225, 100, 450, 50, menuFrame, menuScale);
+	MenuButton titleLeft(L"Left: ", 1, 0, -225, 150, 450, 50, menuFrame, menuScale);
+	MenuButton titleRight(L"Right: ", 1, 0, -225, 200, 450, 50, menuFrame, menuScale);
+	MenuButton titleForward(L"Forward: ", 1, 0, -225, 250, 450, 50, menuFrame, menuScale);
+	MenuButton titleBackward(L"Backward: ", 1, 0, -225, 300, 450, 50, menuFrame, menuScale);
+	MenuButton titleRollClockwise(L"Roll Clockwise: ", 1, 0, -225, 350, 450, 50, menuFrame, menuScale);
+	MenuButton titleRollCounterClockwise(L"Roll Counter Clockwise: ", 1, 0, -225, 400, 450, 50, menuFrame, menuScale);
+	MenuButton titleMount(L"Mount Vehicle: ", 1, 0, -225, 450, 450, 50, menuFrame, menuScale);
+	MenuButton titleUseTool(L"Use Tool: ", 1, 0, -225, 500, 450, 50, menuFrame, menuScale);
+	MenuButton titleUseToolAlt(L"Use Tool Alt: ", 1, 0, -225, 550, 450, 50, menuFrame, menuScale);
+	MenuButton titleStopSprinting(L"Stop Sprinting: ", 1, 0, -225, 600, 450, 50, menuFrame, menuScale);
+	MenuButton titleChangeToToolOne(L"Change to Tool One: ", 1, 0, -225, 650, 450, 50, menuFrame, menuScale);
+	MenuButton titleChangeToToolTwo(L"Change to Tool Two: ", 1, 0, -225, 700, 450, 50, menuFrame, menuScale);
+	MenuButton titleChangeToToolThree(L"Change to Tool Three: ", 1, 0, -225, 750, 450, 50, menuFrame, menuScale);
+	MenuButton titleChangeToToolOff(L"Change to Tool Off: ", 1, 0, -225, 800, 450, 50, menuFrame, menuScale);
+	MenuButton titleDebugWireframe(L"Debug View: ", 1, 0, -225, 850, 450, 50, menuFrame, menuScale);
+	MenuButton titleGameMenu(L"Open Menu: ", 1, 0, -225, 900, 450, 50, menuFrame, menuScale);
+
+	p_buttons.push_back(setUp);
+	p_buttons.push_back(setDown);
+	p_buttons.push_back(setLeft);
+	p_buttons.push_back(setRight);
+	p_buttons.push_back(setForward);
+	p_buttons.push_back(setBackward);
+	p_buttons.push_back(setRollClockwise);
+	p_buttons.push_back(setRollCounterClockwise);
+	p_buttons.push_back(setMount);
+	p_buttons.push_back(setUseTool);
+	p_buttons.push_back(setUseToolAlt);
+	p_buttons.push_back(setSpringt);
+	p_buttons.push_back(setChangeToToolOne);
+	p_buttons.push_back(setChangeTotoolTwo);
+	p_buttons.push_back(setChangeToToolThree);
+	p_buttons.push_back(setChangeToToolOff);
+	p_buttons.push_back(setDebugWireframe);
+	p_buttons.push_back(setGameMenu);
+
+	p_buttons.push_back(titleUp);
+	p_buttons.push_back(titleDown);
+	p_buttons.push_back(titleLeft);
+	p_buttons.push_back(titleRight);
+	p_buttons.push_back(titleForward);
+	p_buttons.push_back(titleBackward);
+	p_buttons.push_back(titleRollClockwise);
+	p_buttons.push_back(titleRollCounterClockwise);
+	p_buttons.push_back(titleMount);
+	p_buttons.push_back(titleUseTool);
+	p_buttons.push_back(titleUseToolAlt);
+	p_buttons.push_back(titleStopSprinting);
+	p_buttons.push_back(titleChangeToToolOne);
+	p_buttons.push_back(titleChangeToToolTwo);
+	p_buttons.push_back(titleChangeToToolThree);
+	p_buttons.push_back(titleChangeToToolOff);
+	p_buttons.push_back(titleDebugWireframe);
+	p_buttons.push_back(titleGameMenu);
+}
+
+void KeybindMenu::ButtonFunction(int buttonIndex, UINT settingID, Game* game) {
+	m_inputController->PrepareKeybindChange(buttonIndex, settingID);
+	game->OpenKeybindPromptMenu();
+}
+
+std::wstring KeybindMenu::SettingText(UINT settingID) {
+	return ConvertVirtualKeyToString(m_inputController->GetGameBindSetting(settingID));
+}
+
+void KeybindMenu::UpdateButtonText(int index, UINT settingID) {
+	p_buttons.at(index).SetText(SettingText(settingID));
+}
+
+KeybindPromptMenu::KeybindPromptMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, 1000, 300, game) {
+	D2D1_RECT_F menuFrame = GetMenuFrame();
+	float menuScale = GetMenuScale();
+
+	MenuButton promptButton(L"Press a key to bind new control.", 1, 1, 0, 0, 600, 50, menuFrame, menuScale);
+
+	p_buttons.push_back(promptButton);
+}
+
+std::wstring ConvertVirtualKeyToString(UINT key) {
+	switch (key) {
+	case VK_LBUTTON: return L"Left MButton";
+	case VK_RBUTTON: return L"Right MButton";
+	case VK_CANCEL: return L"Cancel";
+	case VK_MBUTTON: return L"Middle MButton";
+	case VK_XBUTTON1: return L"X1 Mouse Button";
+	case VK_XBUTTON2: return L"X2 Mouse Button";
+	case VK_BACK: return L"Backspace";
+	case VK_TAB: return L"Tab";
+	case VK_CLEAR: return L"Clear";
+	case VK_RETURN: return L"Enter";
+	case VK_SHIFT: return L"Shift";
+	case VK_CONTROL: return L"Control";
+	case VK_MENU: return L"Alt";
+	case VK_PAUSE: return L"Pause";
+	case VK_CAPITAL: return L"Caps Lock";
+	case VK_ESCAPE: return L"Escape";
+	case VK_SPACE: return L"Space";
+	case VK_PRIOR: return L"Page Up";
+	case VK_NEXT: return L"Page Down";
+	case VK_END: return L"End";
+	case VK_HOME: return L"Home";
+	case VK_LEFT: return L"Left Arrow";
+	case VK_UP: return L"Up Arrow";
+	case VK_RIGHT: return L"Right Arrow";
+	case VK_DOWN: return L"Down Arrow";
+	case VK_SELECT: return L"Select";
+	case VK_PRINT: return L"Print";
+	case VK_EXECUTE: return L"Execute";
+	case VK_SNAPSHOT: return L"Print screen";
+	case VK_INSERT: return L"Insert";
+	case VK_DELETE: return L"Delete";
+	case VK_HELP: return L"Help";
+	case '0': return L"0";
+	case '1': return L"1";
+	case '2': return L"2";
+	case '3': return L"3";
+	case '4': return L"4";
+	case '5': return L"5";
+	case '6': return L"6";
+	case '7': return L"7";
+	case '8': return L"8";
+	case '9': return L"9";
+	case 'A': return L"A";
+	case 'B': return L"B";
+	case 'C': return L"C";
+	case 'D': return L"D";
+	case 'E': return L"E";
+	case 'F': return L"F";
+	case 'G': return L"G";
+	case 'H': return L"H";
+	case 'I': return L"I";
+	case 'J': return L"J";
+	case 'K': return L"K";
+	case 'L': return L"L";
+	case 'M': return L"M";
+	case 'N': return L"N";
+	case 'O': return L"O";
+	case 'P': return L"P";
+	case 'Q': return L"Q";
+	case 'R': return L"R";
+	case 'S': return L"S";
+	case 'T': return L"T";
+	case 'U': return L"U";
+	case 'V': return L"V";
+	case 'W': return L"W";
+	case 'X': return L"X";
+	case 'Y': return L"Y";
+	case 'Z': return L"Z";
+	case VK_LWIN: return L"Left Windows";
+	case VK_RWIN: return L"Right Windows";
+	case VK_APPS: return L"Application";
+	case VK_SLEEP: return L"Computer Sleep";
+	case VK_NUMPAD0: return L"Numpad 0";
+	case VK_NUMPAD1: return L"Numpad 1";
+	case VK_NUMPAD2: return L"Numpad 2";
+	case VK_NUMPAD3: return L"Numpad 3";
+	case VK_NUMPAD4: return L"Numpad 4";
+	case VK_NUMPAD5: return L"Numpad 5";
+	case VK_NUMPAD6: return L"Numpad 6";
+	case VK_NUMPAD7: return L"Numpad 7";
+	case VK_NUMPAD8: return L"Numpad 8";
+	case VK_NUMPAD9: return L"Numpad 9";
+	case VK_MULTIPLY: return L"Numpad Multiply";
+	case VK_ADD: return L"Numpad Add";
+	case VK_SEPARATOR: return L"Numpad Separator";
+	case VK_SUBTRACT: return L"Numpad Subtract";
+	case VK_DECIMAL: return L"Numpad Decimal";
+	case VK_DIVIDE: return L"Numpad Divide";
+	case VK_F1: return L"F1";
+	case VK_F2: return L"F2";
+	case VK_F3: return L"F3";
+	case VK_F4: return L"F4";
+	case VK_F5: return L"F5";
+	case VK_F6: return L"F6";
+	case VK_F7: return L"F7";
+	case VK_F8: return L"F8";
+	case VK_F9: return L"F9";
+	case VK_F10: return L"F10";
+	case VK_F11: return L"F11";
+	case VK_F12: return L"F12";
+	case VK_F13: return L"F13";
+	case VK_F14: return L"F14";
+	case VK_F15: return L"F15";
+	case VK_F16: return L"F16";
+	case VK_F17: return L"F17";
+	case VK_F18: return L"F18";
+	case VK_F19: return L"F19";
+	case VK_F20: return L"F20";
+	case VK_F21: return L"F21";
+	case VK_F22: return L"F22";
+	case VK_F23: return L"F23";
+	case VK_F24: return L"F24";
+	case VK_NUMLOCK: return L"Num Lock";
+	case VK_SCROLL: return L"Scroll Lock";
+	case VK_LSHIFT: return L"Left Shift";
+	case VK_RSHIFT: return L"Right Shift";
+	case VK_LCONTROL: return L"Left Control";
+	case VK_RCONTROL: return L"Right Control";
+	case VK_LMENU: return L"Left Alt";
+	case VK_RMENU: return L"Right Alt";
+	case VK_BROWSER_BACK: return L"Browser Back";
+	case VK_BROWSER_FORWARD: return L"Browser Forward";
+	case VK_BROWSER_REFRESH: return L"Browser Refresh";
+	case VK_BROWSER_STOP: return L"Browser Stop";
+	case VK_BROWSER_SEARCH: return L"Browser Search";
+	case VK_BROWSER_FAVORITES: return L"Browser Favorites";
+	case VK_BROWSER_HOME: return L"Browser Start/Home";
+	case VK_VOLUME_MUTE: return L"Volume Mute";
+	case VK_VOLUME_DOWN: return L"Volume Down";
+	case VK_VOLUME_UP: return L"Volume Up";
+	case VK_MEDIA_NEXT_TRACK: return L"Media Next Track";
+	case VK_MEDIA_PREV_TRACK: return L"Media Previous Track";
+	case VK_MEDIA_STOP: return L"Media Stop";
+	case VK_MEDIA_PLAY_PAUSE: return L"Media Play/Pause";
+	case VK_LAUNCH_MAIL: return L"Start Mail";
+	case VK_LAUNCH_MEDIA_SELECT: return L"Start Media";
+	case VK_LAUNCH_APP1: return L"Launch Application 1";
+	case VK_LAUNCH_APP2: return L"Launch Application 2";
+	case VK_OEM_1: return L"Semicolon";
+	case VK_OEM_PLUS: return L"Plus";
+	case VK_OEM_COMMA: return L"Comma";
+	case VK_OEM_MINUS: return L"Minus";
+	case VK_OEM_PERIOD: return L"Period";
+	case VK_OEM_2: return L"Forward Slash";
+	case VK_OEM_3: return L"Grave/Tilde";
+	case VK_OEM_4: return L"Left Brace";
+	case VK_OEM_5: return L"Backslash";
+	case VK_OEM_6: return L"Right Brace";
+	case VK_OEM_7: return L"Apostrophe";
+	case VK_OEM_8: return L"OEM 8";
+	case VK_OEM_102: return L"OEM 102";
+	case VK_PROCESSKEY: return L"Process Key";
+	case VK_PACKET: return L"Unicode Keystroke Packet";
+	case VK_ATTN: return L"Attn";
+	case VK_CRSEL: return L"CrSel";
+	case VK_EXSEL: return L"ExSel";
+	case VK_EREOF: return L"Erase EOF";
+	case VK_PLAY: return L"Play";
+	case VK_ZOOM: return L"Zoom";
+	case VK_PA1: return L"PA1";
+	case VK_OEM_CLEAR: return L"Clear";
+	default:
+		return std::to_wstring(key);
+	}
 }
