@@ -371,18 +371,32 @@ GraphicsSettingsMenu::GraphicsSettingsMenu(int screenSizeH, int screenSizeV, Gam
 	D2D1_RECT_F menuFrame = GetMenuFrame();
 	float menuScale = GetMenuScale();
 
-	MenuButton res1920x1080Button(L"1920 x 1080", 0, 0, 50, 100, 300, 50, menuFrame, [this]() {m_game->SetResolution(1920, 1080); }, menuScale);
-	MenuButton res1440x900Button(L"1440 x 900", 0, 0, 50, 150, 300, 50, menuFrame, [this]() {m_game->SetResolution(1440, 900); }, menuScale);
-	MenuButton res800x600Button(L"800 x 600", 0, 0, 50, 200, 300, 50, menuFrame, [this]() {m_game->SetResolution(800, 600); }, menuScale);
+	p_buttons.push_back(MenuButton(L"3840 x 2160", 1, 0, -150, 50, 300, 50, menuFrame, [this]() {m_game->SetResolution(3840, 2160); }, menuScale));
+	p_buttons.push_back(MenuButton(L"2715 x 1527", 1, 0, -150, 100, 300, 50, menuFrame, [this]() {m_game->SetResolution(2715, 1527); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1920 x 1080", 1, 0, -150, 150, 300, 50, menuFrame, [this]() {m_game->SetResolution(1920, 1080); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1768 x 992", 1, 0, -150, 200, 300, 50, menuFrame, [this]() {m_game->SetResolution(1768, 992); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1680 x 1050", 1, 0, -150, 250, 300, 50, menuFrame, [this]() {m_game->SetResolution(1680, 1050); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1600 x 1024", 1, 0, -150, 300, 300, 50, menuFrame, [this]() {m_game->SetResolution(1600, 1024); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1600 x 900", 1, 0, -150, 350, 300, 50, menuFrame, [this]() {m_game->SetResolution(1600, 900); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1440 x 1080", 1, 0, -150, 400, 300, 50, menuFrame, [this]() {m_game->SetResolution(1440, 1080); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1440 x 900", 1, 0, -150, 450, 300, 50, menuFrame, [this]() {m_game->SetResolution(1440, 900); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1360 x 768", 1, 0, -150, 500, 300, 50, menuFrame, [this]() {m_game->SetResolution(1360, 768); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1280 x 1024", 1, 0, -150, 550, 300, 50, menuFrame, [this]() {m_game->SetResolution(1280, 1024); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1280 x 960", 1, 0, 150, 50, 300, 50, menuFrame, [this]() {m_game->SetResolution(1280, 960); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1280 x 800", 1, 0, 150, 100, 300, 50, menuFrame, [this]() {m_game->SetResolution(1280, 800); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1280 x 768", 1, 0, 150, 150, 300, 50, menuFrame, [this]() {m_game->SetResolution(1280, 768); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1280 x 720", 1, 0, 150, 200, 300, 50, menuFrame, [this]() {m_game->SetResolution(1280, 720); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1176 x 664", 1, 0, 150, 250, 300, 50, menuFrame, [this]() {m_game->SetResolution(1176, 664); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1152 x 864", 1, 0, 150, 300, 300, 50, menuFrame, [this]() {m_game->SetResolution(1152, 864); }, menuScale));
+	p_buttons.push_back(MenuButton(L"1024 x 768", 1, 0, 150, 350, 300, 50, menuFrame, [this]() {m_game->SetResolution(1024, 768); }, menuScale));
+	p_buttons.push_back(MenuButton(L"800 x 600", 1, 0, 150, 400, 300, 50, menuFrame, [this]() {m_game->SetResolution(800, 600); }, menuScale));
+	p_buttons.push_back(MenuButton(L"720 x 480", 1, 0, 150, 450, 300, 50, menuFrame, [this]() {m_game->SetResolution(720, 480); }, menuScale));
+	p_buttons.push_back(MenuButton(L"640 x 480", 1, 0, 150, 500, 300, 50, menuFrame, [this]() {m_game->SetResolution(640, 480); }, menuScale));
 
-	p_buttons.push_back(res1920x1080Button);
-	p_buttons.push_back(res1440x900Button);
-	p_buttons.push_back(res800x600Button);
-
-	Slider fovSlider(2, 0, 50, 100, 300, 50, menuFrame, menuScale, [game]() { game->SetFOV(1.0f); }, game);
+	Slider fovSlider(1, 0, 0, 550, 300, 50, menuFrame, menuScale, [game]() { game->SetFOV(1.0f); }, game);
 	p_sliders.push_back(fovSlider);
 
-	MenuButton closeButton(L"Close Menu", 1, 0, 0, 700, 300, 50, menuFrame, [this, game]() {m_game->CloseTopmostMenu(); }, menuScale);
+	MenuButton closeButton(L"Close Menu", 1, 0, 0, 750, 300, 50, menuFrame, [this, game]() {m_game->CloseTopmostMenu(); }, menuScale);
 	p_buttons.push_back(closeButton);
 }
 
