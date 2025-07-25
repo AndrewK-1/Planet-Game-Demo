@@ -13,7 +13,7 @@ public:
 	void GenerateGeometry();
 	void EditData(int x, int y, int z, float value);
 	void SetData(int x, int y, int z, float value);
-	std::vector<CustomGeometry::Vertex>* GetGeometry();
+	std::vector<CustomGeometry::VertexWNormal>* GetGeometry();
 	int GetArrayRadius();
 	int GetVertexCount();
 	std::vector<UINT> GetIndexArray();
@@ -21,7 +21,7 @@ public:
 	float GetPlanetRadius();
 private:
 	std::vector<std::vector<std::vector<float>>> m_voxelData;
-	std::vector<CustomGeometry::Vertex> m_geometry;
+	std::vector<CustomGeometry::VertexWNormal> m_geometry;
 	std::vector<UINT> m_indexArray;
 	float m_radius;
 	int m_arrayRadius;

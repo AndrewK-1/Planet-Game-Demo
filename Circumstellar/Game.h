@@ -144,15 +144,15 @@ private:
 	int m_planetIndexCount;
 	int m_cubeIndexCount = CustomGeometry::CubeVertexCount;
 	int m_cubeVertexCount = CustomGeometry::CubeVertexCount;
-	std::vector<CustomGeometry::Vertex> m_cubeVertices = CustomGeometry::CubeArray;
+	std::vector<CustomGeometry::VertexWNormal> m_cubeVertices = CustomGeometry::CubeArray;
 	std::vector<UINT> m_cubeIndices = CustomGeometry::CubeIndexArray;
 	int m_isoSphereIndexCount = CustomGeometry::IsoSphereIndexCount;
 	int m_isoSphereVertexCount = CustomGeometry::IsoSphereVertexCount;
-	std::vector<CustomGeometry::Vertex> m_isoSphereVertices = CustomGeometry::IsoSphereArray;
+	std::vector<CustomGeometry::VertexWNormal> m_isoSphereVertices = CustomGeometry::IsoSphereArray;
 	std::vector<UINT> m_isoSphereIndices = CustomGeometry::IsoSphereIndexArray;
 	int m_spaceshipIndexCount = CustomGeometry::SpaceshipIndexCount;
 	int m_spaceshipVertexCount = CustomGeometry::SpaceshipVertexCount;
-	std::vector<CustomGeometry::Vertex> m_spaceshipVertices = CustomGeometry::SpaceshipVertexArray;
+	std::vector<CustomGeometry::VertexWNormal> m_spaceshipVertices = CustomGeometry::SpaceshipVertexArray;
 	std::vector<UINT> m_spaceshipIndices = CustomGeometry::SpaceshipIndexArray;
 
 	int m_currentTool;
@@ -168,6 +168,7 @@ private:
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrush;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrushSolidBlue;
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
 	//Setting IO
 	std::unique_ptr<GraphicsSettingsIO> m_settingsIO;

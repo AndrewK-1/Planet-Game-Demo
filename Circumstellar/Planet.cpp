@@ -23,7 +23,7 @@ Planet::Planet(float radius, DirectX::XMVECTOR position, DirectX::XMVECTOR rotat
 	GenerateData();
 }
 
-std::vector<CustomGeometry::Vertex>* Planet::GetGeometry() {
+std::vector<CustomGeometry::VertexWNormal>* Planet::GetGeometry() {
 	return &m_geometry;
 }
 
@@ -204,10 +204,17 @@ void Planet::GenerateGeometry() {
 										}
 										for (int triIndex = 2; triIndex < m_tempVertices.size(); triIndex++) {
 											m_vertexCount += 3;
-	
-											m_geometry.push_back(m_tempVertices[0]);
-											m_geometry.push_back(m_tempVertices[triIndex-1]);
-											m_geometry.push_back(m_tempVertices[triIndex]);
+											XMVECTOR vertX, vertY, vertZ, normalVec;
+											vertX = XMLoadFloat4(&m_tempVertices[0].V_Position);
+											vertY = XMLoadFloat4(&m_tempVertices[triIndex - 1].V_Position);
+											vertZ = XMLoadFloat4(&m_tempVertices[triIndex].V_Position);
+											normalVec = XMVector3Cross(XMVectorSubtract(vertZ, vertY), XMVectorSubtract(vertX, vertY));
+											XMFLOAT4 normalFloat;
+											XMStoreFloat4(&normalFloat, normalVec);
+
+											m_geometry.push_back({ m_tempVertices[0].V_Position, normalFloat, m_tempVertices[0].V_Color });
+											m_geometry.push_back({ m_tempVertices[triIndex - 1].V_Position, normalFloat, m_tempVertices[triIndex - 1].V_Color });
+											m_geometry.push_back({ m_tempVertices[triIndex].V_Position, normalFloat, m_tempVertices[triIndex].V_Color });
 										}
 									}
 								}

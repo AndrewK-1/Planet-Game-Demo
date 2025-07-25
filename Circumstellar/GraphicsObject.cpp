@@ -17,7 +17,7 @@ bool GraphicsObject::SendToPipeline(ID3D11Device* device) {
 	//OutputDebugString(L"\n");
 	D3D11_BUFFER_DESC vertBufferDesc = {};
 	vertBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertBufferDesc.ByteWidth = sizeof(CustomGeometry::Vertex) * m_vertices.size();	//Size of array passed to the GPU
+	vertBufferDesc.ByteWidth = sizeof(CustomGeometry::VertexWNormal) * m_vertices.size();	//Size of array passed to the GPU
 	vertBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;	//Type of buffer i.e. vertex buffer
 	vertBufferDesc.CPUAccessFlags = 0;
 	vertBufferDesc.MiscFlags = 0;
@@ -52,7 +52,7 @@ bool GraphicsObject::SendToPipeline(ID3D11Device* device) {
 }
 
 void GraphicsObject::Bind(ID3D11DeviceContext* context){
-	UINT stride = sizeof(CustomGeometry::Vertex);
+	UINT stride = sizeof(CustomGeometry::VertexWNormal);
 	UINT offset = 0;
 
 	context->IASetVertexBuffers(0, 1, m_vBuffer.GetAddressOf(), &stride, &offset);
@@ -61,7 +61,7 @@ void GraphicsObject::Bind(ID3D11DeviceContext* context){
 }
 
 void GraphicsObject::Bind(ID3D11DeviceContext* context, ID3D11Buffer* instancing) {
-	UINT stride[] = {sizeof(CustomGeometry::Vertex), sizeof(DirectX::XMMATRIX)};
+	UINT stride[] = {sizeof(CustomGeometry::VertexWNormal), sizeof(DirectX::XMMATRIX)};
 	UINT offset[] = { 0, 0 };
 	Microsoft::WRL::ComPtr<ID3D11Buffer> buffers[] = { m_vBuffer.Get(), instancing};
 	context->IASetVertexBuffers(0, 2, buffers->GetAddressOf(), stride, offset);
@@ -73,12 +73,12 @@ UINT GraphicsObject::GetVertexCount() {
 	return m_vCount;
 }
 
-void GraphicsObject::SetGeometry(std::vector<CustomGeometry::Vertex>& geometry, std::vector<UINT>& indexArray) {
+void GraphicsObject::SetGeometry(std::vector<CustomGeometry::VertexWNormal>& geometry, std::vector<UINT>& indexArray) {
 	m_vertices = geometry;
 	m_indexArray = indexArray;
 }
 
-void GraphicsObject::AddGeometry(std::vector<CustomGeometry::Vertex>& geometry, std::vector<UINT>& indexArray) {
+void GraphicsObject::AddGeometry(std::vector<CustomGeometry::VertexWNormal>& geometry, std::vector<UINT>& indexArray) {
 	m_vertices.insert(m_vertices.end(), geometry.begin(), geometry.end());
 	m_indexArray.insert(m_indexArray.end(), indexArray.begin(), indexArray.end());
 }

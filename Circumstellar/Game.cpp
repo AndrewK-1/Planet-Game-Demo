@@ -290,9 +290,9 @@ void Game::Clear() {
 	float backgroundColor[4] = { 0.05f, 0.05f, 0.05f, 1.0f };
 	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), backgroundColor);
 	//Below statement is for depth stencils
-	////m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	//Set render targets
-	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), NULL);
+	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
 
 	//Set viewport
 	D3D11_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(m_screenWidth), static_cast<float>(m_screenHeight), 0.0f, 1.0f };
@@ -402,6 +402,60 @@ void Game::CreateResources()
 			m_swapChain.ReleaseAndGetAddressOf()
 		));
 	}
+	if (m_depthStencilView) {
+
+	}
+	else {
+		D3D11_TEXTURE2D_DESC depthDesc = {};
+		depthDesc.Width = m_screenWidth;
+		depthDesc.Height = m_screenHeight;
+		depthDesc.MipLevels = 1;
+		depthDesc.ArraySize = 1;
+		depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 24 bits for depth, 8 bits for stencil
+		depthDesc.SampleDesc.Count = 1;
+		depthDesc.SampleDesc.Quality = 0;
+		depthDesc.Usage = D3D11_USAGE_DEFAULT;
+		depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		depthDesc.CPUAccessFlags = 0;
+		depthDesc.MiscFlags = 0;
+
+		ComPtr<ID3D11Texture2D> depthStencilTexture;
+		DX::ThrowIfFailed(m_device->CreateTexture2D(&depthDesc, nullptr, depthStencilTexture.GetAddressOf()));
+
+		//Depth stencil state
+		D3D11_DEPTH_STENCIL_DESC depthStateDesc = {};
+		//Depth test parameters
+		depthStateDesc.DepthEnable = true;
+		depthStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		depthStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		//Stencil test parameters
+		depthStateDesc.StencilEnable = true;
+		depthStateDesc.StencilReadMask = 0xFF;
+		depthStateDesc.StencilWriteMask = 0xFF;
+		//Stencil operations if pixel is front-facing
+		depthStateDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		depthStateDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		depthStateDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		depthStateDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		// Stencil operations if pixel is back-facing
+		depthStateDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		depthStateDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		depthStateDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		depthStateDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		// Create depth stencil state
+		ComPtr<ID3D11DepthStencilState> depthStencilState;
+		m_device->CreateDepthStencilState(&depthStateDesc, depthStencilState.GetAddressOf());
+		//Create the depth stencil view
+		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilView = {};
+		depthStencilView.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depthStencilView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		depthStencilView.Texture2D.MipSlice = 0;
+		//Create depth stencil view
+		DX::ThrowIfFailed(m_device->CreateDepthStencilView(depthStencilTexture.Get(), &depthStencilView, m_depthStencilView.ReleaseAndGetAddressOf()));
+		//Bind depth stencil view
+		m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+	}
+	
 
 	//COM pointers should be released, but WRL makes it so that this is not always necessary.
 	//Also COM pointers should not use Release(), as the Com object will handle releasing, and if already released will cause an error on releasing a nullptr.
@@ -573,6 +627,7 @@ void Game::InitializeShaders() {
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
 		//Vertex data
 		{static_cast<LPCSTR>("POSITION"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{static_cast<LPCSTR>("NORMAL"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{static_cast<LPCSTR>("COLOR"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		//Instance data
 		{static_cast<LPCSTR>("INSTANCE_POSITION"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
@@ -586,7 +641,7 @@ void Game::InitializeShaders() {
 	//Compiling the shader
 	Microsoft::WRL::ComPtr<ID3DBlob> VshaderBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> VerrorBlob = nullptr;
-	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexInstanceShader.hlsl", nullptr, nullptr, "main", "vs_5_0", 0, 0, &VshaderBlob, &VerrorBlob));
+	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexDiffuseInstanceShader.hlsl", nullptr, nullptr, "main", "vs_5_0", 0, 0, &VshaderBlob, &VerrorBlob));
 	OutputDebugString(L"Creating vertex shader.\n");
 	//Create vertex shader
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> createdVertexShader;
@@ -604,7 +659,7 @@ void Game::InitializeShaders() {
 	//Pixel Shader
 	Microsoft::WRL::ComPtr<ID3DBlob> PshaderBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> PerrorBlob = nullptr;
-	DX::ThrowIfFailed(D3DCompileFromFile(L"PixelShader1.hlsl", nullptr, nullptr, "main", "ps_5_0", 0, 0, &PshaderBlob, &PerrorBlob));
+	DX::ThrowIfFailed(D3DCompileFromFile(L"PixelDiffuseShader.hlsl", nullptr, nullptr, "main", "ps_5_0", 0, 0, &PshaderBlob, &PerrorBlob));
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> createdPixelShader;
 	DX::ThrowIfFailed(m_device->CreatePixelShader(PshaderBlob->GetBufferPointer(), PshaderBlob->GetBufferSize(), NULL, &createdPixelShader));
 
