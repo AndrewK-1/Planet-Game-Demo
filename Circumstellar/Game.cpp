@@ -260,6 +260,22 @@ void Game::Render() {
 				button.GetButtonRectangle(),
 				m_2dBrush.Get());
 		}
+		for (int j = 0; j < m_menuStack.at(i)->GetSliderCount(); j++) {
+			Slider slider = m_menuStack.at(i)->GetSlider(j);
+			//Draw slider
+			//Draw slider lines
+			std::vector<D2D1_POINT_2F> pointsList = slider.GetPointsList();
+			for (int i = 0; i < 6; i += 2) {
+				m_2dRenderTarget->DrawLine(pointsList.at(i), pointsList.at(i+1), m_2dBrush.Get(), 3.0f);
+			}
+			//Draw slider box
+			D2D1_RECT_F sliderRectangle = slider.GetSliderRectangle();
+			float boxWidth = 10.0f;
+			float boxPosX = sliderRectangle.left + (sliderRectangle.right - sliderRectangle.left) * slider.GetValue() - boxWidth / 2.0f;
+			float boxPosY = sliderRectangle.top;
+			D2D1_RECT_F sliderRect = D2D1::RectF(boxPosX, boxPosY, boxPosX + boxWidth, boxPosY + slider.GetHeight());
+			m_2dRenderTarget->FillRectangle(sliderRect, m_2dBrush.Get());
+		}
 	}
 	//End 2D drawing
 	m_2dRenderTarget->EndDraw();
@@ -710,8 +726,14 @@ float Game::GetFOV() {
 	return m_FOV;
 }
 void Game::SetFOV(float fov) {
-	m_settingsIO->SetSetting(m_settingsFileName, "FieldOfView", std::to_string(fov));
-	m_FOV = fov;
+	float newFOV = m_menuStack.back()->GetSlider(0).GetValue() * 3.14f;
+	m_settingsIO->SetSetting(m_settingsFileName, "FieldOfView", std::to_string(newFOV));
+	m_FOV = newFOV;
+	std::wstring msg = L"Slider value is: " + std::to_wstring(m_menuStack.back()->GetSlider(0).GetValue()) + L"\n";
+	OutputDebugString(msg.c_str());
+	msg = L"New FOV set to: " + std::to_wstring(newFOV) + L"\n";
+	OutputDebugString(msg.c_str());
+	XMStoreFloat4x4(&float4x4Data.perspectiveMatrix, XMMatrixPerspectiveFovLH(m_FOV, (static_cast<float>(m_screenWidth) / static_cast<float>(m_screenHeight)), 0.1f, 1000.0f));
 }
 
 void Game::GetResolution(int& width, int& height) {
@@ -743,6 +765,10 @@ void Game::CheckMenuClick(int posX, int posY){
 	if (!m_menuStack.empty()) {
 		m_menuStack.back()->ClickButton(posX, posY);
 		OutputDebugString(L"Button clicked.\n");
+	}
+	if (!m_menuStack.empty()) {
+		m_menuStack.back()->ClickSlider(posX, posY);
+		OutputDebugString(L"Slider clicked.\n");
 	}
 	OutputDebugString(L"No menu to click.\n");
 	
@@ -831,4 +857,8 @@ void Game::ChangeFontSize(float fontSize) {
 		L"en-us",
 		m_textFormat.ReleaseAndGetAddressOf()
 	);
+}
+
+GraphicsSettingsIO* Game::GetSettingIO() {
+	return m_settingsIO.get();
 }

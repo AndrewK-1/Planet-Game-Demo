@@ -3,6 +3,7 @@
 #include "Menus.h"
 #include "Game.h"
 #include "InputController.h"
+#include "GraphicsSettingsIO.h"
 
 bool MenuButton::IsPointInButton(int posX, int posY) {
 	if (posX >= m_buttonRectangle.left && posX <= m_buttonRectangle.right &&
@@ -12,85 +13,163 @@ bool MenuButton::IsPointInButton(int posX, int posY) {
 	return false;
 }
 
-MenuButton::MenuButton(
-	std::wstring text, int buttonPlacementH, int buttonPlacementV, int paddingH, int paddingV, int width, int height, D2D1_RECT_F menuFrame, float menuScale) {
-	int posX1, posX2, posY1, posY2;
-	m_buttonAlignentH = buttonPlacementH;
-	m_buttonAlignentV = buttonPlacementV;
-	m_paddingH = paddingH;
-	m_paddingV = paddingV;
-	m_width = width;
-	m_height = height;
+bool Slider::IsPointInSlider(int posX, int posY) {
+	if (posX >= m_sliderRectangle.left && posX <= m_sliderRectangle.right &&
+		posY >= m_sliderRectangle.top && posY <= m_sliderRectangle.bottom) {
+		return true;
+	}
+	return false;
+}
 
-	if (buttonPlacementH == BUTTON_H_LEFT) {
+D2D1_RECT_F MenuElementCalculator::CalculateRectangle(int placementH, int placementV, float paddingH, float paddingV, float width, float height, D2D1_RECT_F menuFrame, float menuScale) {
+	float posX1, posX2, posY1, posY2;
+	if (placementH == MENU_TOP) {
 		posX1 = paddingH + menuFrame.left;
 		posX2 = paddingH + width + menuFrame.left;
 	}
-	else if (buttonPlacementH == BUTTON_H_CENTER) {
-		posX1 = (menuFrame.right - menuFrame.left) / 2 - width / 2 + paddingH + menuFrame.left;
-		posX2 = (menuFrame.right - menuFrame.left) / 2 + width / 2 + paddingH + menuFrame.left;
+	else if (placementH == MENU_CENTER) {
+		posX1 = (menuFrame.right - menuFrame.left) / 2.0f - width / 2.0f + paddingH + menuFrame.left;
+		posX2 = (menuFrame.right - menuFrame.left) / 2.0f + width / 2.0f + paddingH + menuFrame.left;
 	}
 	else {
 		posX1 = menuFrame.right - paddingH - width + paddingH;
 		posX2 = menuFrame.right - paddingH + paddingH;
 	}
 
-	if (buttonPlacementV == BUTTON_V_TOP) {
+	if (placementV == MENU_TOP) {
 		posY1 = paddingV + menuFrame.top;
 		posY2 = paddingV + height + menuFrame.top;
 	}
-	else if (buttonPlacementV == BUTTON_V_CENTER) {
-		posY1 = (menuFrame.bottom - menuFrame.top) / 2 - height / 2 + paddingV + menuFrame.top;
-		posY2 = (menuFrame.bottom - menuFrame.top) / 2 + height / 2 + paddingV + menuFrame.top;
+	else if (placementV == MENU_CENTER) {
+		posY1 = (menuFrame.bottom - menuFrame.top) / 2.0f - height / 2.0f + paddingV + menuFrame.top;
+		posY2 = (menuFrame.bottom - menuFrame.top) / 2.0f + height / 2.0f + paddingV + menuFrame.top;
 	}
 	else {
 		posY1 = menuFrame.bottom - paddingV - height;
 		posY2 = menuFrame.bottom - paddingV;
 	}
+	return D2D1::RectF(posX1, posY1, posX2,	posY2);
+}
 
-	m_buttonRectangle = D2D1::RectF(posX1, posY1, posX2, posY2);
+Slider::Slider(int placementH, int placementV, float paddingH, float paddingV, float width, float height, D2D1_RECT_F menuFrame, float menuScale, Game* game)
+	: m_alignmentH(placementH), m_alignmentV(placementV), m_paddingH(paddingH), m_paddingV(paddingV), m_width(width), m_height(height), m_game(game)
+{
+	std::string setting;
+	if (m_game->GetSettingIO()->GetSetting("GraphicsSettings.txt", "FieldOfView", setting)) {
+		m_sliderValue = std::stof(setting) / 3.14f;
+	}
+	else {
+		m_sliderValue = 0.27f;
+	}
+	std::wstring msg = L"Constructed slider value is: " + std::to_wstring(m_sliderValue) + L"\n";
+	OutputDebugString(msg.c_str());
+
+	MenuElementCalculator calc;
+	m_sliderRectangle = calc.CalculateRectangle(m_alignmentH, m_alignmentV, paddingH, paddingV, width, height, menuFrame, menuScale);
+
+	//T=top, B=bottom, L=left, R=right, M=middle
+	D2D1_POINT_2F pointTL = D2D1::Point2F(m_sliderRectangle.left, m_sliderRectangle.top);
+	D2D1_POINT_2F pointBL = D2D1::Point2F(m_sliderRectangle.left, m_sliderRectangle.bottom);
+	D2D1_POINT_2F pointTR = D2D1::Point2F(m_sliderRectangle.right, m_sliderRectangle.top);
+	D2D1_POINT_2F pointBR = D2D1::Point2F(m_sliderRectangle.right, m_sliderRectangle.bottom);
+	D2D1_POINT_2F pointML = D2D1::Point2F(m_sliderRectangle.left, (m_sliderRectangle.bottom - m_sliderRectangle.top) / 2.0f + m_sliderRectangle.top);
+	D2D1_POINT_2F pointMR = D2D1::Point2F(m_sliderRectangle.right, (m_sliderRectangle.bottom - m_sliderRectangle.top) / 2.0f + m_sliderRectangle.top);
+
+	m_points.clear();
+	m_points.push_back(pointTL);
+	m_points.push_back(pointBL);
+	m_points.push_back(pointTR);
+	m_points.push_back(pointBR);
+	m_points.push_back(pointML);
+	m_points.push_back(pointMR);
+}
+
+Slider::Slider(int placementH, int placementV, float paddingH, float paddingV, float width, float height, D2D1_RECT_F menuFrame, float menuScale, std::function<void()> onClickFunction, Game* game)
+	: Slider(placementH, placementV, paddingH, paddingV, width, height, menuFrame, menuScale, game)
+{
+	m_onSliderFunctionality = onClickFunction;
+}
+
+void Slider::RecalculateSliderSize(float menuScale, D2D1_RECT_F menuFrame) {
+	float paddingH = m_paddingH * menuScale, paddingV = m_paddingV * menuScale;
+	float width = m_width * menuScale, height = m_height * menuScale;
+	MenuElementCalculator calc;
+	m_sliderRectangle = calc.CalculateRectangle(m_alignmentH, m_alignmentV, paddingH, paddingV, width, height, menuFrame, menuScale);
+
+	//T=top, B=bottom, L=left, R=right, M=middle
+	D2D1_POINT_2F pointTL = D2D1::Point2F(m_sliderRectangle.left, m_sliderRectangle.top);
+	D2D1_POINT_2F pointBL = D2D1::Point2F(m_sliderRectangle.left, m_sliderRectangle.bottom);
+	D2D1_POINT_2F pointTR = D2D1::Point2F(m_sliderRectangle.right, m_sliderRectangle.top);
+	D2D1_POINT_2F pointBR = D2D1::Point2F(m_sliderRectangle.right, m_sliderRectangle.bottom);
+	D2D1_POINT_2F pointML = D2D1::Point2F(m_sliderRectangle.left, (m_sliderRectangle.bottom - m_sliderRectangle.top) / 2.0f + m_sliderRectangle.top);
+	D2D1_POINT_2F pointMR = D2D1::Point2F(m_sliderRectangle.right, (m_sliderRectangle.bottom - m_sliderRectangle.top) / 2.0f + m_sliderRectangle.top);
+
+	m_points.clear();
+	m_points.push_back(pointTL);
+	m_points.push_back(pointBL);
+	m_points.push_back(pointTR);
+	m_points.push_back(pointBR);
+	m_points.push_back(pointML);
+	m_points.push_back(pointMR);
+}
+
+float Slider::GetHeight() {
+	return m_height;
+}
+
+float Slider::GetWidth() {
+	return m_width;
+}
+
+void Slider::OnClick(int posX, int posY) {
+	if (IsPointInSlider(posX, posY)) {
+		m_sliderValue = std::clamp((posX - m_sliderRectangle.left) / (m_sliderRectangle.right - m_sliderRectangle.left), 0.0f, 1.0f);
+		std::wstring msg = L"New slider value: " + std::to_wstring(m_sliderValue); msg += L"\n";
+		OutputDebugString(msg.c_str());
+
+		if (m_onSliderFunctionality) {
+			m_onSliderFunctionality();
+		}
+	}
+}
+
+float Slider::GetValue() {
+	return m_sliderValue;
+}
+
+void Slider::SetSliderFunctionality(std::function<void()> sliderFunctionality) {
+	m_onSliderFunctionality = sliderFunctionality;
+}
+
+std::vector<D2D1_POINT_2F> Slider::GetPointsList() {
+	return m_points;
+}
+
+D2D1_RECT_F Slider::GetSliderRectangle() {
+	return m_sliderRectangle;
+}
+
+MenuButton::MenuButton(
+	std::wstring text, int buttonAlignmentH, int buttonAlignmentV, int paddingH, int paddingV, int width, int height, D2D1_RECT_F menuFrame, float menuScale)
+	: m_buttonAlignmentH(buttonAlignmentH), m_buttonAlignmentV(buttonAlignmentV), m_paddingH(paddingH), m_paddingV(paddingV), m_width(width), m_height(height) 
+{
+	MenuElementCalculator calc;
+	m_buttonRectangle = calc.CalculateRectangle(buttonAlignmentH, buttonAlignmentV, paddingH, paddingV, width, height, menuFrame, menuScale);
 	m_buttonText = text;
 	RecalculateButtonSize(menuScale, menuFrame);
 }
 
-void MenuButton::RecalculateButtonSize(float menuScale, D2D1_RECT_F menuFrame) {
-	int posX1, posX2, posY1, posY2;
-	int paddingH = static_cast<float>(m_paddingH) * menuScale, paddingV = static_cast<float>(m_paddingV) * menuScale;
-	int width = static_cast<float>(m_width) * menuScale, height = static_cast<float>(m_height) * menuScale;
-
-	if (m_buttonAlignentH == BUTTON_H_LEFT) {
-		posX1 = paddingH + menuFrame.left;
-		posX2 = paddingH + width + menuFrame.left;
-	}
-	else if (m_buttonAlignentH == BUTTON_H_CENTER) {
-		posX1 = (menuFrame.right - menuFrame.left) / 2 - width / 2 + paddingH + menuFrame.left;
-		posX2 = (menuFrame.right - menuFrame.left) / 2 + width / 2 + paddingH + menuFrame.left;
-	}
-	else {
-		posX1 = menuFrame.right - paddingH - width + paddingH;
-		posX2 = menuFrame.right - paddingH + paddingH;
-	}
-
-	if (m_buttonAlignentV == BUTTON_V_TOP) {
-		posY1 = paddingV + menuFrame.top;
-		posY2 = paddingV + height + menuFrame.top;
-	}
-	else if (m_buttonAlignentV == BUTTON_V_CENTER) {
-		posY1 = (menuFrame.bottom - menuFrame.top) / 2 - height / 2 + paddingV + menuFrame.top;
-		posY2 = (menuFrame.bottom - menuFrame.top) / 2 + height / 2 + paddingV + menuFrame.top;
-	}
-	else {
-		posY1 = menuFrame.bottom - paddingV - height;
-		posY2 = menuFrame.bottom - paddingV;
-	}
-
-	m_buttonRectangle = D2D1::RectF(posX1, posY1, posX2, posY2);
-}
-
-MenuButton::MenuButton(std::wstring text, int buttonPlacementH, int buttonPlacementV, int paddingH, int paddingV, int width, int height, D2D1_RECT_F menuFrame, std::function<void()> onClickFunction, float menuScale) 
-	: MenuButton(text, buttonPlacementH, buttonPlacementV, paddingH, paddingV, width, height, menuFrame, menuScale) 
+MenuButton::MenuButton(std::wstring text, int buttonPlacementH, int buttonPlacementV, int paddingH, int paddingV, int width, int height, D2D1_RECT_F menuFrame, std::function<void()> onClickFunction, float menuScale)
+	: MenuButton(text, buttonPlacementH, buttonPlacementV, paddingH, paddingV, width, height, menuFrame, menuScale)
 {
 	SetOnClickFunction(onClickFunction);
+}
+
+void MenuButton::RecalculateButtonSize(float menuScale, D2D1_RECT_F menuFrame) {
+	float paddingH = static_cast<float>(m_paddingH) * menuScale, paddingV = static_cast<float>(m_paddingV) * menuScale;
+	float width = static_cast<float>(m_width) * menuScale, height = static_cast<float>(m_height) * menuScale;
+	MenuElementCalculator calc;
+	m_buttonRectangle = calc.CalculateRectangle(m_buttonAlignmentH, m_buttonAlignmentV, paddingH, paddingV, width, height, menuFrame, menuScale);
 }
 
 void MenuButton::SetText(std::wstring text) {
@@ -197,8 +276,16 @@ int Menus::GetButtonCount() {
 	return static_cast<int>(p_buttons.size());
 }
 
+int Menus::GetSliderCount() {
+	return p_sliders.size();
+}
+
 MenuButton Menus::GetButton(int index) {
 	return p_buttons.at(index);
+}
+
+Slider Menus::GetSlider(int index) {
+	return p_sliders.at(index);
 }
 
 MenuButton& Menus::GetButtonReference(int index) {
@@ -214,11 +301,23 @@ float Menus::GetMenuScale() {
 }
 
 bool Menus::ClickButton(int posX, int posY) {
-	for (auto button : p_buttons) {
+	for (auto& button : p_buttons) {
 		if (button.IsPointInButton(posX, posY)) {
 			std::wstring msg = L"Button clicked: " + button.GetButtonText() + L"\n";
 			OutputDebugString(msg.c_str());
 			button.OnClick();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Menus::ClickSlider(int posX, int posY) {
+	for (auto& slider : p_sliders) {
+		if (slider.IsPointInSlider(posX, posY)) {
+			std::wstring msg = L"Slider clicked.\n";
+			OutputDebugString(msg.c_str());
+			slider.OnClick(posX, posY);
 			return true;
 		}
 	}
@@ -279,6 +378,9 @@ GraphicsSettingsMenu::GraphicsSettingsMenu(int screenSizeH, int screenSizeV, Gam
 	p_buttons.push_back(res1920x1080Button);
 	p_buttons.push_back(res1440x900Button);
 	p_buttons.push_back(res800x600Button);
+
+	Slider fovSlider(2, 0, 50, 100, 300, 50, menuFrame, menuScale, [game]() { game->SetFOV(1.0f); }, game);
+	p_sliders.push_back(fovSlider);
 
 	MenuButton closeButton(L"Close Menu", 1, 0, 0, 700, 300, 50, menuFrame, [this, game]() {m_game->CloseTopmostMenu(); }, menuScale);
 	p_buttons.push_back(closeButton);

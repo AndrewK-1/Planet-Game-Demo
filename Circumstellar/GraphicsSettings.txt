@@ -1,3 +1,3 @@
 ResolutionWidth=1440
 ResolutionHeight=900
-FieldOfView=1.5
+FieldOfView=2.187533

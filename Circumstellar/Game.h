@@ -88,6 +88,7 @@ public:
 	void OpenSaveMenu();
 	void OpenLoadMenu();
 	void ChangeFontSize(float fontSize);
+	GraphicsSettingsIO* GetSettingIO();
 private:
 	//Rendering and views methods
 	void Update();
