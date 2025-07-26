@@ -118,6 +118,7 @@ private:
 		DirectX::XMMATRIX worldMatrix;
 		DirectX::XMMATRIX viewMatrix;
 		DirectX::XMMATRIX perspectiveMatrix;
+		DirectX::XMVECTOR cameraPos;
 	};
 
 	struct Float4x4Data {

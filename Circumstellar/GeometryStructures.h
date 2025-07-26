@@ -24,53 +24,53 @@ namespace CustomGeometry {
 	
 
 	inline const std::vector<VertexWNormal> CubeArray = {
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData},
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		
-		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData },
 	};
 	
 
@@ -78,18 +78,18 @@ namespace CustomGeometry {
 	inline const std::vector<UINT> CubeIndexArray = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35 };
 
 	inline const std::vector<VertexWNormal> IsoSphereArray = {
-		{ DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(0.0f, 0.447215f, 0.894425f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-0.85064f, 0.447215f, 0.276385f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-0.52572f, 0.447215f, -0.7236f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(0.52572f, 0.447215f, -0.7236f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(0.85064f, 0.447215f, 0.276385f, 1.0f), tempNormal, CubeColor.ColorData }, //5
-		{ DirectX::XMFLOAT4(0.52572f, -0.447215f, 0.7236f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-0.52572f, -0.447215f, 0.7236f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(-0.85064f, -0.447215f, -0.276385f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(0.0f, -0.447215f, -0.894425f, 1.0f), tempNormal, CubeColor.ColorData },
-		{ DirectX::XMFLOAT4(0.85064f, -0.447215f, -0.276385f, 1.0f), tempNormal, CubeColor.ColorData }, //10
-		{ DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), tempNormal, CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData},
+		{ DirectX::XMFLOAT4(0.0f, 0.447215f, 0.894425f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.447215f, 0.894425f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-0.85064f, 0.447215f, 0.276385f, 1.0f), DirectX::XMFLOAT4(-0.85064f, 0.447215f, 0.276385f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-0.52572f, 0.447215f, -0.7236f, 1.0f), DirectX::XMFLOAT4(-0.52572f, 0.447215f, -0.7236f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(0.52572f, 0.447215f, -0.7236f, 1.0f), DirectX::XMFLOAT4(0.52572f, 0.447215f, -0.7236f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(0.85064f, 0.447215f, 0.276385f, 1.0f), DirectX::XMFLOAT4(0.85064f, 0.447215f, 0.276385f, 1.0f), CubeColor.ColorData }, //5
+		{ DirectX::XMFLOAT4(0.52572f, -0.447215f, 0.7236f, 1.0f), DirectX::XMFLOAT4(0.52572f, -0.447215f, 0.7236f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-0.52572f, -0.447215f, 0.7236f, 1.0f), DirectX::XMFLOAT4(-0.5257f, -0.4472f, 0.7236, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(-0.85064f, -0.447215f, -0.276385f, 1.0f), DirectX::XMFLOAT4(-0.85064f, -0.447215f, -0.276385f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(0.0f, -0.447215f, -0.894425f, 1.0f), DirectX::XMFLOAT4(0.0f, -0.447215f, -0.894425f, 1.0f), CubeColor.ColorData },
+		{ DirectX::XMFLOAT4(0.85064f, -0.447215f, -0.276385f, 1.0f), DirectX::XMFLOAT4(0.85064f, -0.447215f, -0.276385f, 1.0f), CubeColor.ColorData }, //10
+		{ DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), CubeColor.ColorData },
 	};
 	int const IsoSphereVertexCount = 12;
 	inline const std::vector<UINT> IsoSphereIndexArray = { 0,2,1,0,3,2,0,4,3,0,5,4,0,1,5,
@@ -117,10 +117,10 @@ namespace CustomGeometry {
 	};
 	int const SpaceshipVertexCount = 13;
 	inline const std::vector<UINT> SpaceshipIndexArray = {
-		0,1,2,0,2,3,0,3,4,0,4,5,0,5,6,0,6,1,
-		1,7,8,1,8,2,1,6,12,1,12,7,2,8,3,5,12,6,
-		3,8,9,9,8,10,10,8,7,10,7,12,10,12,11,11,12,5,
-		3,9,4,4,9,10,4,10,11,4,11,5
+		2,1,0,3,2,0,4,3,0,5,4,0,6,5,0,1,6,0,
+		8,7,1,2,8,1,12,6,1,7,12,1,3,8,2,6,12,5,
+		9,8,3,10,8,9,7,8,10,12,7,10,11,12,10,5,12,11,
+		4,9,3,10,9,4,11,10,4,5,11,4
 	};
 	int const SpaceshipIndexCount = 66;
 }

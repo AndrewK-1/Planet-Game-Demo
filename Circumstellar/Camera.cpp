@@ -36,6 +36,9 @@ XMVECTOR Camera::GetOrientationVector() {
 XMFLOAT4 Camera::GetPosition() {
 	return position;
 }
+XMVECTOR Camera::GetPositionVector() {
+	return XMLoadFloat4(&position);
+}
 
 //Get a position from the forwrd direction of the camera
 XMVECTOR Camera::GetForwardRay(float distance) {

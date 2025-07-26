@@ -127,6 +127,11 @@ void Game::Update() {
 		camera->SetPosition(playerPosVec, playerRotVec);
 		XMMATRIX camRayMatrix = XMMatrixAffineTransformation(XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
 			camera->GetForwardRay(10.0f));
+		XMMATRIX camRayMatrixRotated = XMMatrixAffineTransformation(
+			XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f),
+			XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
+			camera->GetOrientationVector(),
+			camera->GetForwardRay(10.0f));
 		//Get array of cube matrix positions
 		std::vector<XMMATRIX> cubeWorldMatrix;
 		for (int i = 0; i < m_world1->GetBlockCount(); i++) {
@@ -143,6 +148,8 @@ void Game::Update() {
 		instanceMatrices.push_back(defaultInstanceMatrix);
 		//Camera and player using the isosphere model
 		instanceMatrices.push_back(camRayMatrix);
+		//Second matrix for a rotated tool
+		instanceMatrices.push_back(camRayMatrixRotated);
 
 		instanceMatrices.push_back(m_world1->GetPlayer()->GetObjectMatrix());
 		//Maybe change this later.  Right now each cube matrix is being added as its own instance.
@@ -174,6 +181,7 @@ void Game::Update() {
 		matData.viewMatrix = camera->getCameraMatrix();
 		matData.viewMatrix = XMMatrixTranspose(matData.viewMatrix);
 		matData.perspectiveMatrix = XMMatrixTranspose(XMLoadFloat4x4(&float4x4Data.perspectiveMatrix));
+		matData.cameraPos = camera->GetPositionVector();
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 		DX::ThrowIfFailed(m_deviceContext->Map(m_constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
@@ -208,8 +216,10 @@ void Game::Render() {
 		UINT planetInstanceStart = 0;
 		UINT cameraToolRayInstances = 1;
 		UINT cameraToolRayInstanceStart = planetInstances;
+		UINT cameraToolRayRotatedInstances = 1;
+		UINT cameraToolRayRotatedInstanceStart = cameraToolRayInstanceStart + cameraToolRayInstances;
 		UINT playerInstances = 1;
-		UINT playerInstanceStart = cameraToolRayInstanceStart + cameraToolRayInstances;
+		UINT playerInstanceStart = cameraToolRayRotatedInstanceStart + cameraToolRayRotatedInstances;
 		UINT cubeInstances = m_world1->GetBlockCount();
 		UINT cubeInstanceStart = playerInstanceStart + playerInstances;
 		UINT spaceshipInstances = m_world1->GetSpaceshipCount();
@@ -224,7 +234,7 @@ void Game::Render() {
 			break;
 		}
 		case 2: {
-			m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cameraToolRayInstances, cubeIndex, cubeVertex, cameraToolRayInstanceStart);
+			m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cameraToolRayRotatedInstances, cubeIndex, cubeVertex, cameraToolRayRotatedInstanceStart);
 			break;
 		}
 		case 3: {
@@ -489,8 +499,8 @@ void Game::CreateResources()
 	DX::ThrowIfFailed(m_2dFactory->CreateDxgiSurfaceRenderTarget(surfaceBackBuffer.Get(), &targetProperties2D, m_2dRenderTarget.ReleaseAndGetAddressOf()));
 
 	//Create a brush
-	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Cyan), m_2dBrush.GetAddressOf());
-	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkBlue), m_2dBrushSolidBlue.GetAddressOf());
+	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.7f, 0.7f, 1.0f)), m_2dBrush.GetAddressOf());
+	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.1f, 0.1f, 1.0f)), m_2dBrushSolidBlue.GetAddressOf());
 
 	//Text formatting
 	ComPtr<IDWriteFactory> writeFactory;

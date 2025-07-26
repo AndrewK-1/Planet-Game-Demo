@@ -9,6 +9,7 @@ public:
 	DirectX::XMFLOAT4 GetOrientation();
 	DirectX::XMVECTOR GetOrientationVector();
 	DirectX::XMFLOAT4 GetPosition();
+	DirectX::XMVECTOR GetPositionVector();
 	void YawAndPitch(float aYaw, float aPitch);
 	void Yaw(float angle);
 	void Pitch(float angle);
