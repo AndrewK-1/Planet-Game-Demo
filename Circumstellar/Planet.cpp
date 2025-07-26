@@ -6,20 +6,23 @@
 using namespace DirectX;
 
 Planet::Planet() 
-	: WorldObject(), m_radius(10), m_arrayRadius(std::ceil(m_radius)), m_voxelData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{} 
+	: WorldObject(), m_radius(10), m_voxelPadding(5), m_voxelData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{} 
 {
+	m_arrayRadius = static_cast<int>(std::ceil(m_radius) + m_voxelPadding + 1);
 	GenerateData();
 }
 
 Planet::Planet(float radius) 
-	: WorldObject(), m_voxelData({}), m_radius(radius), m_arrayRadius(std::ceil(m_radius)), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{}
+	: WorldObject(), m_voxelData({}), m_radius(radius), m_voxelPadding(5), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{}
 {
+	m_arrayRadius = static_cast<int>(std::ceil(m_radius) + m_voxelPadding + 1);
 	GenerateData();
 }
 
 Planet::Planet(float radius, DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale) 
-	: WorldObject(position, rotation, scale), m_radius(radius), m_arrayRadius(std::ceil(m_radius)), m_voxelData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{}
+	: WorldObject(position, rotation, scale), m_radius(radius), m_voxelPadding(5), m_voxelData({}), m_tempVertices({}), m_cubeValues{}, m_visitedEmpty{}, m_currentCoords{}
 {
+	m_arrayRadius = static_cast<int>(std::ceil(m_radius) + m_voxelPadding + 1);
 	GenerateData();
 }
 
@@ -51,9 +54,10 @@ float Planet::GetPlanetRadius() {
 void Planet::GenerateData() {
 	OutputDebugString(L"Generating data...");
 	m_voxelData.clear();
-	int arraysize = (int)std::ceil(m_radius) * 2 + 1;
-	int ceilradius = (int)std::ceil(m_radius);
-	int arraymax = (int)std::ceil(m_radius) + 1;
+	//Values adjusted for zero box around data
+	int ceilradius = (int)std::ceil(m_radius) + 1 + m_voxelPadding;
+	int arraysize = (ceilradius) * 2 + 1;
+	int arraymax = ceilradius + 1;
 	m_voxelData.resize(arraysize);
 	//Setting size of voxel array
 	for (int i = 0; i < arraysize; i++) {
@@ -66,22 +70,38 @@ void Planet::GenerateData() {
 	for (int z = -ceilradius; z < arraymax; z++) {
 		for (int y = -ceilradius; y < arraymax; y++) {
 			for (int x = -ceilradius; x < arraymax; x++) {
-				float num = std::clamp(static_cast<float>(m_radius - std::sqrt((std::pow((x), 2) + std::pow((y), 2) + std::pow((z), 2)))), -1.0f, 1.0f);
-				//std::wstring msg = L"Float at " + std::to_wstring(x); msg += L", " + std::to_wstring(y); msg += L", " + std::to_wstring(z); msg += L": " + std::to_wstring(num); msg += L"\n";
-				//OutputDebugString(msg.c_str());
-				m_voxelData[x + ceilradius][y + ceilradius][z + ceilradius] = num;
+				if(x == -ceilradius || y == -ceilradius || z == -ceilradius || x == arraymax || y == arraymax || z == arraymax) {
+					//If any coordinate is zero, it is the outside box, set to empty
+					m_voxelData[x + ceilradius][y + ceilradius][z + ceilradius] = -1.0f;
+				}
+				else {
+					float num = std::clamp(static_cast<float>(m_radius - std::sqrt((std::pow((x), 2) + std::pow((y), 2) + std::pow((z), 2)))), -1.0f, 1.0f);
+					//std::wstring msg = L"Float at " + std::to_wstring(x); msg += L", " + std::to_wstring(y); msg += L", " + std::to_wstring(z); msg += L": " + std::to_wstring(num); msg += L"\n";
+					//OutputDebugString(msg.c_str());
+					m_voxelData[x + ceilradius][y + ceilradius][z + ceilradius] = num;
+				}
 			}
 		}
 	}
 }
 
 void Planet::EditData(int x, int y, int z, float value) {
-	m_voxelData[x][y][z] = std::clamp(m_voxelData[x][y][z] + value, -1.0f, 1.0f);
+	if(x == 0 || x == m_voxelData.size() -1 || y == 0 || y == m_voxelData[0].size() - 1 || z == 0 || z == m_voxelData[0][0].size() - 1) {
+
+	}
+	else {
+		m_voxelData[x][y][z] = std::clamp(m_voxelData[x][y][z] + value, -1.0f, 1.0f);
+	}
 	GenerateGeometry();
 }
 
 void Planet::SetData(int x, int y, int z, float value) {
-	m_voxelData[x][y][z] = std::clamp(value, -1.0f, 1.0f);
+	if (x == 0 || x == m_voxelData.size() - 1 || y == 0 || y == m_voxelData[0].size() - 1 || z == 0 || z == m_voxelData[0][0].size() - 1) {
+
+	}
+	else {
+		m_voxelData[x][y][z] = std::clamp(value, -1.0f, 1.0f);
+	}
 	GenerateGeometry();
 }
 
@@ -94,7 +114,7 @@ void Planet::GenerateGeometry() {
 	m_indexArray.clear();
 	m_vertexCount = 0;
 	//truncated radius to assist in defining the loop variables
-	int ceilradius = (int)std::ceil(m_radius);
+	int ceilradius = (int)std::ceil(m_radius) + 1 + m_voxelPadding;
 	//Array maximum.  Beyond this point groupings will be outside the sphere's intersection.
 	int arraymax = ceilradius*2;
 	#if DEBUG

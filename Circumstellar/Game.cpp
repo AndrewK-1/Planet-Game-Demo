@@ -775,7 +775,7 @@ void Game::SaveWorld(std::wstring worldName) {
 void Game::NewWorld() {
 	OutputDebugString(L"Creating new world\n");
 	m_menuStack.clear();
-	m_world1->AddPlanet(XMQuaternionIdentity(), 10.0f);
+	m_world1->AddPlanet(XMQuaternionIdentity(), 9.0f);
 	m_worldLoaded = true;
 	InitializeShaders();
 }

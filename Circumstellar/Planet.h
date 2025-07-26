@@ -34,6 +34,7 @@ private:
 	void AxisCheck(int x, int y, int z, char axis);
 	void CalculateVertex(int x, int y, int z, char axis);
 	int m_vertexCount;
+	int m_voxelPadding;
 	//Map for more efficient vertex changes
 	//std::map<int, std::map<int, std::map<int, std::vector<CustomGeometry::Vertex>>>> m_trianglemap;
 };

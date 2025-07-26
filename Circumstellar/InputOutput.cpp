@@ -59,7 +59,7 @@ bool InputOutput::ImportWorldInfo(std::wstring worldName, World* world) {
 			inputStream.read(reinterpret_cast<char*>(&planetRadius), sizeof(float));
 			planetPos = XMVectorSet(posX, posY, posZ, 1.0f);
 			world->AddPlanet(planetPos, planetRadius);
-			arraySize = (int)std::ceil(planetRadius) * 2 + 1;
+			arraySize = (int)std::ceil(planetRadius) * 2 + 1 + 2;
 			//Get number of elements in array
 			inputStream.read(reinterpret_cast<char*>(&arrayElementCount), sizeof(UINT));
 			//Get voxel data
