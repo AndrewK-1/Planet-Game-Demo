@@ -99,21 +99,21 @@ namespace CustomGeometry {
 
 	inline const Color SpaceshipColor = { DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 0.0f) };
 	inline const std::vector<VertexWNormal> SpaceshipVertexArray = {
-		{ DirectX::XMFLOAT4(0.0f, -0.3048f, 1.40445f, 1.0f), tempNormal, SpaceshipColor.ColorData },	//0
+		{ DirectX::XMFLOAT4(0.0f, -0.3048f, 1.40445f, 1.0f), DirectX::XMFLOAT4(0.0f, -0.3048f, 1.40445f, 1.0f), SpaceshipColor.ColorData },	//0
 
-		{ DirectX::XMFLOAT4(0.0f, 0.304799f, 0.304799f, 1.0f), tempNormal, SpaceshipColor.ColorData },	//1
-		{ DirectX::XMFLOAT4(0.3048f, 0.3048f, 0.3048f, 1.0f), tempNormal, SpaceshipColor.ColorData },
-		{ DirectX::XMFLOAT4(0.462012f, -0.3048f, 0.3048f, 1.0f), tempNormal, SpaceshipColor.ColorData },
-		{ DirectX::XMFLOAT4(0.0f, -0.3048f, 0.304766f, 1.0f), tempNormal, SpaceshipColor.ColorData },
-		{ DirectX::XMFLOAT4(-0.462012f, -0.3048f, 0.3048f, 1.0f), tempNormal, SpaceshipColor.ColorData },
-		{ DirectX::XMFLOAT4(-0.3048f, 0.3048f, 0.3048f, 1.0f), tempNormal, SpaceshipColor.ColorData },	//6
+		{ DirectX::XMFLOAT4(0.0f, 0.304799f, 0.304799f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.304799f, 0.304799f, 1.0f), SpaceshipColor.ColorData },	//1
+		{ DirectX::XMFLOAT4(0.3048f, 0.3048f, 0.3048f, 1.0f), DirectX::XMFLOAT4(0.3048f, 0.3048f, 0.3048f, 1.0f), SpaceshipColor.ColorData },
+		{ DirectX::XMFLOAT4(0.462012f, -0.3048f, 0.3048f, 1.0f), DirectX::XMFLOAT4(0.462012f, -0.3048f, 0.3048f, 1.0f), SpaceshipColor.ColorData },
+		{ DirectX::XMFLOAT4(0.0f, -0.3048f, 0.304766f, 1.0f), DirectX::XMFLOAT4(0.0f, -0.3048f, 0.304766f, 1.0f), SpaceshipColor.ColorData },
+		{ DirectX::XMFLOAT4(-0.462012f, -0.3048f, 0.3048f, 1.0f), DirectX::XMFLOAT4(-0.462012f, -0.3048f, 0.3048f, 1.0f), SpaceshipColor.ColorData },
+		{ DirectX::XMFLOAT4(-0.3048f, 0.3048f, 0.3048f, 1.0f), DirectX::XMFLOAT4(-0.3048f, 0.3048f, 0.3048f, 1.0f), SpaceshipColor.ColorData },	//6
 
-		{ DirectX::XMFLOAT4(0.0f, 0.3048f, -0.820414f, 1.0f), tempNormal, SpaceshipColor.ColorData },	//7
-		{ DirectX::XMFLOAT4(0.685801f, 0.441425f, -1.27367f, 1.0f), tempNormal, SpaceshipColor.ColorData },
-		{ DirectX::XMFLOAT4(0.3048f, -0.3048f, -0.3048f, 1.0f), tempNormal, SpaceshipColor.ColorData },
-		{ DirectX::XMFLOAT4(0.0f, -0.3048f, -0.522118f, 1.0f), tempNormal, SpaceshipColor.ColorData },
-		{ DirectX::XMFLOAT4(-0.3048f, -0.3048f, -0.3048f, 1.0f), tempNormal, SpaceshipColor.ColorData },
-		{ DirectX::XMFLOAT4(-0.685801f, 0.441425f, -1.27367f, 1.0f), tempNormal, SpaceshipColor.ColorData },	//12
+		{ DirectX::XMFLOAT4(0.0f, 0.3048f, -0.820414f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.3048f, -0.820414f, 1.0f), SpaceshipColor.ColorData },	//7
+		{ DirectX::XMFLOAT4(0.685801f, 0.441425f, -1.27367f, 1.0f), DirectX::XMFLOAT4(0.685801f, 0.441425f, -1.27367f, 1.0f), SpaceshipColor.ColorData },
+		{ DirectX::XMFLOAT4(0.3048f, -0.3048f, -0.3048f, 1.0f), DirectX::XMFLOAT4(0.3048f, -0.3048f, -0.3048f, 1.0f), SpaceshipColor.ColorData },
+		{ DirectX::XMFLOAT4(0.0f, -0.3048f, -0.522118f, 1.0f), DirectX::XMFLOAT4(0.0f, -0.3048f, -0.522118f, 1.0f), SpaceshipColor.ColorData },
+		{ DirectX::XMFLOAT4(-0.3048f, -0.3048f, -0.3048f, 1.0f), DirectX::XMFLOAT4(-0.3048f, -0.3048f, -0.3048f, 1.0f), SpaceshipColor.ColorData },
+		{ DirectX::XMFLOAT4(-0.685801f, 0.441425f, -1.27367f, 1.0f), DirectX::XMFLOAT4(-0.685801f, 0.441425f, -1.27367f, 1.0f), SpaceshipColor.ColorData },	//12
 	};
 	int const SpaceshipVertexCount = 13;
 	inline const std::vector<UINT> SpaceshipIndexArray = {

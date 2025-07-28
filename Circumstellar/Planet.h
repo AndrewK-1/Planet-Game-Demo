@@ -9,8 +9,11 @@ public:
 	Planet(float radius);
 	Planet(float radius, DirectX::XMVECTOR position, DirectX::XMVECTOR rotation, DirectX::XMVECTOR scale);
 	Planet();
+	bool GetWasChanged();
+	void SetWasChange(bool wasChanged);
 	void GenerateData();
 	void GenerateGeometry();
+	void InitializeGeometry();
 	void EditData(int x, int y, int z, float value);
 	void SetData(int x, int y, int z, float value);
 	std::vector<CustomGeometry::VertexWNormal>* GetGeometry();
@@ -21,6 +24,7 @@ public:
 	float GetPlanetRadius();
 private:
 	std::vector<std::vector<std::vector<float>>> m_voxelData;
+	std::vector<std::vector<std::vector<std::vector<CustomGeometry::VertexWNormal>>>> m_triangleArray;
 	std::vector<CustomGeometry::VertexWNormal> m_geometry;
 	std::vector<UINT> m_indexArray;
 	float m_radius;
@@ -35,6 +39,20 @@ private:
 	void CalculateVertex(int x, int y, int z, char axis);
 	int m_vertexCount;
 	int m_voxelPadding;
+
+	struct ChangedVertexData {
+		int x;
+		int y;
+		int z;
+	};
+	std::vector<ChangedVertexData> m_changedVertices;
+	std::vector<std::vector<std::vector<bool>>> m_updatedVertices;
+
+	int m_ceilradius;
+	int m_arraymax;
+	int m_arraysize;
+
+	bool m_wasChanged;
 	//Map for more efficient vertex changes
 	//std::map<int, std::map<int, std::map<int, std::vector<CustomGeometry::Vertex>>>> m_trianglemap;
 };

@@ -615,7 +615,6 @@ void Game::InitializeShaders() {
 	else {
 		OutputDebugString(L"Planet exists.\n");
 	}
-	GetPlanet(0)->GenerateGeometry();
 	m_planetVertexCount = GetPlanet(0)->GetVertexCount();
 	m_planetIndexCount = m_planetVertexCount;
 	std::vector<UINT> planetIndexArray = GetPlanet(0)->GetIndexArray();
