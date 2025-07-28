@@ -38,7 +38,7 @@ VSOut main(VSIn input, InstanceIn instance)
     output.position = mul(float4(output.position), projectionMatrix);
     
     float3x3 normalMatrix = (float3x3) transformMat;
-    float3 normal = mul(normalMatrix, input.normal.xyz);
+    float3 normal = normalize(mul(normalMatrix, input.normal.xyz));
     
     //Calculate diffuse lighting
     float3 DiffuseLightDirection = float3(1, 0, 0);

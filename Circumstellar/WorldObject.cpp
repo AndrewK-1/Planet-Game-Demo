@@ -12,7 +12,7 @@ WorldObject::WorldObject() : m_objectScale(1.0f, 1.0f, 1.0f, 1.0f), m_objectPos(
 WorldObject::WorldObject(XMVECTOR position, XMVECTOR rotation, XMVECTOR scale) : m_objectType(0)
 {
 	XMStoreFloat4(&m_objectPos, position);
-	XMStoreFloat4(&m_objectRot, XMQuaternionRotationRollPitchYawFromVector(rotation));
+	XMStoreFloat4(&m_objectRot, rotation);
 	XMStoreFloat4(&m_objectScale, scale);
 }
 

@@ -228,7 +228,7 @@ void Planet::GenerateGeometry() {
 											vertX = XMLoadFloat4(&m_tempVertices[0].V_Position);
 											vertY = XMLoadFloat4(&m_tempVertices[triIndex - 1].V_Position);
 											vertZ = XMLoadFloat4(&m_tempVertices[triIndex].V_Position);
-											normalVec = XMVector3Cross(XMVectorSubtract(vertZ, vertY), XMVectorSubtract(vertX, vertY));
+											normalVec = XMVector4Normalize(XMVector3Cross(XMVectorSubtract(vertZ, vertY), XMVectorSubtract(vertX, vertY)));
 											XMFLOAT4 normalFloat;
 											XMStoreFloat4(&normalFloat, normalVec);
 
