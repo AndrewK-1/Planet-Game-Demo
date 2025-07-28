@@ -109,6 +109,15 @@ void Planet::SetData(int x, int y, int z, float value) {
 	GenerateGeometry();
 }
 
+void Planet::SetDataNoUpdate(int x, int y, int z, float value) {
+	if (x == 0 || x == m_voxelData.size() - 1 || y == 0 || y == m_voxelData[0].size() - 1 || z == 0 || z == m_voxelData[0][0].size() - 1) {
+
+	}
+	else {
+		m_voxelData[x][y][z] = std::clamp(value, -1.0f, 1.0f);
+	}
+}
+
 float Planet::GetData(int x, int y, int z) {
 	return m_voxelData[x][y][z];
 }

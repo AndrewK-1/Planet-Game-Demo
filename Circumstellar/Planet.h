@@ -13,6 +13,7 @@ public:
 	void GenerateGeometry();
 	void EditData(int x, int y, int z, float value);
 	void SetData(int x, int y, int z, float value);
+	void SetDataNoUpdate(int x, int y, int z, float value);
 	float GetData(int x, int y, int z);
 	std::vector<CustomGeometry::VertexWNormal>* GetGeometry();
 	int GetArrayRadius();
