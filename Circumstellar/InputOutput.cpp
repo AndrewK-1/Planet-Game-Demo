@@ -59,7 +59,8 @@ bool InputOutput::ImportWorldInfo(std::wstring worldName, World* world) {
 			inputStream.read(reinterpret_cast<char*>(&planetRadius), sizeof(float));
 			planetPos = XMVectorSet(posX, posY, posZ, 1.0f);
 			world->AddPlanet(planetPos, planetRadius);
-			arraySize = (int)std::ceil(planetRadius) * 2 + 1 + 2;
+			//Get array size
+			inputStream.read(reinterpret_cast<char*>(&arraySize), sizeof(int));
 			//Get number of elements in array
 			inputStream.read(reinterpret_cast<char*>(&arrayElementCount), sizeof(UINT));
 			//Get voxel data
@@ -150,6 +151,9 @@ bool InputOutput::ExportWorldInfo(std::wstring worldName, World* world) {
 		//Write planet radius for later reconstruction
 		float radius = world->GetPlanet(i)->GetPlanetRadius();
 		outputStream.write(reinterpret_cast<char*>(&radius), sizeof(float));
+		//Write planet's array size
+		int planetArraySize = world->GetPlanet(i)->GetArraySize();
+		outputStream.write(reinterpret_cast<char*>(&planetArraySize), sizeof(int));
 		std::vector<std::vector<std::vector<float>>> planetData = world->GetPlanet(i)->GetVoxelData();
 		UINT arraySize = planetData.size() * planetData[0].size() * planetData[0][0].size();
 		//Next byte is the number of voxels to save/load
