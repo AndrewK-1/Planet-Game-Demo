@@ -34,7 +34,7 @@ Game::Game() noexcept :
 	m_settingsFileName("GraphicsSettings.txt"),
 	m_worldLoaded(false),
 	m_menuActive(true),
-	m_wireframe(true)
+	m_wireframe(false)
 {
 	
 	
@@ -713,7 +713,7 @@ void Game::InitializeShaders() {
 	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), &m_inputLayout));
 	//Set shaders to use
 	m_deviceContext->VSSetShader(m_vertexShader.Get(), NULL, 0);
-	m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
+	m_deviceContext->GSSetShader(NULL, NULL, 0);
 	m_deviceContext->PSSetShader(createdPixelShader.Get(), NULL, 0);
 	
 	OutputDebugString(L"Binding vertices to context\n");

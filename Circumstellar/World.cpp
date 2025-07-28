@@ -5,7 +5,7 @@
 
 using namespace DirectX;
 
-World::World() : m_planetArray(), m_blockArray(), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
+World::World() : m_planetArray(), m_blockArray(), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f, XMVectorSet(20.0f, 20.0f, 10.0f, 1.0f), XMQuaternionRotationRollPitchYaw(3.14f-3.14f/6, 3.14f/4, 0.0f)); }
 World::World(std::vector<Planet> planetArray) : m_planetArray(planetArray), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
 World::World(std::vector<Block> blockArray) : m_blockArray(blockArray), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
 World::World(std::vector<Planet> planetArray, std::vector<Block> blockArray) : m_planetArray(planetArray), m_blockArray(blockArray), m_spaceshipArray(), m_isLoaded(0) { m_player = std::make_unique<Player>(1.0f, 0.5f, 3.0f); }
