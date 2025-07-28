@@ -159,6 +159,10 @@ void World::AddPlanet(XMVECTOR position, float radius) {
 	m_planetArray.push_back(newPlanet);
 }
 void World::RemovePlanet(XMVECTOR position) {
+	//If array is empty, do nothing
+	if(m_planetArray.empty()) {
+		return;
+	}
 	XMFLOAT4 positionFloat;
 	XMStoreFloat4(&positionFloat, position);
 	UINT closestPlanetIndex = GetClosestPlanet(positionFloat);
@@ -170,6 +174,10 @@ void World::AddBlock(XMVECTOR position, XMVECTOR rotation) {
 	m_blockArray.push_back(newBlock);
 }
 void World::RemoveBlock(XMVECTOR position) {
+	//If array is empty, do nothing
+	if(m_blockArray.empty()) {
+		return;
+	}
 	XMFLOAT4 positionFloat;
 	XMStoreFloat4(&positionFloat, position);
 	UINT closestBlockIndex = GetClosestBlock(positionFloat);
@@ -184,6 +192,10 @@ void World::AddShip(DirectX::XMVECTOR position, DirectX::XMVECTOR rotation) {
 	m_spaceshipArray.push_back(newSpaceship);
 }
 void World::RemoveShip(DirectX::XMVECTOR position) {
+	//If array is empty, do nothing
+	if(m_spaceshipArray.empty()) {
+		return;
+	}
 	XMFLOAT4 positionFloat;
 	XMStoreFloat4(&positionFloat, position);
 	UINT closestSpaceshipIndex = GetClosestSpaceship(positionFloat);
