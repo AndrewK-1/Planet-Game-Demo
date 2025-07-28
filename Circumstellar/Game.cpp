@@ -33,7 +33,8 @@ Game::Game() noexcept :
 	m_FOV(3.14159f / 4.0f),
 	m_settingsFileName("GraphicsSettings.txt"),
 	m_worldLoaded(false),
-	m_menuActive(true)
+	m_menuActive(true),
+	m_wireframe(true)
 {
 	
 	
@@ -161,6 +162,35 @@ void Game::Update() {
 			instanceMatrices.push_back(spaceshipWorldMatrix[i]);
 		}
 
+		m_planetVoxCount = 0;
+		if (m_wireframe) {
+			Planet* closestPlanet = m_world1->GetPlanet(m_world1->GetClosestPlanet(m_world1->GetPlayer()->GetObjectPos()));
+			int planetArraySize = closestPlanet->GetArraySize();
+			int planetArrayRadius = closestPlanet->GetArrayRadius();
+			XMFLOAT4 planetPos = closestPlanet->GetObjectPos();
+			XMVECTOR planetPosVec = XMLoadFloat4(&planetPos);
+			XMFLOAT4 planetRot = closestPlanet->GetObjectRot();
+			XMVECTOR planetRotVec = XMLoadFloat4(&planetRot);
+			XMMATRIX planetVoxel;
+			for (int i = 0; i < planetArraySize; i++) {
+				for (int j = 0; j < planetArraySize; j++) {
+					for (int k = 0; k < planetArraySize; k++) {
+						m_planetVoxCount++;
+						float voxScale = (closestPlanet->GetData(k, j, i) + 1.2f) / 2.0f / 4.0f;
+						planetVoxel = XMMatrixAffineTransformation(
+							XMVectorSet(voxScale, voxScale, voxScale, 1.0f),
+							XMQuaternionIdentity(),
+							XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
+							XMVectorSet(static_cast<float>(k - planetArrayRadius), static_cast<float>(j - planetArrayRadius), static_cast<float>(i - planetArrayRadius), 1.0f)
+							);
+						planetVoxel = XMMatrixMultiply(planetVoxel, XMMatrixRotationQuaternion(planetRotVec));
+						planetVoxel = XMMatrixMultiply(planetVoxel, XMMatrixTranslationFromVector(planetPosVec));
+						instanceMatrices.push_back(planetVoxel);
+					}
+				}
+			}
+		}
+
 		int instanceCounter = instanceMatrices.size();
 		D3D11_BUFFER_DESC instanceDesc = {};
 		instanceDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -196,7 +226,6 @@ void Game::Render() {
 	Clear();
 
 	//Render code
-
 	if (m_worldLoaded == true) {
 		//Index for where each index array and vertex array start to tell the gpu how to draw shapes.
 		UINT planetIndex = 0;
@@ -224,6 +253,8 @@ void Game::Render() {
 		UINT cubeInstanceStart = playerInstanceStart + playerInstances;
 		UINT spaceshipInstances = m_world1->GetSpaceshipCount();
 		UINT spaceshipInstanceStart = cubeInstanceStart + cubeInstances;
+		UINT planetVoxInstances = m_planetVoxCount;
+		UINT planetVoxInstanceStart = spaceshipInstanceStart + spaceshipInstances;
 
 		//Show planet
 		m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, planetInstances, 0, 0, planetInstanceStart);
@@ -248,6 +279,12 @@ void Game::Render() {
 		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cubeInstances, cubeIndex, cubeVertex, cubeInstanceStart);
 		//Show spaceships
 		m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, spaceshipInstances, spaceshipIndex, spaceshipVertex, spaceshipInstanceStart);
+		//Show planet voxels if wireframe is enabled
+		if (m_wireframe) {
+			m_deviceContext->GSSetShader(NULL, NULL, 0);
+			m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, planetVoxInstances, isoSphereIndex, isoSphereVertex, planetVoxInstanceStart);
+			m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
+		}
 	}
 	
 	//2D Rendering
@@ -654,9 +691,7 @@ void Game::InitializeShaders() {
 	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexDiffuseInstanceShader.hlsl", nullptr, nullptr, "main", "vs_5_0", 0, 0, &VshaderBlob, &VerrorBlob));
 	OutputDebugString(L"Creating vertex shader.\n");
 	//Create vertex shader
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> createdVertexShader;
-	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, &createdVertexShader));
-
+	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, &m_vertexShader));
 
 	OutputDebugString(L"Compiling and creating geometry shader.\n");
 	//Geometry Shader
@@ -677,7 +712,7 @@ void Game::InitializeShaders() {
 	//Create input layout
 	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), &m_inputLayout));
 	//Set shaders to use
-	m_deviceContext->VSSetShader(createdVertexShader.Get(), NULL, 0);
+	m_deviceContext->VSSetShader(m_vertexShader.Get(), NULL, 0);
 	m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
 	m_deviceContext->PSSetShader(createdPixelShader.Get(), NULL, 0);
 	
@@ -688,7 +723,7 @@ void Game::InitializeShaders() {
 	m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 	//Set topology type for primitive
 	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
+
 	OutputDebugString(L"Constant buffer description.\n");
 	//Constant Buffers
 	D3D11_BUFFER_DESC constDesc = {};
@@ -731,12 +766,15 @@ void Game::SetCurrentTool(int tool) {
 	m_currentTool = tool;
 }
 
+//Set debug view on
 void Game::SetWireframe(bool on) {
 	if (on) {
 		m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
+		m_wireframe = true;
 	}
 	else {
 		m_deviceContext->GSSetShader(NULL, NULL, 0);
+		m_wireframe = false;
 	}
 }
 

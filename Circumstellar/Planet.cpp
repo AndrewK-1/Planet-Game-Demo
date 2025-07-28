@@ -34,6 +34,10 @@ int Planet::GetArrayRadius() {
 	return m_arrayRadius;
 }
 
+int Planet::GetArraySize(){
+	return m_arrayRadius * 2 + 1;
+}
+
 int Planet::GetVertexCount() {
 	return m_vertexCount;
 }
@@ -103,6 +107,10 @@ void Planet::SetData(int x, int y, int z, float value) {
 		m_voxelData[x][y][z] = std::clamp(value, -1.0f, 1.0f);
 	}
 	GenerateGeometry();
+}
+
+float Planet::GetData(int x, int y, int z) {
+	return m_voxelData[x][y][z];
 }
 
 void Planet::GenerateGeometry() {

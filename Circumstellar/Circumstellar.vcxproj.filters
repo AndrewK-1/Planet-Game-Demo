@@ -219,6 +219,9 @@
     <FxCompile Include="PixelDiffuseShader.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="DebugPlanetVoxelShader.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Circumstellar.rc">

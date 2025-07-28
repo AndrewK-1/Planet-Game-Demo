@@ -87,6 +87,28 @@ UINT World::GetClosestPlanet(XMFLOAT4 objPosition) {
 	}
 	return lowestIndex;
 }
+Planet* World::GetClosestPlanetPointer(XMFLOAT4 objPosition) {
+	UINT lowestIndex = 0;
+	//Initialize lowestDistance with the first planet's 'distance' without using expensive sqrt function.
+	XMFLOAT4 firstPlanetPos = m_planetArray[0].GetObjectPos();
+	firstPlanetPos.x -= objPosition.x;
+	firstPlanetPos.y -= objPosition.y;
+	firstPlanetPos.z -= objPosition.z;
+	float lowestDistance = std::pow(firstPlanetPos.x, 2.0f) + std::pow(firstPlanetPos.y, 2.0f) + std::pow(firstPlanetPos.z, 2.0f);
+	float distanceCheck;
+	for (UINT i = 0; i < m_planetArray.size(); i++) {
+		XMFLOAT4 planetPos = m_planetArray[i].GetObjectPos();
+		planetPos.x -= objPosition.x;
+		planetPos.y -= objPosition.y;
+		planetPos.z -= objPosition.z;
+		distanceCheck = std::pow(planetPos.x, 2.0f) + std::pow(planetPos.y, 2.0f) + std::pow(planetPos.z, 2.0f);
+		if (lowestDistance > distanceCheck) {
+			lowestDistance = distanceCheck;
+			lowestIndex = i;
+		}
+	}
+	return &m_planetArray[lowestIndex];
+}
 UINT World::GetClosestBlock(XMFLOAT4 objPosition) {
 	UINT lowestIndex = 0;
 	//Initialize lowestDistance with the first block's 'distance' without using expensive sqrt function.

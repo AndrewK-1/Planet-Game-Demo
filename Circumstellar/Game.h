@@ -112,6 +112,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>	m_renderTargetView;		//Thing targeted for rendering
 	//Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	m_depthStencilView;		//Depth stuff
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>		m_inputLayout;			//Input Layout object for receiveing input descriptions or something
+	Microsoft::WRL::ComPtr<ID3D11VertexShader>		m_vertexShader;			
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_pVBuffer;
 
 	struct MatrixData {
@@ -134,6 +135,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_constBuffer;
 
 	GraphicsObject m_graphicsObj;
+	GraphicsObject m_graphicsObjVox;
 
 	std::vector<WorldObject> m_worldObjects;
 
@@ -180,4 +182,7 @@ private:
 	bool m_menuActive;
 	std::vector<std::shared_ptr<Menus>> m_menuStack;
 	InputController* m_inputController;
+	
+	bool m_wireframe;
+	int m_planetVoxCount;
 };

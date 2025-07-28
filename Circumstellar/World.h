@@ -20,6 +20,7 @@ public:
 	float GetBlockDistance(int index, DirectX::XMFLOAT4 objPosition);
 	float GetSpaceshipDistance(int index, DirectX::XMFLOAT4 objPosition);
 	UINT GetClosestPlanet(DirectX::XMFLOAT4 objPosition);
+	Planet* GetClosestPlanetPointer(DirectX::XMFLOAT4 objPosition);
 	UINT GetClosestBlock(DirectX::XMFLOAT4 objPosition);
 	UINT GetClosestSpaceship(DirectX::XMFLOAT4 objPosition);
 	Planet* GetPlanet(UINT index);

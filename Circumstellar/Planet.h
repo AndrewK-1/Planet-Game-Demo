@@ -13,8 +13,10 @@ public:
 	void GenerateGeometry();
 	void EditData(int x, int y, int z, float value);
 	void SetData(int x, int y, int z, float value);
+	float GetData(int x, int y, int z);
 	std::vector<CustomGeometry::VertexWNormal>* GetGeometry();
 	int GetArrayRadius();
+	int GetArraySize();
 	int GetVertexCount();
 	std::vector<UINT> GetIndexArray();
 	std::vector<std::vector<std::vector<float>>>& GetVoxelData();
