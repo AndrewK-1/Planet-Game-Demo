@@ -34,7 +34,8 @@ Game::Game() noexcept :
 	m_settingsFileName("GraphicsSettings.txt"),
 	m_worldLoaded(false),
 	m_menuActive(true),
-	m_wireframe(false)
+	m_wireframe(false),
+	m_uiMenu(m_screenWidth, m_screenHeight, this)
 {
 	
 	
@@ -69,6 +70,7 @@ Game::Game() noexcept :
 	OpenMainMenu();
 	m_world1 = std::make_unique<World>();
 	camera = std::make_unique<Camera>();
+	m_uiMenu.RecalculateMenuFrame(m_screenWidth, m_screenHeight);
 }
 
 void Game::SetInputController(InputController* inputController) {
@@ -259,19 +261,57 @@ void Game::Render() {
 		//Show planet
 		m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, planetInstances, 0, 0, planetInstanceStart);
 		//Choose which tool to show
+		m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
+		//In-game GUI
+		m_2dRenderTarget->BeginDraw();
 		switch (m_currentTool) {
 		case 1: {
 			m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, cameraToolRayInstances, isoSphereIndex, isoSphereVertex, cameraToolRayInstanceStart);
+			MenuButton button = m_uiMenu.GetButton(0);
+			m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrushCyan.Get(), 3.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(),	m_textFormat.Get(),	button.GetButtonRectangle(),m_2dBrush.Get());
+			button = m_uiMenu.GetButton(1);
+			m_2dRenderTarget->DrawRectangle(m_uiMenu.GetButton(1).GetButtonRectangle(), m_2dBrush.Get(), 1.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
+			button = m_uiMenu.GetButton(2);
+			m_2dRenderTarget->DrawRectangle(m_uiMenu.GetButton(2).GetButtonRectangle(), m_2dBrush.Get(), 1.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
 			break;
 		}
 		case 2: {
 			m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cameraToolRayRotatedInstances, cubeIndex, cubeVertex, cameraToolRayRotatedInstanceStart);
+			MenuButton button = m_uiMenu.GetButton(1);
+			m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrushCyan.Get(), 3.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
+			button = m_uiMenu.GetButton(2);
+			m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrush.Get(), 1.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
+			button = m_uiMenu.GetButton(0);
+			m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrush.Get(), 1.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
 			break;
 		}
 		case 3: {
-			m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, cameraToolRayInstances, spaceshipIndex, spaceshipVertex, cameraToolRayInstanceStart);
+			m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, cameraToolRayRotatedInstances, spaceshipIndex, spaceshipVertex, cameraToolRayRotatedInstanceStart);
+			MenuButton button = m_uiMenu.GetButton(2);
+			m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrushCyan.Get(), 3.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
+			button = m_uiMenu.GetButton(0);
+			m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrush.Get(), 1.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
+			button = m_uiMenu.GetButton(1);
+			m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrush.Get(), 1.0f);
+			m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
 			break;
 		}
+		}
+		m_2dRenderTarget->EndDraw();
+
+		if (m_wireframe) {
+			m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
+		}
+		else {
+			m_deviceContext->GSSetShader(NULL, NULL, 0);
 		}
 		//Show Player
 		////m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, playerInstances, isoSphereIndex, isoSphereVertex, playerInstanceStart);
@@ -538,6 +578,7 @@ void Game::CreateResources()
 	//Create a brush
 	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.7f, 0.7f, 1.0f)), m_2dBrush.GetAddressOf());
 	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.1f, 0.1f, 1.0f)), m_2dBrushSolidBlue.GetAddressOf());
+	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.95f, 0.95f, 1.0f)), m_2dBrushCyan.GetAddressOf());
 
 	//Text formatting
 	ComPtr<IDWriteFactory> writeFactory;
@@ -602,6 +643,7 @@ void Game::OnWindowSizeChanged(int width, int height) {
 	for(auto menu : m_menuStack) {
 		menu->RecalculateMenuFrame(m_screenWidth, m_screenHeight);
 	}
+	m_uiMenu.RecalculateMenuFrame(m_screenWidth, m_screenHeight);
 
 	CreateResources();
 }

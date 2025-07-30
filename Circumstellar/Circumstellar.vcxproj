@@ -169,6 +169,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ControlSettingsIO.cpp" />
     <ClCompile Include="CreateWindow.cpp" />
+    <ClCompile Include="DualContour.cpp" />
     <ClCompile Include="ErrorHandling.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameTool.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ControlSettingsIO.h" />
     <ClInclude Include="CreateWindow.h" />
+    <ClInclude Include="DualContour.h" />
     <ClInclude Include="ErrorHandling.h" />
     <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="InputController.h" />

@@ -127,6 +127,9 @@
     <ClInclude Include="Menus.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="DualContour.h">
+      <Filter>Header Files\API Interaction\Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CreateWindow.cpp">
@@ -195,6 +198,9 @@
     </ClCompile>
     <ClCompile Include="Menus.cpp">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="DualContour.cpp">
+      <Filter>Source Files\API Interaction\Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

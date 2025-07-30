@@ -10,7 +10,7 @@
 
 //bindingMap is a map containing a UINT key corresponding to a windows message, and an Action which is std::function<void()>
 
-InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_changePower(0.1f), m_wireframeOn(1), m_menuContextEnabled(1),
+InputController::InputController() : m_cameraSpeed(0.1f), m_rollSpeed(0.05f), m_changePower(0.1f), m_wireframeOn(0), m_menuContextEnabled(1),
 	m_lastMouseClickPosH(0), m_lastMouseClickPosV(0), m_keyChangeInputContextEnabled(0)
 {
 	//Note: VK_ is a prefix for some key codes.  All letters and numbers can be listed as '1' or 'A' as a char instead of hexadecimal	

@@ -170,6 +170,7 @@ private:
 	Microsoft::WRL::ComPtr<ID2D1RenderTarget> m_2dRenderTarget;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrush;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrushSolidBlue;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush>m_2dBrushCyan;
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
@@ -182,6 +183,7 @@ private:
 	bool m_menuActive;
 	std::vector<std::shared_ptr<Menus>> m_menuStack;
 	InputController* m_inputController;
+	GameplayUIMenu m_uiMenu;
 	
 	bool m_wireframe;
 	int m_planetVoxCount;

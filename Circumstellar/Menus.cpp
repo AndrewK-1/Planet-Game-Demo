@@ -531,6 +531,18 @@ SaveGameMenu::SaveGameMenu(int screenSizeH, int screenSizeV, Game* game) : Menus
 	p_buttons.push_back(saveGameThreeButton);
 }
 
+GameplayUIMenu::GameplayUIMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, screenSizeH, screenSizeV, game) {
+	D2D1_RECT_F menuFrame = GetMenuFrame();
+	float menuScale = GetMenuScale();
+	MenuButton terrainToolDisplay = { L"Terrain", 1, 2, -200, 10, 150, 150, menuFrame, menuScale };
+	MenuButton blockToolDisplay = { L"Block", 1, 2, 0, 10, 150, 150, menuFrame, menuScale };
+	MenuButton shipToolDisplay = { L"Ship", 1, 2, 200, 10, 150, 150, menuFrame, menuScale };
+
+	p_buttons.push_back(terrainToolDisplay);
+	p_buttons.push_back(blockToolDisplay);
+	p_buttons.push_back(shipToolDisplay);
+}
+
 std::wstring ConvertVirtualKeyToString(UINT key) {
 	switch (key) {
 	case VK_LBUTTON: return L"Left MButton";

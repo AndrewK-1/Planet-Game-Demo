@@ -190,4 +190,9 @@ public:
 	SaveGameMenu(int screenSizeH, int screenSizeV, Game* game);
 };
 
+class GameplayUIMenu : public Menus {
+public:
+	GameplayUIMenu(int screenSizeH, int screenSizeV, Game* game);
+};
+
 std::wstring ConvertVirtualKeyToString(UINT key);
