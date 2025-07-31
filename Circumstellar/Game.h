@@ -89,6 +89,7 @@ public:
 	void OpenLoadMenu();
 	void ChangeFontSize(float fontSize);
 	GraphicsSettingsIO* GetSettingIO();
+	void UpdateGUI();
 private:
 	//Rendering and views methods
 	void Update();
@@ -112,7 +113,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>	m_renderTargetView;		//Thing targeted for rendering
 	//Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	m_depthStencilView;		//Depth stuff
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>		m_inputLayout;			//Input Layout object for receiveing input descriptions or something
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>		m_vertexShader;			
+	Microsoft::WRL::ComPtr<ID3D11InputLayout>		m_inputLayoutSkybox;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader>		m_vertexShader;		
+	Microsoft::WRL::ComPtr<ID3D11VertexShader>		m_vertexShaderSkybox;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_vBufferSkybox;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_iBufferSkybox;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_pVBuffer;
 
 	struct MatrixData {
@@ -170,9 +175,13 @@ private:
 	Microsoft::WRL::ComPtr<ID2D1RenderTarget> m_2dRenderTarget;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrush;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrushSolidBlue;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_2dBrushSolidBlueTranslucent;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush>m_2dBrushCyan;
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textureSkybox;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_skyboxSRV;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
 
 	//Setting IO
 	std::unique_ptr<GraphicsSettingsIO> m_settingsIO;
