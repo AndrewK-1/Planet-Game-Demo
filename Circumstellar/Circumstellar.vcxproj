@@ -24,6 +24,7 @@
     <ProjectGuid>{331a9588-22cd-4156-b0aa-10be511be68a}</ProjectGuid>
     <RootNamespace>Circumstellar</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>PlanetGameDemo</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

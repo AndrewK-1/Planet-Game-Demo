@@ -56,7 +56,7 @@ int WINAPI wWinMain(
 	HWND hWind = CreateWindowExW(
 		WS_EX_CLIENTEDGE, 
 		MAKEINTATOM(RegisteredWindowClass), 
-		L"Circumstellar", 
+		L"PlanetGameDemo", 
 		WS_OVERLAPPEDWINDOW | WS_SIZEBOX, 
 		10,
 		10,
