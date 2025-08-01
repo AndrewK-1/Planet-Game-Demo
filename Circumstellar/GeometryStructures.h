@@ -1,5 +1,7 @@
 #pragma once
 #include "pch.h"
+#define oneThird 0.333333333f
+#define oneFourth 0.25f
 
 namespace CustomGeometry {
 	
@@ -16,6 +18,12 @@ namespace CustomGeometry {
 		DirectX::XMFLOAT4 V_Position;
 		DirectX::XMFLOAT4 V_Normal;
 		DirectX::XMFLOAT4 V_Color;
+	};
+
+	struct VertexTextured {
+		DirectX::XMFLOAT4 V_Position;
+		DirectX::XMFLOAT4 V_Normal;
+		DirectX::XMFLOAT2 V_Texture;
 	};
 
 	inline const DirectX::XMFLOAT4 tempNormal = { 1.0f, 0.0f, 0.0f, 1.0f };
@@ -72,8 +80,58 @@ namespace CustomGeometry {
 		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData },
 		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), CubeColor.ColorData },
 	};
-	
 
+	inline const std::vector<VertexTextured> CubeArrayTextured = {
+		//Right face, Bottom forward triangle
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(0.0f, oneThird) },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth, oneThird * 2) },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth, oneThird * 2) },
+		//Top backward triangle
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth, oneThird) },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(0.0f, oneThird) },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth, oneThird) },
+		//Back face, right bottom triangle
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(oneFourth, oneThird) },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 2, oneThird * 2) },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(oneFourth, oneThird * 2) },
+		//top left triangle
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 2, oneThird * 2) },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(oneFourth, oneThird) },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 2, oneThird) },
+		//Left face, bottom backward triangle
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 2, oneThird) },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, oneThird * 2) },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 2, oneThird * 2) },
+		//top forward triangle
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, oneThird * 2) },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 2, oneThird) },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, oneThird) },
+		//Forward face, bottom left triangle
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, oneThird) },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, oneThird * 2) },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, oneThird * 2) },
+		//top right triangle
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, oneThird) },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, oneThird) },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, oneThird * 2) },
+		//Top face, forward right triangle
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, oneThird) },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, 0.0f) },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
+		//backward left triangle
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, 0.0f) },
+		{ DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, oneThird) },
+		{ DirectX::XMFLOAT4(-1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, oneThird) },
+		//Bottom face, backward right triangle
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, 1.0f) },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, oneThird * 2) },
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
+		//front left triangle
+		{ DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, oneThird * 2) },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, 1.0f) },
+		{ DirectX::XMFLOAT4(-1.0f, -1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(oneFourth * 3, oneThird * 2) }
+	};
+	
 	int const CubeVertexCount = 36;
 	inline const std::vector<UINT> CubeIndexArray = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35 };
 

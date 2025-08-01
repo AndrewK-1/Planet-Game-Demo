@@ -193,6 +193,7 @@ public:
 class GameplayUIMenu : public Menus {
 public:
 	GameplayUIMenu(int screenSizeH, int screenSizeV, Game* game);
+	void ChangeToolKeyDisplay(int toolIndex, UINT key);
 };
 
 std::wstring ConvertVirtualKeyToString(UINT key);

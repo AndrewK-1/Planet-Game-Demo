@@ -125,6 +125,9 @@ void InputController::HandleKeyDown(UINT key, long long lParam, Game* game) {
 		SetGameBindSetting(oldKey, key, m_nextKeyToChangeSettingID);
 		m_keyChangeInputContextEnabled = false;
 		game->CloseTopmostMenu();
+		game->UpdateGUI();
+		msg = L"Updating button " + m_buttonChangeIndex; msg += L" for keybind change.\n"; OutputDebugString(msg.c_str());
+		game->GetTopmostMenu().GetButtonReference(m_buttonChangeIndex).SetText(ConvertVirtualKeyToString(key));
 	}
 
 	//Key flag becomes last 16 bits of lParam.  Useful since KF_REPEAT is 16-bit.

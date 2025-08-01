@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Game.h"
 #include <d3dcompiler.h>
+#include <WICTextureLoader.h>
 #include <WindowsNumerics.h>
 #include <debugapi.h>
 #include <chrono>
@@ -12,6 +13,7 @@
 #include "Block.h"
 #include "Planet.h"
 #include "Menus.h"
+#include "InputController.h"
 
 
 using Microsoft::WRL::ComPtr;
@@ -70,7 +72,6 @@ Game::Game() noexcept :
 	OpenMainMenu();
 	m_world1 = std::make_unique<World>();
 	camera = std::make_unique<Camera>();
-	m_uiMenu.RecalculateMenuFrame(m_screenWidth, m_screenHeight);
 }
 
 void Game::SetInputController(InputController* inputController) {
@@ -82,6 +83,12 @@ InputController* Game::GetInputController() {
 
 void Game::Initialize(HWND windowHandle) {
 	m_windowHandle = windowHandle;
+	
+	m_uiMenu.RecalculateMenuFrame(m_screenWidth, m_screenHeight);
+	m_uiMenu.ChangeToolKeyDisplay(0, m_inputController->GetGameBindSetting(ID_ChangeToToolOne));
+	m_uiMenu.ChangeToolKeyDisplay(1, m_inputController->GetGameBindSetting(ID_ChangeToToolTwo));
+	m_uiMenu.ChangeToolKeyDisplay(2, m_inputController->GetGameBindSetting(ID_ChangeToToolThree));
+
 	CreateDevice();
 	CreateResources();
 
@@ -91,6 +98,12 @@ void Game::Initialize(HWND windowHandle) {
 	if (m_world1->CheckIfLoaded()) {
 		InitializeShaders();
 	}
+}
+
+void Game::UpdateGUI() {
+	m_uiMenu.ChangeToolKeyDisplay(0, m_inputController->GetGameBindSetting(ID_ChangeToToolOne));
+	m_uiMenu.ChangeToolKeyDisplay(1, m_inputController->GetGameBindSetting(ID_ChangeToToolTwo));
+	m_uiMenu.ChangeToolKeyDisplay(2, m_inputController->GetGameBindSetting(ID_ChangeToToolThree));
 }
 
 void Game::Tick() {
@@ -229,6 +242,7 @@ void Game::Render() {
 
 	//Render code
 	if (m_worldLoaded == true) {
+
 		//Index for where each index array and vertex array start to tell the gpu how to draw shapes.
 		UINT planetIndex = 0;
 		UINT planetVertex = 0;
@@ -264,7 +278,19 @@ void Game::Render() {
 		m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
 		//In-game GUI
 		m_2dRenderTarget->BeginDraw();
+		for (int i = 0; i < m_uiMenu.GetButtonCount(); i++) {
+			m_2dRenderTarget->FillRectangle(m_uiMenu.GetButton(i).GetButtonRectangle(), m_2dBrushSolidBlueTranslucent.Get());
+		}
 		switch (m_currentTool) {
+		case 0: {
+			MenuButton button = m_uiMenu.GetButton(0);
+			for (int i = 0; i < m_uiMenu.GetButtonCount(); i++) {
+				button = m_uiMenu.GetButton(i);
+				m_2dRenderTarget->DrawRectangle(button.GetButtonRectangle(), m_2dBrush.Get(), 1.0f);
+				m_2dRenderTarget->DrawText(button.GetButtonText().c_str(), button.GetButtonText().length(), m_textFormat.Get(), button.GetButtonRectangle(), m_2dBrush.Get());
+			}
+			break;
+		}
 		case 1: {
 			m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, cameraToolRayInstances, isoSphereIndex, isoSphereVertex, cameraToolRayInstanceStart);
 			MenuButton button = m_uiMenu.GetButton(0);
@@ -578,6 +604,7 @@ void Game::CreateResources()
 	//Create a brush
 	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.7f, 0.7f, 1.0f)), m_2dBrush.GetAddressOf());
 	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.1f, 0.1f, 1.0f)), m_2dBrushSolidBlue.GetAddressOf());
+	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.1f, 0.1f, 0.55f)), m_2dBrushSolidBlueTranslucent.GetAddressOf());
 	m_2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF(0.0f, 0.95f, 0.95f, 1.0f)), m_2dBrushCyan.GetAddressOf());
 
 	//Text formatting
@@ -733,7 +760,20 @@ void Game::InitializeShaders() {
 	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexDiffuseInstanceShader.hlsl", nullptr, nullptr, "main", "vs_5_0", 0, 0, &VshaderBlob, &VerrorBlob));
 	OutputDebugString(L"Creating vertex shader.\n");
 	//Create vertex shader
-	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, &m_vertexShader));
+	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, m_vertexShader.GetAddressOf()));
+
+	//Sampler state
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	DX::ThrowIfFailed(m_device->CreateSamplerState(&samplerDesc, m_samplerState.GetAddressOf()));
+	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+
 
 	OutputDebugString(L"Compiling and creating geometry shader.\n");
 	//Geometry Shader

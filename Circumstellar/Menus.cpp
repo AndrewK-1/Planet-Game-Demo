@@ -173,6 +173,7 @@ void MenuButton::RecalculateButtonSize(float menuScale, D2D1_RECT_F menuFrame) {
 }
 
 void MenuButton::SetText(std::wstring text) {
+	OutputDebugString(L"Setting text\n");
 	m_buttonText = text;
 }
 
@@ -436,7 +437,7 @@ KeybindMenu::KeybindMenu(int screenSizeH, int screenSizeV, Game* game, InputCont
 	MenuButton titleMount(L"Mount Vehicle: ", 1, 0, -225, 450, 450, 50, menuFrame, menuScale);
 	MenuButton titleUseTool(L"Use Tool: ", 1, 0, -225, 500, 450, 50, menuFrame, menuScale);
 	MenuButton titleUseToolAlt(L"Use Tool Alt: ", 1, 0, -225, 550, 450, 50, menuFrame, menuScale);
-	MenuButton titleStopSprinting(L"Stop Sprinting: ", 1, 0, -225, 600, 450, 50, menuFrame, menuScale);
+	MenuButton titleStopSprinting(L"Sprint: ", 1, 0, -225, 600, 450, 50, menuFrame, menuScale);
 	MenuButton titleChangeToToolOne(L"Change to Tool One: ", 1, 0, -225, 650, 450, 50, menuFrame, menuScale);
 	MenuButton titleChangeToToolTwo(L"Change to Tool Two: ", 1, 0, -225, 700, 450, 50, menuFrame, menuScale);
 	MenuButton titleChangeToToolThree(L"Change to Tool Three: ", 1, 0, -225, 750, 450, 50, menuFrame, menuScale);
@@ -534,13 +535,31 @@ SaveGameMenu::SaveGameMenu(int screenSizeH, int screenSizeV, Game* game) : Menus
 GameplayUIMenu::GameplayUIMenu(int screenSizeH, int screenSizeV, Game* game) : Menus(screenSizeH, screenSizeV, screenSizeH, screenSizeV, game) {
 	D2D1_RECT_F menuFrame = GetMenuFrame();
 	float menuScale = GetMenuScale();
-	MenuButton terrainToolDisplay = { L"Terrain", 1, 2, -200, 10, 150, 150, menuFrame, menuScale };
-	MenuButton blockToolDisplay = { L"Block", 1, 2, 0, 10, 150, 150, menuFrame, menuScale };
-	MenuButton shipToolDisplay = { L"Ship", 1, 2, 200, 10, 150, 150, menuFrame, menuScale };
+	MenuButton terrainToolDisplay = { L"\nTerrain", 1, 2, -250, 10, 200, 100, menuFrame, menuScale };
+	MenuButton blockToolDisplay = { L"\nBlocks", 1, 2, 0, 10, 200, 100, menuFrame, menuScale };
+	MenuButton shipToolDisplay = { L"\nShips", 1, 2, 250, 10, 200, 100, menuFrame, menuScale };
 
 	p_buttons.push_back(terrainToolDisplay);
 	p_buttons.push_back(blockToolDisplay);
 	p_buttons.push_back(shipToolDisplay);
+}
+
+void GameplayUIMenu::ChangeToolKeyDisplay(int toolIndex, UINT key) {
+	MenuButton& button = p_buttons.at(toolIndex);
+	switch (toolIndex) {
+	case 0: {
+		button.SetText(ConvertVirtualKeyToString(key) + L"\nTerrain");
+		break;
+	}
+	case 1: {
+		button.SetText(ConvertVirtualKeyToString(key) + L"\nBlocks");
+		break;
+	}
+	case 2: {
+		button.SetText(ConvertVirtualKeyToString(key) + L"\nShips");
+		break;
+	}
+	}
 }
 
 std::wstring ConvertVirtualKeyToString(UINT key) {

@@ -28,8 +28,6 @@ bool GraphicsObject::SendToPipeline(ID3D11Device* device) {
 	subData.SysMemSlicePitch = 0;
 
 	DX::ThrowIfFailed(device->CreateBuffer(&vertBufferDesc, &subData, m_vBuffer.GetAddressOf()));
-	//OutputDebugString(L"Sent To Pipeline\n");
-	
 
 	//Index Buffer Description
 	D3D11_BUFFER_DESC indexBufferDesc;
