@@ -66,22 +66,7 @@ Slider::Slider(int placementH, int placementV, float paddingH, float paddingV, f
 
 	MenuElementCalculator calc;
 	m_sliderRectangle = calc.CalculateRectangle(m_alignmentH, m_alignmentV, paddingH, paddingV, width, height, menuFrame, menuScale);
-
-	//T=top, B=bottom, L=left, R=right, M=middle
-	D2D1_POINT_2F pointTL = D2D1::Point2F(m_sliderRectangle.left, m_sliderRectangle.top);
-	D2D1_POINT_2F pointBL = D2D1::Point2F(m_sliderRectangle.left, m_sliderRectangle.bottom);
-	D2D1_POINT_2F pointTR = D2D1::Point2F(m_sliderRectangle.right, m_sliderRectangle.top);
-	D2D1_POINT_2F pointBR = D2D1::Point2F(m_sliderRectangle.right, m_sliderRectangle.bottom);
-	D2D1_POINT_2F pointML = D2D1::Point2F(m_sliderRectangle.left, (m_sliderRectangle.bottom - m_sliderRectangle.top) / 2.0f + m_sliderRectangle.top);
-	D2D1_POINT_2F pointMR = D2D1::Point2F(m_sliderRectangle.right, (m_sliderRectangle.bottom - m_sliderRectangle.top) / 2.0f + m_sliderRectangle.top);
-
-	m_points.clear();
-	m_points.push_back(pointTL);
-	m_points.push_back(pointBL);
-	m_points.push_back(pointTR);
-	m_points.push_back(pointBR);
-	m_points.push_back(pointML);
-	m_points.push_back(pointMR);
+	RecalculateSliderSize(menuScale, menuFrame);
 }
 
 Slider::Slider(int placementH, int placementV, float paddingH, float paddingV, float width, float height, D2D1_RECT_F menuFrame, float menuScale, std::function<void()> onClickFunction, Game* game)
@@ -91,8 +76,8 @@ Slider::Slider(int placementH, int placementV, float paddingH, float paddingV, f
 }
 
 void Slider::RecalculateSliderSize(float menuScale, D2D1_RECT_F menuFrame) {
-	float paddingH = m_paddingH * menuScale, paddingV = m_paddingV * menuScale;
-	float width = m_width * menuScale, height = m_height * menuScale;
+	float paddingH = static_cast<float>(m_paddingH) * menuScale, paddingV = static_cast<float>(m_paddingV) * menuScale;
+	float width = static_cast<float>(m_width) * menuScale, height = static_cast<float>(m_height) * menuScale;
 	MenuElementCalculator calc;
 	m_sliderRectangle = calc.CalculateRectangle(m_alignmentH, m_alignmentV, paddingH, paddingV, width, height, menuFrame, menuScale);
 
@@ -263,6 +248,9 @@ void Menus::RecalculateMenuFrame(int screenWidth, int screenHeight) {
 	for (auto& button : p_buttons) {
 		button.RecalculateButtonSize(m_menuScale, m_menuFrame);
 	}
+	for (auto& slider : p_sliders) {
+		slider.RecalculateSliderSize(m_menuScale, m_menuFrame);
+	}
 }
 
 void Menus::AddButton(MenuButton button) {
@@ -394,10 +382,10 @@ GraphicsSettingsMenu::GraphicsSettingsMenu(int screenSizeH, int screenSizeV, Gam
 	p_buttons.push_back(MenuButton(L"720 x 480", 1, 0, 150, 450, 300, 50, menuFrame, [this]() {m_game->SetResolution(720, 480); }, menuScale));
 	p_buttons.push_back(MenuButton(L"640 x 480", 1, 0, 150, 500, 300, 50, menuFrame, [this]() {m_game->SetResolution(640, 480); }, menuScale));
 
-	Slider fovSlider(1, 0, 0, 550, 300, 50, menuFrame, menuScale, [game]() { game->SetFOV(1.0f); }, game);
+	Slider fovSlider(1, 0, 0, 625, 300, 50, menuFrame, menuScale, [game]() { game->SetFOV(1.0f); }, game);
 	p_sliders.push_back(fovSlider);
 
-	MenuButton closeButton(L"Close Menu", 1, 0, 0, 750, 300, 50, menuFrame, [this, game]() {m_game->CloseTopmostMenu(); }, menuScale);
+	MenuButton closeButton(L"Close Menu", 1, 0, 0, 700, 300, 50, menuFrame, [this, game]() {m_game->CloseTopmostMenu(); }, menuScale);
 	p_buttons.push_back(closeButton);
 }
 

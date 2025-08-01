@@ -274,6 +274,18 @@ void Game::Render() {
 
 		//Show planet
 		m_deviceContext->DrawIndexedInstanced(m_planetVertexCount, planetInstances, 0, 0, planetInstanceStart);
+		//Show Player
+		////m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, playerInstances, isoSphereIndex, isoSphereVertex, playerInstanceStart);
+		//Show cubes
+		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cubeInstances, cubeIndex, cubeVertex, cubeInstanceStart);
+		//Show spaceships
+		m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, spaceshipInstances, spaceshipIndex, spaceshipVertex, spaceshipInstanceStart);
+		//Show planet voxels if wireframe is enabled
+		if (m_wireframe) {
+			m_deviceContext->GSSetShader(NULL, NULL, 0);
+			m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, planetVoxInstances, isoSphereIndex, isoSphereVertex, planetVoxInstanceStart);
+			m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
+		}
 		//Choose which tool to show
 		m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
 		//In-game GUI
@@ -339,18 +351,6 @@ void Game::Render() {
 		else {
 			m_deviceContext->GSSetShader(NULL, NULL, 0);
 		}
-		//Show Player
-		////m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, playerInstances, isoSphereIndex, isoSphereVertex, playerInstanceStart);
-		//Show cubes
-		m_deviceContext->DrawIndexedInstanced(m_cubeIndexCount, cubeInstances, cubeIndex, cubeVertex, cubeInstanceStart);
-		//Show spaceships
-		m_deviceContext->DrawIndexedInstanced(m_spaceshipIndexCount, spaceshipInstances, spaceshipIndex, spaceshipVertex, spaceshipInstanceStart);
-		//Show planet voxels if wireframe is enabled
-		if (m_wireframe) {
-			m_deviceContext->GSSetShader(NULL, NULL, 0);
-			m_deviceContext->DrawIndexedInstanced(m_isoSphereIndexCount, planetVoxInstances, isoSphereIndex, isoSphereVertex, planetVoxInstanceStart);
-			m_deviceContext->GSSetShader(m_createdGeometryShader.Get(), NULL, 0);
-		}
 	}
 	
 	//2D Rendering
@@ -383,10 +383,10 @@ void Game::Render() {
 			}
 			//Draw slider box
 			D2D1_RECT_F sliderRectangle = slider.GetSliderRectangle();
-			float boxWidth = 10.0f;
+			float boxWidth = 10.0f * m_menuStack.at(i)->GetMenuScale();
 			float boxPosX = sliderRectangle.left + (sliderRectangle.right - sliderRectangle.left) * slider.GetValue() - boxWidth / 2.0f;
 			float boxPosY = sliderRectangle.top;
-			D2D1_RECT_F sliderRect = D2D1::RectF(boxPosX, boxPosY, boxPosX + boxWidth, boxPosY + slider.GetHeight());
+			D2D1_RECT_F sliderRect = D2D1::RectF(boxPosX, boxPosY, boxPosX + boxWidth, boxPosY + slider.GetHeight() * m_menuStack.at(i)->GetMenuScale());
 			m_2dRenderTarget->FillRectangle(sliderRect, m_2dBrush.Get());
 		}
 	}
