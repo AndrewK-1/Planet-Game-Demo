@@ -179,8 +179,6 @@ private:
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush>m_2dBrushCyan;
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textureSkybox;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_skyboxSRV;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
 
 	//Setting IO

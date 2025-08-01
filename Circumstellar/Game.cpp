@@ -242,7 +242,6 @@ void Game::Render() {
 
 	//Render code
 	if (m_worldLoaded == true) {
-		m_deviceContext->PSSetShaderResources(0, 1, m_skyboxSRV.GetAddressOf());
 
 		//Index for where each index array and vertex array start to tell the gpu how to draw shapes.
 		UINT planetIndex = 0;
@@ -763,23 +762,6 @@ void Game::InitializeShaders() {
 	//Create vertex shader
 	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), NULL, m_vertexShader.GetAddressOf()));
 
-
-	D3D11_INPUT_ELEMENT_DESC inputDescSkybox[] = {
-		//Vertex data
-		{static_cast<LPCSTR>("POSITION"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{static_cast<LPCSTR>("NORMAL"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{static_cast<LPCSTR>("TEXCOORD"), 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		//Instance data
-		{static_cast<LPCSTR>("INSTANCE_POSITION"), 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{static_cast<LPCSTR>("INSTANCE_POSITION"), 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{static_cast<LPCSTR>("INSTANCE_POSITION"), 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{static_cast<LPCSTR>("INSTANCE_POSITION"), 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-	};
-	Microsoft::WRL::ComPtr<ID3DBlob> VshaderBlobSkybox = nullptr;
-	Microsoft::WRL::ComPtr<ID3DBlob> VerrorBlobSkybox = nullptr;
-	DX::ThrowIfFailed(D3DCompileFromFile(L"VertexShaderTextured.hlsl", nullptr, nullptr, "main", "vs_5_0", 0, 0, &VshaderBlobSkybox, &VerrorBlobSkybox));
-	DX::ThrowIfFailed(m_device->CreateVertexShader(VshaderBlobSkybox->GetBufferPointer(), VshaderBlobSkybox->GetBufferSize(), NULL, m_vertexShaderSkybox.GetAddressOf()));
-
 	//Sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -811,7 +793,6 @@ void Game::InitializeShaders() {
 	OutputDebugString(L"Creating input layout.\n");
 	//Create input layout
 	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), VshaderBlob->GetBufferPointer(), VshaderBlob->GetBufferSize(), &m_inputLayout));
-	DX::ThrowIfFailed(m_device->CreateInputLayout(inputDescSkybox, ARRAYSIZE(inputDescSkybox), VshaderBlobSkybox->GetBufferPointer(), VshaderBlobSkybox->GetBufferSize(), &m_inputLayout));
 	//Set shaders to use
 	m_deviceContext->VSSetShader(m_vertexShader.Get(), NULL, 0);
 	m_deviceContext->GSSetShader(NULL, NULL, 0);
@@ -849,27 +830,6 @@ void Game::InitializeShaders() {
 
 	msg = L"Number of instances: "; msg += std::to_wstring(m_worldObjects.size()); msg += L".\n";
 	OutputDebugString(msg.c_str());
-
-	//Create texture
-	DX::ThrowIfFailed(CreateWICTextureFromFile(
-		m_device.Get(),
-		m_deviceContext.Get(),
-		L"skybox.jpg",
-		nullptr,
-		m_skyboxSRV.ReleaseAndGetAddressOf()
-	));
-
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = 2560;
-	textureDesc.Height = 1920;
-	textureDesc.MipLevels = 1;
-	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.Usage = D3D11_USAGE_DYNAMIC;
-	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	textureDesc.MiscFlags = 0;
-	DX::ThrowIfFailed(m_device->CreateTexture2D(&textureDesc, nullptr, m_textureSkybox.GetAddressOf()));
 }
 
 void Game::UpdateGraphicsBuffers() {
