@@ -70,10 +70,11 @@ bool GameTool::ChangeTerrain(Planet* planet, Camera* currentCam, float changePow
 			for (int y = arrayMinY; y <= arrayMaxY; y++) {
 				for (int x = arrayMinX; x <= arrayMaxX; x++) {
 					//msg = L"Editing point " + std::to_wstring(x); msg += L", " + std::to_wstring(y); msg += L", " + std::to_wstring(z); msg += L"\n"; OutputDebugString(msg.c_str());
-					planet->EditData(x, y, z, changePower);
+					planet->EditDataNoUpdate(x, y, z, changePower);
 				}
 			}
 		}
+		planet->GenerateGeometry();
 		return true;
 	}
 	return false;
